@@ -1,0 +1,12 @@
+[
+  { "round": 1,  "cards": 10, "trump": "spades" },
+  { "round": 2,  "cards": 9,  "trump": "diamonds" },
+  { "round": 3,  "cards": 8,  "trump": "clubs" },
+  { "round": 4,  "cards": 7,  "trump": "hearts" },
+  { "round": 5,  "cards": 6,  "trump": "spades" },
+  { "round": 6,  "cards": 5,  "trump": "diamonds" },
+  { "round": 7,  "cards": 4,  "trump": "clubs" },
+  { "round": 8,  "cards": 3,  "trump": "hearts" },
+  { "round": 9,  "cards": 2,  "trump": "spades" },
+  { "round": 10, "cards": 1,  "trump": "diamonds" }
+]

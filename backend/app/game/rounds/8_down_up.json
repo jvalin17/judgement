@@ -1,0 +1,18 @@
+[
+  { "round": 1,  "cards": 8, "trump": "spades" },
+  { "round": 2,  "cards": 7, "trump": "diamonds" },
+  { "round": 3,  "cards": 6, "trump": "clubs" },
+  { "round": 4,  "cards": 5, "trump": "hearts" },
+  { "round": 5,  "cards": 4, "trump": "spades" },
+  { "round": 6,  "cards": 3, "trump": "diamonds" },
+  { "round": 7,  "cards": 2, "trump": "clubs" },
+  { "round": 8,  "cards": 1, "trump": "hearts" },
+  { "round": 9,  "cards": 1, "trump": "spades" },
+  { "round": 10, "cards": 2, "trump": "diamonds" },
+  { "round": 11, "cards": 3, "trump": "clubs" },
+  { "round": 12, "cards": 4, "trump": "hearts" },
+  { "round": 13, "cards": 5, "trump": "spades" },
+  { "round": 14, "cards": 6, "trump": "diamonds" },
+  { "round": 15, "cards": 7, "trump": "clubs" },
+  { "round": 16, "cards": 8, "trump": "hearts" }
+]

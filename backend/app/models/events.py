@@ -1,0 +1,155 @@
+from enum import Enum
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel
+
+
+class EventType(str, Enum):
+    GAME_STARTED = "game_started"
+    ROUND_STARTED = "round_started"
+    CARDS_DEALT = "cards_dealt"
+    BID_PLACED = "bid_placed"
+    BIDDING_COMPLETE = "bidding_complete"
+    CARD_PLAYED = "card_played"
+    TRICK_COMPLETE = "trick_complete"
+    ROUND_COMPLETE = "round_complete"
+    GAME_OVER = "game_over"
+    TURN_CHANGED = "turn_changed"
+    INVALID_ACTION = "invalid_action"
+
+
+class GameEvent(BaseModel):
+    event_type: EventType
+    data: Dict[str, Any] = {}
+    player_id: Optional[str] = None  # target player (None = broadcast)
+
+
+# --- Typed event data models ---
+
+
+class GameStartedData(BaseModel):
+    players: List[dict]
+    variant: str
+
+
+class RoundStartedData(BaseModel):
+    round_number: int
+    num_cards: int
+    trump_suit: str
+    dealer_id: str
+
+
+class CardsDealtData(BaseModel):
+    hand: List[dict]
+
+
+class BidPlacedData(BaseModel):
+    player_id: str
+    amount: int
+
+
+class BiddingCompleteData(BaseModel):
+    bids: List[dict]
+
+
+class CardPlayedData(BaseModel):
+    player_id: str
+    card: dict
+
+
+class TrickCompleteData(BaseModel):
+    winner_id: str
+    tricks_won: Dict[str, int]
+
+
+class RoundCompleteData(BaseModel):
+    round_scores: Dict[str, int]
+    cumulative_scores: Dict[str, int]
+    tricks_won: Dict[str, int]
+    bids: List[dict]
+
+
+class GameOverData(BaseModel):
+    final_scores: Dict[str, int]
+    winners: List[str]
+
+
+class TurnChangedData(BaseModel):
+    player_id: str
+    phase: str
+
+
+class InvalidActionData(BaseModel):
+    reason: str
+
+
+# --- Factory functions ---
+
+
+def game_started_event(players: List[dict], variant: str) -> GameEvent:
+    data = GameStartedData(players=players, variant=variant)
+    return GameEvent(event_type=EventType.GAME_STARTED, data=data.model_dump())
+
+
+def round_started_event(
+    round_number: int, num_cards: int, trump_suit: str, dealer_id: str,
+) -> GameEvent:
+    data = RoundStartedData(
+        round_number=round_number, num_cards=num_cards,
+        trump_suit=trump_suit, dealer_id=dealer_id,
+    )
+    return GameEvent(event_type=EventType.ROUND_STARTED, data=data.model_dump())
+
+
+def cards_dealt_event(hand: List[dict], player_id: str) -> GameEvent:
+    data = CardsDealtData(hand=hand)
+    return GameEvent(
+        event_type=EventType.CARDS_DEALT, data=data.model_dump(), player_id=player_id,
+    )
+
+
+def bid_placed_event(player_id: str, amount: int) -> GameEvent:
+    data = BidPlacedData(player_id=player_id, amount=amount)
+    return GameEvent(event_type=EventType.BID_PLACED, data=data.model_dump())
+
+
+def bidding_complete_event(bids: List[dict]) -> GameEvent:
+    data = BiddingCompleteData(bids=bids)
+    return GameEvent(event_type=EventType.BIDDING_COMPLETE, data=data.model_dump())
+
+
+def card_played_event(player_id: str, card: dict) -> GameEvent:
+    data = CardPlayedData(player_id=player_id, card=card)
+    return GameEvent(event_type=EventType.CARD_PLAYED, data=data.model_dump())
+
+
+def trick_complete_event(winner_id: str, tricks_won: Dict[str, int]) -> GameEvent:
+    data = TrickCompleteData(winner_id=winner_id, tricks_won=tricks_won)
+    return GameEvent(event_type=EventType.TRICK_COMPLETE, data=data.model_dump())
+
+
+def round_complete_event(
+    round_scores: Dict[str, int], cumulative_scores: Dict[str, int],
+    tricks_won: Dict[str, int], bids: List[dict],
+) -> GameEvent:
+    data = RoundCompleteData(
+        round_scores=round_scores, cumulative_scores=cumulative_scores,
+        tricks_won=tricks_won, bids=bids,
+    )
+    return GameEvent(event_type=EventType.ROUND_COMPLETE, data=data.model_dump())
+
+
+def game_over_event(final_scores: Dict[str, int], winners: List[str]) -> GameEvent:
+    data = GameOverData(final_scores=final_scores, winners=winners)
+    return GameEvent(event_type=EventType.GAME_OVER, data=data.model_dump())
+
+
+def turn_changed_event(player_id: str, phase: str) -> GameEvent:
+    data = TurnChangedData(player_id=player_id, phase=phase)
+    return GameEvent(event_type=EventType.TURN_CHANGED, data=data.model_dump())
+
+
+def invalid_action_event(reason: str, player_id: str) -> GameEvent:
+    data = InvalidActionData(reason=reason)
+    return GameEvent(
+        event_type=EventType.INVALID_ACTION, data=data.model_dump(), player_id=player_id,
+    )

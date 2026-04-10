@@ -1,0 +1,163 @@
+/* Settings modal */
+
+.settingsContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 320px;
+}
+
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Card back picker */
+
+.cardBackGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+}
+
+.cardBackOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  cursor: pointer;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.cardBackOption:hover {
+  border-color: var(--color-surface-light);
+}
+
+.cardBackOption.selected {
+  border-color: var(--color-accent);
+}
+
+.cardBackPreview {
+  width: 44px;
+  height: 64px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cardBackLabel {
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Table color picker */
+
+.colorGrid {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.colorOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  cursor: pointer;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.colorOption:hover {
+  border-color: var(--color-surface-light);
+}
+
+.colorOption.selected {
+  border-color: var(--color-accent);
+}
+
+.colorSwatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.colorLabel {
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Animation speed picker */
+
+.speedGroup {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.speedOption {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  border: 2px solid transparent;
+}
+
+.speedOption:hover {
+  background: var(--color-surface-light);
+  color: var(--color-text);
+}
+
+.speedOption.selected {
+  background: var(--color-surface-light);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Gear button */
+
+.gearButton {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-light);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.25rem;
+  color: var(--color-text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  z-index: 20;
+}
+
+.gearButton:hover {
+  background: var(--color-surface-light);
+  color: var(--color-text);
+}

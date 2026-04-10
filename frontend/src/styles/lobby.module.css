@@ -1,0 +1,217 @@
+.lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-lg);
+  gap: var(--space-lg);
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-top: calc(-1 * var(--space-sm));
+}
+
+.section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sectionLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Variant selector */
+
+.variantGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.variantOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.variantOption:hover {
+  background: var(--color-surface-light);
+}
+
+.variantOption.selected {
+  background: var(--color-surface-light);
+  outline: 1px solid var(--color-accent);
+}
+
+.variantRadio {
+  accent-color: var(--color-accent);
+}
+
+.variantLabel {
+  flex: 1;
+}
+
+/* Toggle */
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.toggleSwitch {
+  width: 48px;
+  height: 28px;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.toggleSwitch.active {
+  background: var(--color-accent);
+}
+
+.toggleKnob {
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform var(--transition-fast);
+}
+
+.toggleSwitch.active .toggleKnob {
+  transform: translateX(20px);
+}
+
+/* Player setup */
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.playerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.playerIndex {
+  width: 24px;
+  height: 24px;
+  background: var(--color-surface-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.playerName {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--color-surface-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+}
+
+.playerName:focus {
+  outline: 1px solid var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.playerTypeSelect {
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-surface-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.difficultySelect {
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-surface-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  min-width: 70px;
+}
+
+.removeButton {
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  padding: var(--space-xs);
+  line-height: 1;
+}
+
+.removeButton:hover {
+  color: var(--color-danger);
+}
+
+.addPlayerButton {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.addPlayerButton:hover:not(:disabled) {
+  background: var(--color-surface-light);
+  color: var(--color-text);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+}

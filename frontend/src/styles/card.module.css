@@ -1,0 +1,298 @@
+/* --- Card container --- */
+
+.card {
+  width: var(--card-width);
+  height: var(--card-height);
+  background: var(--color-card-bg);
+  background-image:
+    radial-gradient(ellipse at 30% 15%, rgba(255, 255, 255, 0.5) 0%, transparent 50%),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, transparent 30%);
+  border: 1.5px solid var(--color-card-border);
+  border-radius: var(--card-radius);
+  display: flex;
+  flex-direction: column;
+  padding: 4px 5px;
+  cursor: default;
+  user-select: none;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Suit colors */
+
+.card.red {
+  color: var(--color-card-red);
+}
+
+.card.black {
+  color: var(--color-card-black);
+}
+
+.card.blue {
+  color: var(--color-card-blue);
+}
+
+.card.green {
+  color: var(--color-card-green);
+}
+
+/* --- Interactive states --- */
+
+.card.playable {
+  cursor: pointer;
+  box-shadow: 0 0 10px 3px rgba(230, 126, 34, 0.6), 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-color: var(--color-accent);
+  transform: translateY(-6px);
+}
+
+.card.playable:hover {
+  transform: translateY(-14px);
+  box-shadow: 0 0 18px 5px rgba(230, 126, 34, 0.8), 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.card.selected {
+  transform: translateY(-12px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  outline: 2px solid var(--color-accent);
+}
+
+.card.dimmed {
+  opacity: 0.45;
+  filter: brightness(0.75);
+}
+
+/* --- Small variant --- */
+
+.card.small {
+  width: var(--card-width-sm);
+  height: var(--card-height-sm);
+  padding: 2px 3px;
+}
+
+/* --- Corner rank/suit --- */
+
+.cornerTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+  gap: 0px;
+  z-index: 1;
+}
+
+.cornerBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  transform: rotate(180deg);
+  line-height: 1;
+  gap: 0px;
+  z-index: 1;
+}
+
+.rank {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cornerSuit {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* --- Card body (center content area) --- */
+
+.cardBody {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
+/* --- Pip layout for number cards --- */
+
+.pipGrid {
+  position: absolute;
+  inset: 0;
+}
+
+.pip {
+  position: absolute;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.pip.pipSmall {
+  font-size: 0.7rem;
+}
+
+/* --- Face card design (J, Q, K) --- */
+
+.faceCardCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  overflow: hidden;
+}
+
+/* --- Ace design --- */
+
+.aceSymbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Card back --- */
+
+.cardBack {
+  width: var(--card-width);
+  height: var(--card-height);
+  background: linear-gradient(135deg, #1a3a5c, #2c5f8a);
+  border: 1.5px solid #4a7fb5;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cardBack.small {
+  width: var(--card-width-sm);
+  height: var(--card-height-sm);
+}
+
+.backPattern {
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: calc(var(--card-radius) - 2px);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(255, 255, 255, 0.06) 4px,
+      rgba(255, 255, 255, 0.06) 8px
+    );
+}
+
+/* --- Card back design variants --- */
+
+/* Classic Blue (default - enhanced) */
+.backClassicBlue {
+  background: linear-gradient(135deg, #1a3a5c, #2c5f8a);
+  border-color: #4a7fb5;
+}
+.backClassicBlue .backPattern {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: repeating-linear-gradient(
+    45deg,
+    transparent, transparent 4px,
+    rgba(255, 255, 255, 0.06) 4px,
+    rgba(255, 255, 255, 0.06) 8px
+  );
+}
+
+/* Red Damask */
+.backRedDamask {
+  background: linear-gradient(135deg, #5c1a1a, #8a2c2c);
+  border-color: #b54a4a;
+}
+.backRedDamask .backPattern {
+  border-color: rgba(218, 165, 32, 0.3);
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(218, 165, 32, 0.06) 8px, rgba(218, 165, 32, 0.06) 9px),
+    repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(218, 165, 32, 0.06) 8px, rgba(218, 165, 32, 0.06) 9px),
+    repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(218, 165, 32, 0.04) 12px, rgba(218, 165, 32, 0.04) 13px),
+    repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(218, 165, 32, 0.04) 12px, rgba(218, 165, 32, 0.04) 13px);
+}
+
+/* Green Celtic */
+.backGreenCeltic {
+  background: linear-gradient(135deg, #1a4a2a, #2a6a3a);
+  border-color: #4a8a5a;
+}
+.backGreenCeltic .backPattern {
+  border-color: rgba(255, 255, 255, 0.25);
+  background:
+    radial-gradient(circle at 25% 25%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px),
+    radial-gradient(circle at 75% 75%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px),
+    radial-gradient(circle at 75% 25%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px),
+    radial-gradient(circle at 25% 75%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px);
+  background-size: 24px 24px;
+}
+
+/* Royal Purple */
+.backRoyalPurple {
+  background: linear-gradient(135deg, #2a1a4a, #4a2c6a);
+  border-color: #6a4a8a;
+}
+.backRoyalPurple .backPattern {
+  border-color: rgba(192, 192, 192, 0.25);
+  background:
+    repeating-linear-gradient(60deg, transparent, transparent 6px, rgba(192, 192, 192, 0.05) 6px, rgba(192, 192, 192, 0.05) 7px),
+    repeating-linear-gradient(-60deg, transparent, transparent 6px, rgba(192, 192, 192, 0.05) 6px, rgba(192, 192, 192, 0.05) 7px);
+}
+
+/* Gold Ornate */
+.backGoldOrnate {
+  background: linear-gradient(135deg, #4a3a1a, #6a5a2a);
+  border-color: #8a7a3a;
+}
+.backGoldOrnate .backPattern {
+  border-color: rgba(255, 215, 0, 0.3);
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(255, 215, 0, 0.06) 6px, rgba(255, 215, 0, 0.06) 7px),
+    repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(255, 215, 0, 0.06) 6px, rgba(255, 215, 0, 0.06) 7px),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 215, 0, 0.04) 10px, rgba(255, 215, 0, 0.04) 11px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255, 215, 0, 0.04) 10px, rgba(255, 215, 0, 0.04) 11px);
+}
+
+/* --- Tablet+ responsive --- */
+
+@media (min-width: 768px) {
+  .rank {
+    font-size: 1.15rem;
+  }
+
+  .cornerSuit {
+    font-size: 0.9rem;
+  }
+
+  .pip {
+    font-size: 1.1rem;
+  }
+
+  .pip.pipSmall {
+    font-size: 0.75rem;
+  }
+
+  .aceSymbol {
+    font-size: 3.2rem;
+  }
+
+  .card.small {
+    width: var(--card-width-sm);
+    height: var(--card-height-sm);
+  }
+
+  .cardBack.small {
+    width: var(--card-width-sm);
+    height: var(--card-height-sm);
+  }
+}

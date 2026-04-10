@@ -41,3 +41,12 @@ htmlcov/
 
 # Logs
 *.log
+
+# Local notes (not pushed)
+CLAUDE.md
+OPTIMIZATIONS.md
+LEARNINGS.md
+PLAN.md
+RULES.md
+STATUS.md
+SUMMARY.md

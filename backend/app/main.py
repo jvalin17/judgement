@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.app.api import rest, websocket
+from backend.app.game_manager import GameManager
+
 app = FastAPI(title="Judgement Card Game", version="0.1.0")
 
 app.add_middleware(
@@ -10,6 +13,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Shared game manager instance
+game_manager = GameManager()
+rest.set_manager(game_manager)
+websocket.set_manager(game_manager)
+
+app.include_router(rest.router)
+app.include_router(websocket.router)
 
 
 @app.get("/health")

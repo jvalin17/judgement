@@ -1,0 +1,123 @@
+.scoreboard {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.scoreTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.scoreTable th {
+  text-align: left;
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-surface-light);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.scoreTable td {
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid var(--color-surface);
+}
+
+.scoreTable th:not(:first-child),
+.scoreTable td:not(:first-child) {
+  text-align: center;
+}
+
+.playerNameCell {
+  font-weight: 600;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.highlight {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* Final results */
+
+.finalResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.gameOverTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.winnerSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.winnerLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.winnerName {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.finalScoreList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.finalScoreRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.finalScoreRow.winner {
+  background: rgba(230, 126, 34, 0.2);
+  outline: 1px solid var(--color-accent);
+}
+
+.finalScoreName {
+  font-weight: 600;
+}
+
+.finalScoreValue {
+  font-weight: 700;
+}
+
+.positive {
+  color: #2ecc71;
+}
+
+.negative {
+  color: #e74c3c;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+}
