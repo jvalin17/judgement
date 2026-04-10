@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Rank, Suit } from "../../types";
 import { Rank as RankValues, SUIT_COLORS } from "../../types";
 
@@ -10,13 +11,13 @@ interface FaceCardArtProps {
  * SVG face card portraits — stylized J/Q/K with suit-colored accents.
  * Each face has a mirrored design like traditional playing cards.
  */
-export function FaceCardArt({ rank, suit }: FaceCardArtProps) {
+export const FaceCardArt = memo(function FaceCardArt({ rank, suit }: FaceCardArtProps) {
   const color = getSuitHex(suit);
 
   if ((rank as number) === RankValues.JACK) return <JackArt color={color} />;
   if ((rank as number) === RankValues.QUEEN) return <QueenArt color={color} />;
   return <KingArt color={color} />;
-}
+});
 
 function getSuitHex(suit: Suit): string {
   const colorName = SUIT_COLORS[suit];

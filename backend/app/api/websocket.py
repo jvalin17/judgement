@@ -9,16 +9,12 @@ from backend.app.models import Card, Suit, Rank
 from backend.app.models.events import EventType, GameEvent
 from backend.app.game_manager import GameManager, ManagedGame
 
-# Delays (seconds) inserted after events so the frontend can show each card.
+# Default delays (seconds) inserted after events so the frontend can show each card.
 # These control game pacing — how long the user sees each AI move before the
-# next one plays. Separate from CSS transition speed (which is a frontend setting).
-#
-# CARD_PLAYED: time to see each card land before the next one plays.
-# TRICK_COMPLETE: must exceed frontend trick-winner animation (1.6s show + collect).
-# ROUND_COMPLETE: brief pause before scoreboard appears.
-DELAY_AFTER_CARD_PLAYED = 2.0
-DELAY_AFTER_TRICK_COMPLETE = 3.5
-DELAY_AFTER_ROUND_COMPLETE = 1.5
+# next one plays. Configurable per-game via CreateGameRequest.speed.
+DEFAULT_DELAY_AFTER_CARD_PLAYED = 2.0
+DEFAULT_DELAY_AFTER_TRICK_COMPLETE = 3.0
+DEFAULT_DELAY_AFTER_ROUND_COMPLETE = 1.5
 
 router = APIRouter()
 
@@ -76,7 +72,7 @@ connection_manager = ConnectionManager()
 
 
 async def _flush_pending_events(
-    events: list, game_id: str, connections: ConnectionManager
+    events: list, game_id: str, connections: ConnectionManager, managed: ManagedGame
 ) -> None:
     """Send queued events to clients with delays between card plays.
 
@@ -91,18 +87,19 @@ async def _flush_pending_events(
         else:
             await connections.broadcast(game_id, message)
 
-        delay = _get_event_delay(event.event_type)
+        delay = _get_event_delay(event.event_type, managed)
         if delay > 0:
             await asyncio.sleep(delay)
 
 
-def _get_event_delay(event_type: EventType) -> float:
+def _get_event_delay(event_type: EventType, managed: ManagedGame) -> float:
+    speed = managed.speed
     if event_type == EventType.CARD_PLAYED:
-        return DELAY_AFTER_CARD_PLAYED
+        return speed.after_card_played
     if event_type == EventType.TRICK_COMPLETE:
-        return DELAY_AFTER_TRICK_COMPLETE
+        return speed.after_trick_complete
     if event_type == EventType.ROUND_COMPLETE:
-        return DELAY_AFTER_ROUND_COMPLETE
+        return speed.after_round_complete
     return 0
 
 
@@ -164,7 +161,18 @@ async def _send_connected(websocket: WebSocket, managed: ManagedGame, game_id: s
 
 
 def _build_round_data(managed: ManagedGame) -> dict:
-    return managed.engine.get_round_summary()
+    rm = managed.engine._round_manager
+    if not rm:
+        return {}
+    return {
+        "round_number": rm.state.round_number,
+        "num_cards": rm.num_cards,
+        "trump_suit": rm.state.trump_suit.value,
+        "dealer_id": rm.state.dealer_id,
+        "bids": [bid.model_dump() for bid in rm.state.bids],
+        "current_trick": [play.model_dump() for play in rm.state.current_trick.plays],
+        "tricks_won": dict(rm.state.tricks_won),
+    }
 
 
 async def _send_hand_if_my_turn(
@@ -225,7 +233,7 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str, player_id: str)
         while True:
             raw_text = await websocket.receive_text()
             await _dispatch_message(managed, player_id, raw_text, websocket)
-            await _flush_pending_events(pending_events, game_id, connection_manager)
+            await _flush_pending_events(pending_events, game_id, connection_manager, managed)
             await _send_hand_if_my_turn(managed, player_id, websocket)
 
     except WebSocketDisconnect:

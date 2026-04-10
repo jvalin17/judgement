@@ -19,7 +19,6 @@ a known sentinel event (like "hand") rather than trying to drain all messages.
 
 import json
 import pytest
-from unittest.mock import patch
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
@@ -30,15 +29,6 @@ from backend.app.game_manager import GameManager
 
 
 # --- Disable event delays for fast tests ---
-
-@pytest.fixture(autouse=True)
-def no_event_delays():
-    """Patch out asyncio.sleep in the websocket module so tests run fast."""
-    with patch("backend.app.api.websocket.DELAY_AFTER_CARD_PLAYED", 0):
-        with patch("backend.app.api.websocket.DELAY_AFTER_TRICK_COMPLETE", 0):
-            with patch("backend.app.api.websocket.DELAY_AFTER_ROUND_COMPLETE", 0):
-                yield
-
 
 @pytest.fixture(autouse=True)
 def fresh_manager():
@@ -60,6 +50,11 @@ def _create_game(variant="10_to_1"):
             {"name": "Bot1", "is_ai": True, "ai_difficulty": "medium"},
             {"name": "Bot2", "is_ai": True, "ai_difficulty": "medium"},
         ],
+        "speed": {
+            "after_card_played": 0,
+            "after_trick_complete": 0,
+            "after_round_complete": 0,
+        },
     })
     assert resp.status_code == 200
     data = resp.json()

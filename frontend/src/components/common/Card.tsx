@@ -1,7 +1,9 @@
+import { memo } from "react";
 import type { Card as CardType, Suit, Rank } from "../../types";
-import { Rank as RankValues, SUIT_SYMBOLS, SUIT_COLORS, RANK_DISPLAY } from "../../types";
+import { Rank as RankValues, SUIT_COLORS, RANK_DISPLAY } from "../../types";
 import { PIP_LAYOUTS } from "./pipLayouts";
 import type { PipPosition } from "./pipLayouts";
+import { SuitSvg } from "./SuitSvg";
 import { FaceCardArt } from "./FaceCardArt";
 import { useSettings } from "../../context/SettingsContext";
 import { CARD_BACK_DESIGN_CLASS } from "./SettingsModal";
@@ -16,9 +18,8 @@ interface CardProps {
   onClick?: () => void;
 }
 
-export function Card({ card, playable = false, selected = false, dimmed = false, small = false, onClick }: CardProps) {
+export const Card = memo(function Card({ card, playable = false, selected = false, dimmed = false, small = false, onClick }: CardProps) {
   const color = SUIT_COLORS[card.suit];
-  const suitSymbol = SUIT_SYMBOLS[card.suit];
   const rankLabel = RANK_DISPLAY[card.rank];
 
   const classNames = [
@@ -30,11 +31,13 @@ export function Card({ card, playable = false, selected = false, dimmed = false,
     small ? styles.small : "",
   ].filter(Boolean).join(" ");
 
+  const cornerSuitSize = small ? 10 : 13;
+
   return (
     <div className={classNames} onClick={playable ? onClick : undefined} role={playable ? "button" : undefined}>
       <div className={styles.cornerTop}>
         <span className={styles.rank}>{rankLabel}</span>
-        <span className={styles.cornerSuit}>{suitSymbol}</span>
+        <SuitSvg suit={card.suit} size={cornerSuitSize} className={styles.cornerSuit} />
       </div>
 
       <div className={styles.cardBody}>
@@ -43,11 +46,11 @@ export function Card({ card, playable = false, selected = false, dimmed = false,
 
       <div className={styles.cornerBottom}>
         <span className={styles.rank}>{rankLabel}</span>
-        <span className={styles.cornerSuit}>{suitSymbol}</span>
+        <SuitSvg suit={card.suit} size={cornerSuitSize} className={styles.cornerSuit} />
       </div>
     </div>
   );
-}
+});
 
 // --- Card center content ---
 
@@ -58,35 +61,35 @@ interface CardCenterProps {
 }
 
 function CardCenter({ rank, suit, small }: CardCenterProps) {
-  const suitSymbol = SUIT_SYMBOLS[suit];
-
   if (isNumberRank(rank)) {
-    return <PipGrid rank={rank} suitSymbol={suitSymbol} small={small} />;
+    return <PipGrid rank={rank} suit={suit} small={small} />;
   }
 
   if (isFaceRank(rank)) {
     return <FaceCardDesign rank={rank} suit={suit} />;
   }
 
-  return <AceDesign suitSymbol={suitSymbol} />;
+  return <AceDesign suit={suit} />;
 }
 
 // --- Pip grid for number cards ---
 
 interface PipGridProps {
   rank: Rank;
-  suitSymbol: string;
+  suit: Suit;
   small: boolean;
 }
 
-function PipGrid({ rank, suitSymbol, small }: PipGridProps) {
+function PipGrid({ rank, suit, small }: PipGridProps) {
   const positions = PIP_LAYOUTS[rank as number];
-  if (!positions) return <span className={styles.aceSymbol}>{suitSymbol}</span>;
+  if (!positions) return <AceDesign suit={suit} />;
+
+  const pipSize = small ? 10 : 14;
 
   return (
     <div className={styles.pipGrid}>
       {positions.map((position, index) => (
-        <Pip key={index} position={position} symbol={suitSymbol} small={small} />
+        <Pip key={index} position={position} suit={suit} size={pipSize} />
       ))}
     </div>
   );
@@ -94,16 +97,14 @@ function PipGrid({ rank, suitSymbol, small }: PipGridProps) {
 
 interface PipProps {
   position: PipPosition;
-  symbol: string;
-  small: boolean;
+  suit: Suit;
+  size: number;
 }
 
-function Pip({ position, symbol, small }: PipProps) {
-  const pipClass = [styles.pip, small ? styles.pipSmall : ""].filter(Boolean).join(" ");
-
+function Pip({ position, suit, size }: PipProps) {
   return (
     <span
-      className={pipClass}
+      className={styles.pip}
       style={{
         left: `${position.x}%`,
         top: `${position.y}%`,
@@ -112,7 +113,7 @@ function Pip({ position, symbol, small }: PipProps) {
           : "translate(-50%, -50%)",
       }}
     >
-      {symbol}
+      <SuitSvg suit={suit} size={size} />
     </span>
   );
 }
@@ -134,12 +135,12 @@ function FaceCardDesign({ rank, suit }: FaceCardDesignProps) {
 
 // --- Ace design ---
 
-interface AceDesignProps {
-  suitSymbol: string;
-}
-
-function AceDesign({ suitSymbol }: AceDesignProps) {
-  return <span className={styles.aceSymbol}>{suitSymbol}</span>;
+function AceDesign({ suit }: { suit: Suit }) {
+  return (
+    <span className={styles.aceSymbol}>
+      <SuitSvg suit={suit} size={36} />
+    </span>
+  );
 }
 
 // --- Card back ---

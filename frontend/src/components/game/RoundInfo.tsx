@@ -1,5 +1,6 @@
 import type { Suit } from "../../types";
-import { SUIT_SYMBOLS, SUIT_COLORS } from "../../types";
+import { SUIT_COLORS } from "../../types";
+import { SuitSvg } from "../common";
 import styles from "../../styles/game.module.css";
 
 interface RoundInfoProps {
@@ -27,7 +28,6 @@ interface TrumpCardProps {
 }
 
 function TrumpCard({ suit }: TrumpCardProps) {
-  const suitSymbol = SUIT_SYMBOLS[suit];
   const suitColor = SUIT_COLORS[suit];
   const glowColor = suitColor === "red" ? "rgba(192, 57, 43, 0.5)" : "rgba(100, 130, 180, 0.5)";
 
@@ -35,7 +35,7 @@ function TrumpCard({ suit }: TrumpCardProps) {
     <div className={styles.trumpDisplay}>
       <div className={styles.trumpCard} style={{ boxShadow: `0 0 12px 3px ${glowColor}, var(--shadow-card)` }}>
         <span className={styles.trumpSymbol} style={{ color: suitColor === "red" ? "var(--color-card-red)" : "#e8e0d4" }}>
-          {suitSymbol}
+          <SuitSvg suit={suit} size={28} />
         </span>
       </div>
       <span className={styles.trumpLabel}>TRUMP</span>

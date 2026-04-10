@@ -13,10 +13,18 @@ class PlayerSetup(BaseModel):
     ai_difficulty: Optional[AIDifficulty] = None
 
 
+class GameSpeed(BaseModel):
+    """Delays (seconds) between AI actions. Controls game pacing."""
+    after_card_played: float = 2.0
+    after_trick_complete: float = 3.0
+    after_round_complete: float = 1.5
+
+
 class CreateGameRequest(BaseModel):
     variant: DealingVariant = DealingVariant.TEN_TO_ONE
     must_lose_mode: bool = False
     players: List[PlayerSetup]
+    speed: Optional[GameSpeed] = None
 
 
 class CreateGameResponse(BaseModel):

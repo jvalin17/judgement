@@ -88,7 +88,15 @@ async def create_game(request: CreateGameRequest):
         players.append(player)
         player_ids[setup.name] = pid
 
-    managed = _manager.create_game(config, players)
+    speed = None
+    if request.speed:
+        from backend.app.game_manager import GameSpeed
+        speed = GameSpeed(
+            after_card=request.speed.after_card_played,
+            after_trick=request.speed.after_trick_complete,
+            after_round=request.speed.after_round_complete,
+        )
+    managed = _manager.create_game(config, players, speed=speed)
     managed.engine.start_game()
 
     return CreateGameResponse(game_id=managed.engine.state.game_id, player_ids=player_ids)

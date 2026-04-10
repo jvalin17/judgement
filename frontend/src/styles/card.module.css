@@ -19,6 +19,7 @@
     0 4px 8px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  will-change: transform;
   position: relative;
   flex-shrink: 0;
   overflow: hidden;
@@ -104,8 +105,8 @@
 }
 
 .cornerSuit {
-  font-size: 0.85rem;
-  line-height: 1;
+  line-height: 0;
+  display: block;
 }
 
 /* --- Card body (center content area) --- */
@@ -125,12 +126,7 @@
 
 .pip {
   position: absolute;
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.pip.pipSmall {
-  font-size: 0.7rem;
+  line-height: 0;
 }
 
 /* --- Face card design (J, Q, K) --- */
@@ -152,8 +148,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2.5rem;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  line-height: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 /* --- Card back --- */
@@ -268,22 +264,6 @@
 @media (min-width: 768px) {
   .rank {
     font-size: 1.15rem;
-  }
-
-  .cornerSuit {
-    font-size: 0.9rem;
-  }
-
-  .pip {
-    font-size: 1.1rem;
-  }
-
-  .pip.pipSmall {
-    font-size: 0.75rem;
-  }
-
-  .aceSymbol {
-    font-size: 3.2rem;
   }
 
   .card.small {

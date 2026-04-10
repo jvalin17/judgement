@@ -26,11 +26,20 @@ def _make_strategy(difficulty: AIDifficulty) -> AIStrategy:
     return cls()
 
 
+class GameSpeed:
+    """Delays (seconds) between AI actions."""
+    def __init__(self, after_card: float = 2.0, after_trick: float = 3.0, after_round: float = 1.5):
+        self.after_card_played = after_card
+        self.after_trick_complete = after_trick
+        self.after_round_complete = after_round
+
+
 class ManagedGame:
     """Wraps a GameEngine with AI dispatch and session logging."""
 
-    def __init__(self, engine: GameEngine):
+    def __init__(self, engine: GameEngine, speed: Optional[GameSpeed] = None):
         self.engine = engine
+        self.speed = speed or GameSpeed()
         self.ai_strategies: Dict[str, AIStrategy] = {}
         self.session_log = SessionLog(game_id=engine.state.game_id)
         self._event_callbacks: List[Callable[[GameEvent], None]] = []
@@ -134,9 +143,9 @@ class GameManager:
     def __init__(self):
         self._games: Dict[str, ManagedGame] = {}
 
-    def create_game(self, config: GameConfig, players: List[Player]) -> ManagedGame:
+    def create_game(self, config: GameConfig, players: List[Player], speed: Optional[GameSpeed] = None) -> ManagedGame:
         engine = GameEngine(config)
-        managed = ManagedGame(engine)
+        managed = ManagedGame(engine, speed=speed)
         self._register_players(managed, players)
         self._initialize_session_log(managed, config, players)
         self._games[engine.state.game_id] = managed
