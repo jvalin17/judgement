@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Card as CardType, Player, Bid } from "../../types";
 import { GamePhase, isMyTurn } from "../../types";
 import { useGameContext } from "../../context/GameContext";
@@ -58,6 +58,12 @@ function getSeatPositions(playerCount: number): SeatPosition[] {
 export function GameBoard() {
   const { state, actions } = useGameContext();
   const [showSettings, setShowSettings] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  const handleExit = useCallback(() => {
+    actions.disconnect();
+    actions.resetGame();
+  }, [actions]);
 
   const myTurn = isMyTurn(state);
   const allPlayers = state.players;
@@ -111,14 +117,35 @@ export function GameBoard() {
     <div className={styles.gameBoard}>
       <div className={styles.tableOval} />
 
-      <button
-        className={settingsStyles.gearButton}
-        onClick={() => setShowSettings(true)}
-        aria-label="Settings"
-      >
-        &#9881;
-      </button>
+      <div className={settingsStyles.topButtons}>
+        <button
+          className={settingsStyles.exitButton}
+          onClick={() => setShowExitConfirm(true)}
+          aria-label="Exit game"
+        >
+          &times;
+        </button>
+        <button
+          className={settingsStyles.gearButton}
+          onClick={() => setShowSettings(true)}
+          aria-label="Settings"
+        >
+          &#9881;
+        </button>
+      </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      {showExitConfirm && (
+        <Modal title="Leave Game?">
+          <p style={{ textAlign: "center", color: "var(--color-text-muted)", margin: "0 0 16px" }}>
+            Your progress in this game will be lost.
+          </p>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <Button variant="secondary" onClick={() => setShowExitConfirm(false)}>Cancel</Button>
+            <Button variant="danger" onClick={handleExit}>Leave</Button>
+          </div>
+        </Modal>
+      )}
 
       <RoundInfo
         roundNumber={state.roundNumber}

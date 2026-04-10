@@ -31,7 +31,7 @@ export const Card = memo(function Card({ card, playable = false, selected = fals
     small ? styles.small : "",
   ].filter(Boolean).join(" ");
 
-  const cornerSuitSize = small ? 10 : 13;
+  const cornerSuitSize = small ? 12 : 16;
 
   return (
     <div className={classNames} onClick={playable ? onClick : undefined} role={playable ? "button" : undefined}>
@@ -84,7 +84,7 @@ function PipGrid({ rank, suit, small }: PipGridProps) {
   const positions = PIP_LAYOUTS[rank as number];
   if (!positions) return <AceDesign suit={suit} />;
 
-  const pipSize = small ? 10 : 14;
+  const pipSize = small ? 12 : 18;
 
   return (
     <div className={styles.pipGrid}>
@@ -138,7 +138,7 @@ function FaceCardDesign({ rank, suit }: FaceCardDesignProps) {
 function AceDesign({ suit }: { suit: Suit }) {
   return (
     <span className={styles.aceSymbol}>
-      <SuitSvg suit={suit} size={36} />
+      <SuitSvg suit={suit} size={42} />
     </span>
   );
 }

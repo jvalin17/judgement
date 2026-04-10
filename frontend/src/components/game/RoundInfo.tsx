@@ -29,12 +29,25 @@ interface TrumpCardProps {
 
 function TrumpCard({ suit }: TrumpCardProps) {
   const suitColor = SUIT_COLORS[suit];
-  const glowColor = suitColor === "red" ? "rgba(192, 57, 43, 0.5)" : "rgba(100, 130, 180, 0.5)";
+  const isRed = suitColor === "red";
+  const cardBg = isRed
+    ? "linear-gradient(135deg, #1a3a5c, #2c5f8a)"
+    : "linear-gradient(135deg, #f5f0e8, #e8e0d4)";
+  const borderColor = isRed ? "#4a7fb5" : "#c0b8a8";
+  const symbolColor = isRed ? "var(--color-card-red)" : "var(--color-card-black)";
+  const glowColor = isRed ? "rgba(192, 57, 43, 0.5)" : "rgba(100, 100, 100, 0.3)";
 
   return (
     <div className={styles.trumpDisplay}>
-      <div className={styles.trumpCard} style={{ boxShadow: `0 0 12px 3px ${glowColor}, var(--shadow-card)` }}>
-        <span className={styles.trumpSymbol} style={{ color: suitColor === "red" ? "var(--color-card-red)" : "#e8e0d4" }}>
+      <div
+        className={styles.trumpCard}
+        style={{
+          background: cardBg,
+          borderColor: borderColor,
+          boxShadow: `0 0 12px 3px ${glowColor}, var(--shadow-card)`,
+        }}
+      >
+        <span className={styles.trumpSymbol} style={{ color: symbolColor }}>
           <SuitSvg suit={suit} size={28} />
         </span>
       </div>
