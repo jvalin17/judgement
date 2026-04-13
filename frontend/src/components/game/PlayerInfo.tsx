@@ -8,9 +8,10 @@ interface PlayerInfoProps {
   bids: Bid[];
   tricksWon: Record<string, number>;
   cumulativeScores: Record<string, number>;
+  isMyTurn?: boolean;
 }
 
-export function PlayerInfo({ playerId, playerName, bids, tricksWon, cumulativeScores }: PlayerInfoProps) {
+export function PlayerInfo({ playerId, playerName, bids, tricksWon, cumulativeScores, isMyTurn }: PlayerInfoProps) {
   if (!playerId) return null;
 
   const myBid = findMyBid(bids, playerId);
@@ -19,8 +20,13 @@ export function PlayerInfo({ playerId, playerName, bids, tricksWon, cumulativeSc
   const avatarColor = getAvatarColor(playerName);
   const initials = getInitials(playerName);
 
+  const infoClass = [
+    styles.playerInfo,
+    isMyTurn ? styles.playerInfoActive : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <div className={styles.playerInfo}>
+    <div className={infoClass}>
       <div className={styles.playerInfoAvatar} style={{ backgroundColor: avatarColor }}>
         {initials}
       </div>

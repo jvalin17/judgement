@@ -80,15 +80,15 @@ export function GameBoard() {
   useEffect(() => {
     if (!state.trickWinner) return;
 
-    // Phase 1: Show winner label for 2.5s
+    // Phase 1: Show winner label for 1.5s
     const collectTimer = setTimeout(() => {
       actions.startTrickCollect();
-    }, 2500);
+    }, 1500);
 
-    // Phase 2: After collect animation (0.8s), clear the trick
+    // Phase 2: After collect animation (0.6s), clear the trick
     const clearTimer = setTimeout(() => {
       actions.clearTrick();
-    }, 3300);
+    }, 2100);
 
     return () => {
       clearTimeout(collectTimer);
@@ -175,6 +175,8 @@ export function GameBoard() {
         <TrickArea
           currentTrick={state.currentTrick}
           players={state.players}
+          orderedPlayers={orderedPlayers}
+          seatPositions={seatPositions}
           trickWinner={state.trickWinner}
           trickCollecting={state.trickCollecting}
         />
@@ -197,6 +199,7 @@ export function GameBoard() {
           bids={state.bids}
           tricksWon={state.tricksWon}
           cumulativeScores={state.cumulativeScores}
+          isMyTurn={myTurn}
         />
       )}
 
