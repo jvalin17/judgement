@@ -3,6 +3,7 @@ import type { ServerEvent } from "./events";
 
 export const GamePhase = {
   LOBBY: "lobby",
+  WAITING: "waiting",
   DEALING: "dealing",
   BIDDING: "bidding",
   PLAYING: "playing",
@@ -75,6 +76,9 @@ export interface GameState {
   roundScores: Record<string, number>;
   trickWinner: string | null;
   trickCollecting: boolean;
+  lobbyPlayers: Array<{ id: string; name: string; isHost: boolean }>;
+  autoStartSeconds: number | null;
+  isHost: boolean;
 }
 
 export interface RoundSummary {
@@ -110,6 +114,9 @@ export const INITIAL_GAME_STATE: GameState = {
   roundScores: {},
   trickWinner: null,
   trickCollecting: false,
+  lobbyPlayers: [],
+  autoStartSeconds: null,
+  isHost: false,
 };
 
 export const VARIANT_LABELS: Record<DealingVariant, string> = {

@@ -29,6 +29,11 @@ export function TrickArea({ currentTrick, players, trickWinner, trickCollecting 
   return (
     <div className={styles.trickArea}>
       <div className={pileClass}>
+        {trickWinner && !trickCollecting && (
+          <div className={styles.trickWinnerLabel}>
+            {winnerName} wins!
+          </div>
+        )}
         {currentTrick.map((play) => {
           const isWinner = trickWinner === play.player_id;
           return (
@@ -41,11 +46,6 @@ export function TrickArea({ currentTrick, players, trickWinner, trickCollecting 
           );
         })}
       </div>
-      {trickWinner && !trickCollecting && (
-        <div className={styles.trickWinnerLabel}>
-          {winnerName} wins!
-        </div>
-      )}
     </div>
   );
 }

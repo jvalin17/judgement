@@ -20,6 +20,7 @@ rest.set_manager(game_manager)
 websocket.set_manager(game_manager)
 
 app.include_router(rest.router)
+app.include_router(rest.lobby_router)
 app.include_router(websocket.router)
 
 

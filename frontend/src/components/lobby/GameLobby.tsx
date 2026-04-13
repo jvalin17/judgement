@@ -6,21 +6,76 @@ import type { PlayerSetup as PlayerSetupRequest } from "../../services/api";
 import { Button, SettingsModal } from "../common";
 import { VariantSelector } from "./VariantSelector";
 import { PlayerSetup, createDefaultHumanPlayer, createDefaultAiPlayer } from "./PlayerSetup";
+import { JoinGameForm } from "./JoinGameForm";
+import { QuickPlayForm } from "./QuickPlayForm";
 import type { PlayerConfig } from "./PlayerSetup";
 import styles from "../../styles/lobby.module.css";
 import settingsStyles from "../../styles/settings.module.css";
+
+type LobbyTab = "create" | "join" | "quick";
 
 interface GameLobbyProps {
   onGameCreated: (gameId: string, playerId: string) => void;
 }
 
 export function GameLobby({ onGameCreated }: GameLobbyProps) {
+  const [activeTab, setActiveTab] = useState<LobbyTab>("create");
+  const [showSettings, setShowSettings] = useState(false);
+
+  return (
+    <div className={styles.lobby}>
+      <button
+        className={settingsStyles.gearButton}
+        onClick={() => setShowSettings(true)}
+        aria-label="Settings"
+      >
+        &#9881;
+      </button>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      <h1 className={styles.title}>Judgement</h1>
+      <p className={styles.subtitle}>Indian trick-taking card game</p>
+
+      <div className={styles.tabBar}>
+        <button
+          className={`${styles.tab} ${activeTab === "create" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("create")}
+        >
+          Create
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === "join" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("join")}
+        >
+          Join
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === "quick" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("quick")}
+        >
+          Quick Play
+        </button>
+      </div>
+
+      {activeTab === "create" && <CreateGameTab onGameCreated={onGameCreated} />}
+      {activeTab === "join" && <JoinGameForm onJoined={onGameCreated} />}
+      {activeTab === "quick" && <QuickPlayForm onJoined={onGameCreated} />}
+    </div>
+  );
+}
+
+// --- Create game tab (existing flow, slightly modified) ---
+
+interface CreateGameTabProps {
+  onGameCreated: (gameId: string, playerId: string) => void;
+}
+
+function CreateGameTab({ onGameCreated }: CreateGameTabProps) {
   const [variant, setVariant] = useState<DealingVariant>("10_to_1");
   const [mustLoseMode, setMustLoseMode] = useState(false);
   const [players, setPlayers] = useState<PlayerConfig[]>(buildDefaultPlayers);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
   const maxPlayers = VARIANT_MAX_PLAYERS[variant];
 
@@ -54,43 +109,17 @@ export function GameLobby({ onGameCreated }: GameLobbyProps) {
   }, [players, variant, mustLoseMode, onGameCreated]);
 
   return (
-    <div className={styles.lobby}>
-      <button
-        className={settingsStyles.gearButton}
-        onClick={() => setShowSettings(true)}
-        aria-label="Settings"
-      >
-        &#9881;
-      </button>
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-
-      <h1 className={styles.title}>Judgement</h1>
-      <p className={styles.subtitle}>Indian trick-taking card game</p>
-
+    <>
       <VariantSelector selected={variant} onChange={handleVariantChange} />
-
       <MustLoseToggle enabled={mustLoseMode} onToggle={setMustLoseMode} />
-
-      <PlayerSetup
-        players={players}
-        maxPlayers={maxPlayers}
-        onChange={setPlayers}
-      />
-
+      <PlayerSetup players={players} maxPlayers={maxPlayers} onChange={setPlayers} />
       {error && <p className={styles.error}>{error}</p>}
-
       <div className={styles.actions}>
-        <Button
-          variant="primary"
-          size="large"
-          fullWidth
-          onClick={handleCreateGame}
-          disabled={isCreating}
-        >
+        <Button variant="primary" size="large" fullWidth onClick={handleCreateGame} disabled={isCreating}>
           {isCreating ? "Creating..." : "Start Game"}
         </Button>
       </div>
-    </div>
+    </>
   );
 }
 

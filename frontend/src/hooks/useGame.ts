@@ -15,6 +15,9 @@ import type {
   TurnChangedEventData,
   HandEventData,
   ErrorEventData,
+  PlayerJoinedEventData,
+  PlayerLeftEventData,
+  AutoStartCountdownEventData,
 } from "../types";
 import {
   GamePhase,
@@ -66,7 +69,10 @@ function handleSetGameInfo(
   gameId: string,
   playerId: string,
 ): GameState {
-  return { ...state, gameId, playerId };
+  // When gameId is set from lobby, transition to WAITING so we show WaitingRoom
+  // (WebSocket connected event will refine the phase if game already started)
+  const phase = state.phase === GamePhase.LOBBY ? GamePhase.WAITING : state.phase;
+  return { ...state, gameId, playerId, phase };
 }
 
 // --- Server event dispatch ---
@@ -114,6 +120,14 @@ function handleServerEvent(state: GameState, event: ServerEvent): GameState {
     case ServerEventType.INVALID_ACTION:
     case ServerEventType.ERROR:
       return handleError(state, event.data as unknown as ErrorEventData);
+    case ServerEventType.PLAYER_JOINED:
+      return handlePlayerJoined(state, event.data as unknown as PlayerJoinedEventData);
+    case ServerEventType.PLAYER_LEFT:
+      return handlePlayerLeft(state, event.data as unknown as PlayerLeftEventData);
+    case ServerEventType.AUTO_START_COUNTDOWN:
+      return handleAutoStartCountdown(state, event.data as unknown as AutoStartCountdownEventData);
+    case ServerEventType.GAME_STARTING:
+      return state; // Game will transition via GAME_STARTED event
     default:
       return state;
   }
@@ -122,13 +136,24 @@ function handleServerEvent(state: GameState, event: ServerEvent): GameState {
 // --- Individual event handlers ---
 
 function handleConnected(state: GameState, data: ConnectedEventData): GameState {
+  // Backend "lobby" phase maps to WAITING in frontend (player already joined)
+  const phase = data.phase === "lobby" ? GamePhase.WAITING : data.phase as GamePhase;
+  const playerId = state.playerId ?? data.player_id;
+  const hostId = (data as unknown as Record<string, unknown>).host_player_id as string | undefined;
+  const lobbyPlayers = (data.players ?? []).map((player) => ({
+    id: player.id,
+    name: player.name,
+    isHost: player.id === hostId,
+  }));
   return {
     ...state,
     gameId: data.game_id,
-    playerId: state.playerId ?? data.player_id,
-    phase: data.phase as GamePhase,
+    playerId,
+    phase,
+    isHost: playerId === hostId,
     currentPlayerId: data.current_player_id,
     players: data.players ?? state.players,
+    lobbyPlayers,
     roundNumber: data.round_number ?? state.roundNumber,
     numCards: data.num_cards ?? state.numCards,
     trumpSuit: data.trump_suit ?? state.trumpSuit,
@@ -239,6 +264,30 @@ function handleHand(state: GameState, data: HandEventData): GameState {
     hand: data.hand,
     validCards: data.valid_cards,
     validBids: data.valid_bids,
+  };
+}
+
+function handlePlayerJoined(state: GameState, data: PlayerJoinedEventData): GameState {
+  const alreadyExists = state.lobbyPlayers.some((p) => p.id === data.player_id);
+  if (alreadyExists) return state;
+  return {
+    ...state,
+    lobbyPlayers: [...state.lobbyPlayers, { id: data.player_id, name: data.player_name, isHost: false }],
+  };
+}
+
+function handlePlayerLeft(state: GameState, data: PlayerLeftEventData): GameState {
+  return {
+    ...state,
+    lobbyPlayers: state.lobbyPlayers.filter((p) => p.id !== data.player_id),
+    autoStartSeconds: data.player_count < 2 ? null : state.autoStartSeconds,
+  };
+}
+
+function handleAutoStartCountdown(state: GameState, data: AutoStartCountdownEventData): GameState {
+  return {
+    ...state,
+    autoStartSeconds: data.seconds_remaining,
   };
 }
 

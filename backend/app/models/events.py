@@ -15,6 +15,12 @@ class EventType(str, Enum):
     GAME_OVER = "game_over"
     TURN_CHANGED = "turn_changed"
     INVALID_ACTION = "invalid_action"
+    PLAYER_JOINED = "player_joined"
+    PLAYER_LEFT = "player_left"
+    AUTO_START_COUNTDOWN = "auto_start_countdown"
+    GAME_STARTING = "game_starting"
+    PLAYER_RECONNECTED = "player_reconnected"
+    PLAYER_DISCONNECTED = "player_disconnected"
 
 
 class GameEvent(BaseModel):
@@ -152,4 +158,59 @@ def invalid_action_event(reason: str, player_id: str) -> GameEvent:
     data = InvalidActionData(reason=reason)
     return GameEvent(
         event_type=EventType.INVALID_ACTION, data=data.model_dump(), player_id=player_id,
+    )
+
+
+# --- Lobby event data models ---
+
+
+class PlayerJoinedData(BaseModel):
+    player_id: str
+    player_name: str
+    player_count: int
+
+
+class PlayerLeftData(BaseModel):
+    player_id: str
+    player_name: str
+    player_count: int
+
+
+class AutoStartCountdownData(BaseModel):
+    seconds_remaining: int
+
+
+# --- Lobby event factories ---
+
+
+def player_joined_event(player_id: str, player_name: str, player_count: int) -> GameEvent:
+    data = PlayerJoinedData(player_id=player_id, player_name=player_name, player_count=player_count)
+    return GameEvent(event_type=EventType.PLAYER_JOINED, data=data.model_dump())
+
+
+def player_left_event(player_id: str, player_name: str, player_count: int) -> GameEvent:
+    data = PlayerLeftData(player_id=player_id, player_name=player_name, player_count=player_count)
+    return GameEvent(event_type=EventType.PLAYER_LEFT, data=data.model_dump())
+
+
+def auto_start_countdown_event(seconds_remaining: int) -> GameEvent:
+    data = AutoStartCountdownData(seconds_remaining=seconds_remaining)
+    return GameEvent(event_type=EventType.AUTO_START_COUNTDOWN, data=data.model_dump())
+
+
+def game_starting_event() -> GameEvent:
+    return GameEvent(event_type=EventType.GAME_STARTING, data={})
+
+
+def player_reconnected_event(player_id: str, player_name: str) -> GameEvent:
+    return GameEvent(
+        event_type=EventType.PLAYER_RECONNECTED,
+        data={"player_id": player_id, "player_name": player_name},
+    )
+
+
+def player_disconnected_event(player_id: str, player_name: str) -> GameEvent:
+    return GameEvent(
+        event_type=EventType.PLAYER_DISCONNECTED,
+        data={"player_id": player_id, "player_name": player_name},
     )

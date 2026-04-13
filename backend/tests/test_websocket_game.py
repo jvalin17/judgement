@@ -296,6 +296,190 @@ class TestStuckDetection:
             assert not violations, f"Stuck state detected: {violations}"
 
 
+# --- Phase 2: Event delivery tests ---
+
+
+def _create_lobby_game_ws(variant="10_to_1"):
+    """Create a lobby game (auto_start=False) for multiplayer WS tests."""
+    resp = client.post("/api/games", json={
+        "variant": variant,
+        "must_lose_mode": False,
+        "players": [{"name": "Alice", "is_ai": False}],
+        "auto_start": False,
+        "speed": {
+            "after_card_played": 0,
+            "after_trick_complete": 0,
+            "after_round_complete": 0,
+        },
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    return data["game_id"], data["player_ids"]["Alice"]
+
+
+class TestLobbyWebSocketConnect:
+    """Verify WS connected event for lobby-phase games includes host info
+    and all joined players — needed for the WaitingRoom screen."""
+
+    def test_connected_event_in_lobby_has_host_and_players(self):
+        """After joining a lobby game, WS connected event must include
+        host_player_id and all players so frontend can render WaitingRoom."""
+        game_id, alice_id = _create_lobby_game_ws()
+
+        # Bob joins via REST
+        join_resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "Bob"})
+        bob_id = join_resp.json()["player_id"]
+
+        # Bob connects via WebSocket (before game starts)
+        with client.websocket_connect(f"/ws/{game_id}/{bob_id}") as ws:
+            connected = ws.receive_json()
+            assert connected["type"] == "connected"
+            data = connected["data"]
+
+            # Phase must be "lobby" so frontend knows to show WaitingRoom
+            assert data["phase"] == "lobby"
+
+            # Must include host_player_id so frontend knows who can start
+            assert "host_player_id" in data, "connected event missing host_player_id"
+            assert data["host_player_id"] == alice_id
+
+            # Must include all players (host + joiner)
+            player_ids = [p["id"] for p in data["players"]]
+            assert alice_id in player_ids
+            assert bob_id in player_ids
+
+    def test_joiner_is_not_host(self):
+        """A player who joined (not created) should see themselves as non-host."""
+        game_id, alice_id = _create_lobby_game_ws()
+        join_resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "Bob"})
+        bob_id = join_resp.json()["player_id"]
+
+        with client.websocket_connect(f"/ws/{game_id}/{bob_id}") as ws:
+            connected = ws.receive_json()
+            assert connected["data"]["host_player_id"] != bob_id
+
+    def test_host_sees_themselves_as_host(self):
+        """The game creator should see host_player_id matching their own id."""
+        game_id, alice_id = _create_lobby_game_ws()
+
+        with client.websocket_connect(f"/ws/{game_id}/{alice_id}") as ws:
+            connected = ws.receive_json()
+            assert connected["data"]["host_player_id"] == alice_id
+
+
+class TestTwoHumanBidding:
+    """Test that two human players can bid over WebSocket."""
+
+    def test_two_humans_bid_and_play(self):
+        game_id, alice_id = _create_lobby_game_ws()
+
+        # Bob joins
+        join_resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "Bob"})
+        assert join_resp.status_code == 200
+        bob_id = join_resp.json()["player_id"]
+
+        # Add an AI so we have 3 players (minimum for interesting game)
+        # Actually, 2 players is fine for testing. Start the game
+        resp = client.post(f"/api/games/{game_id}/start?player_id={alice_id}")
+        assert resp.status_code == 200
+
+        with client.websocket_connect(f"/ws/{game_id}/{alice_id}") as ws_alice:
+            with client.websocket_connect(f"/ws/{game_id}/{bob_id}") as ws_bob:
+                # Both get connected + hand
+                alice_connected = ws_alice.receive_json()
+                alice_hand = ws_alice.receive_json()
+                bob_connected = ws_bob.receive_json()
+                bob_hand = ws_bob.receive_json()
+
+                assert alice_connected["type"] == "connected"
+                assert bob_connected["type"] == "connected"
+                assert alice_hand["type"] == "hand"
+                assert bob_hand["type"] == "hand"
+
+                # Determine who bids first
+                current_id = alice_connected["data"]["current_player_id"]
+                if current_id == alice_id:
+                    first_ws, first_hand = ws_alice, alice_hand
+                    second_ws, second_hand = ws_bob, bob_hand
+                else:
+                    first_ws, first_hand = ws_bob, bob_hand
+                    second_ws, second_hand = ws_alice, alice_hand
+
+                # First player bids
+                bids = first_hand["data"]["valid_bids"]
+                assert len(bids) > 0
+                first_ws.send_json({"action": "bid", "amount": bids[0]})
+
+                # Second player should receive bid_placed event and then their hand
+                # (since it becomes their turn)
+                events_seen = []
+                for _ in range(10):
+                    evt = second_ws.receive_json()
+                    events_seen.append(evt)
+                    if evt["type"] == "hand":
+                        break
+
+                bid_events = [e for e in events_seen if e["type"] == "bid_placed"]
+                assert len(bid_events) >= 1, (
+                    f"Second player didn't receive bid_placed. Events: "
+                    f"{[e['type'] for e in events_seen]}"
+                )
+
+
+class TestEventOrdering:
+    """Verify events arrive in correct order."""
+
+    def test_connected_then_hand(self):
+        game_id, player_id = _create_game()
+
+        with client.websocket_connect(f"/ws/{game_id}/{player_id}") as ws:
+            first = ws.receive_json()
+            second = ws.receive_json()
+            assert first["type"] == "connected"
+            assert second["type"] == "hand"
+
+
+class TestReconnection:
+    """Verify reconnection restores game state."""
+
+    def test_reconnect_restores_state(self):
+        game_id, player_id = _create_game()
+
+        # First connection — bid
+        with client.websocket_connect(f"/ws/{game_id}/{player_id}") as ws:
+            connected = ws.receive_json()
+            hand = ws.receive_json()
+            assert connected["type"] == "connected"
+
+            # Place a bid if it's our turn
+            valid_bids = hand["data"].get("valid_bids", [])
+            if valid_bids:
+                ws.send_json({"action": "bid", "amount": valid_bids[0]})
+                _read_until_hand(ws)
+        # Disconnected
+
+        # Reconnect — should get full state back
+        with client.websocket_connect(f"/ws/{game_id}/{player_id}") as ws2:
+            connected2 = ws2.receive_json()
+            hand2 = ws2.receive_json()
+            assert connected2["type"] == "connected"
+            assert hand2["type"] == "hand"
+            # Game should be in progress, not lobby
+            assert connected2["data"]["phase"] in ("bidding", "playing", "round_over")
+
+
+class TestDisconnectCleanup:
+    """Verify writer task is properly cancelled on disconnect."""
+
+    def test_disconnect_no_error(self):
+        game_id, player_id = _create_game()
+
+        with client.websocket_connect(f"/ws/{game_id}/{player_id}") as ws:
+            connected = ws.receive_json()
+            assert connected["type"] == "connected"
+        # Exiting context manager closes the socket — no crash expected
+
+
 # --- Assertion helpers ---
 
 

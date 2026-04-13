@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import type { Card as CardType, Player, Bid } from "../../types";
+import { useState, useEffect, useCallback } from "react";
+import type { Card as CardType, Bid } from "../../types";
 import { GamePhase, isMyTurn } from "../../types";
 import { useGameContext } from "../../context/GameContext";
 import { RoundInfo } from "./RoundInfo";
@@ -80,15 +80,15 @@ export function GameBoard() {
   useEffect(() => {
     if (!state.trickWinner) return;
 
-    // Phase 1: Show winner label for 1s
+    // Phase 1: Show winner label for 2.5s
     const collectTimer = setTimeout(() => {
       actions.startTrickCollect();
-    }, 1000);
+    }, 2500);
 
-    // Phase 2: After collect animation (0.6s), clear the trick
+    // Phase 2: After collect animation (0.8s), clear the trick
     const clearTimer = setTimeout(() => {
       actions.clearTrick();
-    }, 1600);
+    }, 3300);
 
     return () => {
       clearTimeout(collectTimer);

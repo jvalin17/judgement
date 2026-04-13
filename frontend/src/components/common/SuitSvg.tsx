@@ -1,6 +1,6 @@
 import { memo } from "react";
 import type { Suit } from "../../types";
-import { Suit as SuitValues, SUIT_COLORS } from "../../types";
+import { Suit as SuitValues } from "../../types";
 
 interface SuitSvgProps {
   suit: Suit;

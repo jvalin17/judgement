@@ -32,7 +32,7 @@
 
 /* Trick collect — fade out upward */
 .collectTrick {
-  animation: collectTrick var(--transition-base) ease-in both;
+  animation: collectTrick 0.8s ease-in both;
 }
 
 @keyframes collectTrick {

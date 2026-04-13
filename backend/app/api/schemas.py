@@ -25,6 +25,8 @@ class CreateGameRequest(BaseModel):
     must_lose_mode: bool = False
     players: List[PlayerSetup]
     speed: Optional[GameSpeed] = None
+    auto_start: bool = True
+    is_public: bool = False
 
 
 class CreateGameResponse(BaseModel):
@@ -76,3 +78,41 @@ class SessionLogResponse(BaseModel):
     rounds: List[Dict]
     final_scores: Dict[str, int]
     winners: List[str]
+
+
+class JoinGameRequest(BaseModel):
+    player_name: str
+
+
+class JoinGameResponse(BaseModel):
+    player_id: str
+    game_id: str
+
+
+class LobbyStateResponse(BaseModel):
+    game_id: str
+    phase: str
+    variant: str
+    must_lose_mode: bool
+    players: List[Dict]
+    host_player_id: Optional[str] = None
+    max_players: int
+
+
+class LobbyGameInfo(BaseModel):
+    game_id: str
+    host_name: Optional[str] = None
+    variant: str
+    must_lose_mode: bool
+    player_count: int
+    max_players: int
+
+
+class LobbyListResponse(BaseModel):
+    games: List[LobbyGameInfo]
+
+
+class QuickJoinRequest(BaseModel):
+    player_name: str
+    variant: Optional[str] = None
+    auto_play: bool = True

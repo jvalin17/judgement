@@ -146,3 +146,69 @@ export async function getSessionLog(
   const response = await fetch(`${BASE_URL}/${gameId}/session-log`);
   return handleResponse<SessionLogResponse>(response);
 }
+
+// --- Multiplayer API ---
+
+export interface JoinGameResponse {
+  player_id: string;
+  game_id: string;
+}
+
+export interface LobbyGameInfo {
+  game_id: string;
+  host_name: string | null;
+  variant: string;
+  must_lose_mode: boolean;
+  player_count: number;
+  max_players: number;
+}
+
+export interface LobbyStateResponse {
+  game_id: string;
+  phase: string;
+  variant: string;
+  must_lose_mode: boolean;
+  players: Array<Record<string, unknown>>;
+  host_player_id: string | null;
+  max_players: number;
+}
+
+export async function joinGame(
+  gameId: string,
+  playerName: string,
+): Promise<JoinGameResponse> {
+  const response = await postJson(`${BASE_URL}/${gameId}/join`, {
+    player_name: playerName,
+  });
+  return handleResponse<JoinGameResponse>(response);
+}
+
+export async function startGame(
+  gameId: string,
+  playerId: string,
+): Promise<ActionResponse> {
+  const response = await postJson(`${BASE_URL}/${gameId}/start?player_id=${playerId}`, {});
+  return handleResponse<ActionResponse>(response);
+}
+
+export async function getLobbyList(): Promise<{ games: LobbyGameInfo[] }> {
+  const response = await fetch("/api/lobby");
+  return handleResponse<{ games: LobbyGameInfo[] }>(response);
+}
+
+export async function quickJoin(
+  playerName: string,
+  variant?: string,
+): Promise<JoinGameResponse> {
+  const body: Record<string, string> = { player_name: playerName };
+  if (variant) body.variant = variant;
+  const response = await postJson("/api/lobby/quick-join", body);
+  return handleResponse<JoinGameResponse>(response);
+}
+
+export async function getLobbyState(
+  gameId: string,
+): Promise<LobbyStateResponse> {
+  const response = await fetch(`${BASE_URL}/${gameId}/lobby`);
+  return handleResponse<LobbyStateResponse>(response);
+}

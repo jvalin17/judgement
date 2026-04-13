@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Dict, List, Optional, Callable
 
 from backend.app.models import (
     Player, PlayerType, AIDifficulty, GameConfig, GamePhase,
+    max_players_for_variant,
 )
-from backend.app.models.events import GameEvent, EventType
+from backend.app.models.events import (
+    GameEvent, EventType,
+    player_joined_event, player_left_event, game_starting_event,
+)
 from backend.app.models.session import SessionLog, RoundLog
 from backend.app.game.engine import GameEngine
 from backend.app.ai.base import AIStrategy, RoundContext
@@ -42,6 +47,9 @@ class ManagedGame:
         self.speed = speed or GameSpeed()
         self.ai_strategies: Dict[str, AIStrategy] = {}
         self.session_log = SessionLog(game_id=engine.state.game_id)
+        self.host_player_id: Optional[str] = None
+        self.is_public: bool = False
+        self.created_at: datetime = datetime.utcnow()
         self._event_callbacks: List[Callable[[GameEvent], None]] = []
 
         engine.add_observer(self._on_event)
@@ -169,11 +177,70 @@ class GameManager:
         ]
         managed.session_log.variant = config.variant.value
 
+    def add_human_player(self, game_id: str, player: Player) -> bool:
+        managed = self._games.get(game_id)
+        if not managed:
+            return False
+        success = managed.engine.add_player(player)
+        if success:
+            event = player_joined_event(
+                player_id=player.id,
+                player_name=player.name,
+                player_count=len(managed.engine.state.players),
+            )
+            managed._notify_callbacks(event)
+        return success
+
+    def start_game(self, game_id: str) -> bool:
+        managed = self._games.get(game_id)
+        if not managed:
+            return False
+        event = game_starting_event()
+        managed._notify_callbacks(event)
+        return managed.engine.start_game()
+
+    def fill_with_ai(self, game_id: str) -> None:
+        """Fill remaining slots with medium AI players."""
+        managed = self._games.get(game_id)
+        if not managed:
+            return
+        engine = managed.engine
+        max_p = max_players_for_variant(engine.state.config.variant)
+        current_count = len(engine.state.players)
+        for index in range(current_count, max_p):
+            ai_name = f"AI {index + 1}"
+            ai_player = Player(
+                id=f"ai-backfill-{index}",
+                name=ai_name,
+                player_type=PlayerType.AI,
+                ai_difficulty=AIDifficulty.MEDIUM,
+            )
+            if engine.add_player(ai_player):
+                managed.ai_strategies[ai_player.id] = _make_strategy(AIDifficulty.MEDIUM)
+
     def get_game(self, game_id: str) -> Optional[ManagedGame]:
-        return self._games.get(game_id)
+        # Exact match first
+        exact = self._games.get(game_id)
+        if exact:
+            return exact
+        # Prefix match (for short join codes) — case insensitive
+        game_id_lower = game_id.lower()
+        matches = [
+            managed for gid, managed in self._games.items()
+            if gid.lower().startswith(game_id_lower)
+        ]
+        if len(matches) == 1:
+            return matches[0]
+        return None
 
     def remove_game(self, game_id: str) -> None:
         self._games.pop(game_id, None)
 
     def list_games(self) -> List[str]:
         return list(self._games.keys())
+
+    def list_public_lobbies(self) -> List[ManagedGame]:
+        return [
+            managed for managed in self._games.values()
+            if managed.is_public and managed.engine.state.phase == GamePhase.LOBBY
+        ]

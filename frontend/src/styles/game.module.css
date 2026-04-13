@@ -136,6 +136,7 @@
 }
 
 .trickPile {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -152,14 +153,19 @@
   will-change: transform, opacity;
 }
 
-/* Winner highlight — card scales up, losers dim */
+/* Winner highlight — card scales up with glow, losers dim */
 .trickCardWinner {
-  transform: scale(1.08);
-  filter: brightness(1.1);
+  transform: scale(1.12);
+  filter: brightness(1.15);
+  box-shadow: 0 0 16px rgba(218, 165, 32, 0.4);
+  border-radius: var(--card-radius);
+  transition: transform 0.6s ease, filter 0.6s ease, box-shadow 0.6s ease;
 }
 
 .trickHasWinner .trickCardSlot:not(.trickCardWinner) {
-  opacity: 0.5;
+  opacity: 0.35;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .trickPlayerName {
@@ -175,12 +181,28 @@
   border-radius: 4px;
 }
 
-.trickWinnerLabel {
-  font-size: var(--font-size-sm);
+/* Winner name gets highlighted */
+.trickCardWinner .trickPlayerName {
   color: var(--color-accent);
-  font-weight: 600;
+  background: rgba(218, 165, 32, 0.15);
+  border: 1px solid rgba(218, 165, 32, 0.3);
+}
+
+.trickWinnerLabel {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: #fff;
   text-align: center;
-  margin-top: var(--space-xs);
+  padding: 4px 16px;
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.9), rgba(184, 134, 11, 0.9));
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 12px rgba(218, 165, 32, 0.4);
+  white-space: nowrap;
+  animation: winnerLabelIn 0.6s ease-out both;
 }
 
 .emptyTrick {
@@ -379,6 +401,17 @@
   }
   to {
     opacity: 0;
+  }
+}
+
+@keyframes winnerLabelIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 }
 

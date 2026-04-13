@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { GamePhase } from "./types";
 import { GameProvider, useGameContext } from "./context/GameContext";
 import { SettingsProvider } from "./context/SettingsContext";
-import { GameLobby } from "./components/lobby";
+import { GameLobby, WaitingRoom } from "./components/lobby";
 import { GameBoard } from "./components/game";
 import { FinalResults } from "./components/scoreboard";
 import styles from "./styles/app.module.css";
@@ -58,11 +58,31 @@ function CurrentScreen({ phase, gameId, onGameCreated, onPlayAgain }: CurrentScr
     return <GameLobby onGameCreated={onGameCreated} />;
   }
 
+  if (phase === GamePhase.WAITING) {
+    return <WaitingRoomScreen onPlayAgain={onPlayAgain} />;
+  }
+
   if (phase === GamePhase.GAME_OVER) {
     return <GameOverScreen onPlayAgain={onPlayAgain} />;
   }
 
   return <GameBoard />;
+}
+
+function WaitingRoomScreen({ onPlayAgain }: { onPlayAgain: () => void }) {
+  const { state } = useGameContext();
+
+  return (
+    <WaitingRoom
+      gameId={state.gameId ?? ""}
+      playerId={state.playerId ?? ""}
+      isHost={state.isHost}
+      players={state.lobbyPlayers}
+      autoStartSeconds={state.autoStartSeconds}
+      maxPlayers={5}
+      onLeave={onPlayAgain}
+    />
+  );
 }
 
 function GameOverScreen({ onPlayAgain }: { onPlayAgain: () => void }) {

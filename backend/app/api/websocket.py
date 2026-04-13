@@ -9,13 +9,6 @@ from backend.app.models import Card, Suit, Rank
 from backend.app.models.events import EventType, GameEvent
 from backend.app.game_manager import GameManager, ManagedGame
 
-# Default delays (seconds) inserted after events so the frontend can show each card.
-# These control game pacing — how long the user sees each AI move before the
-# next one plays. Configurable per-game via CreateGameRequest.speed.
-DEFAULT_DELAY_AFTER_CARD_PLAYED = 2.0
-DEFAULT_DELAY_AFTER_TRICK_COMPLETE = 3.0
-DEFAULT_DELAY_AFTER_ROUND_COMPLETE = 1.5
-
 router = APIRouter()
 
 _manager: GameManager = GameManager()
@@ -33,63 +26,34 @@ class ConnectionManager:
     def __init__(self):
         self._games: Dict[str, Dict[str, WebSocket]] = {}
 
-    async def connect(self, game_id: str, player_id: str, websocket: WebSocket) -> None:
+    async def connect(self, game_id: str, player_id: str, websocket: WebSocket) -> Optional[WebSocket]:
+        """Accept and register a WebSocket. Returns the old socket if replacing."""
         await websocket.accept()
         if game_id not in self._games:
             self._games[game_id] = {}
+        old_socket = self._games[game_id].get(player_id)
         self._games[game_id][player_id] = websocket
+        return old_socket
 
-    def disconnect(self, game_id: str, player_id: str) -> None:
+    def disconnect(self, game_id: str, player_id: str, websocket: WebSocket) -> None:
+        """Only remove if the stored socket matches (prevents stale disconnect)."""
         game_connections = self._games.get(game_id)
         if not game_connections:
             return
-        game_connections.pop(player_id, None)
+        stored = game_connections.get(player_id)
+        if stored is websocket:
+            game_connections.pop(player_id, None)
         if not game_connections:
             del self._games[game_id]
 
-    async def send_to_player(self, game_id: str, player_id: str, message: dict) -> None:
-        socket = self._get_socket(game_id, player_id)
-        if socket:
-            await socket.send_json(message)
-
-    async def broadcast(self, game_id: str, message: dict, exclude: Optional[str] = None) -> None:
-        game_connections = self._games.get(game_id, {})
-        for player_id, socket in game_connections.items():
-            if player_id != exclude:
-                await socket.send_json(message)
-
     def get_connected_players(self, game_id: str) -> Set[str]:
         return set(self._games.get(game_id, {}).keys())
-
-    def _get_socket(self, game_id: str, player_id: str) -> Optional[WebSocket]:
-        return self._games.get(game_id, {}).get(player_id)
 
 
 connection_manager = ConnectionManager()
 
 
-# --- Event flushing ---
-
-
-async def _flush_pending_events(
-    events: list, game_id: str, connections: ConnectionManager, managed: ManagedGame
-) -> None:
-    """Send queued events to clients with delays between card plays.
-
-    Without delays, AI card plays arrive in one instant burst and the
-    frontend never has time to render each card being played.
-    """
-    while events:
-        event = events.pop(0)
-        message = {"type": event.event_type.value, "data": event.data}
-        if event.player_id:
-            await connections.send_to_player(game_id, event.player_id, message)
-        else:
-            await connections.broadcast(game_id, message)
-
-        delay = _get_event_delay(event.event_type, managed)
-        if delay > 0:
-            await asyncio.sleep(delay)
+# --- Event delay logic ---
 
 
 def _get_event_delay(event_type: EventType, managed: ManagedGame) -> float:
@@ -144,7 +108,7 @@ async def _send_error(websocket: WebSocket, reason: str) -> None:
 
 async def _send_connected(websocket: WebSocket, managed: ManagedGame, game_id: str, player_id: str) -> None:
     engine = managed.engine
-    round_data = _build_round_data(managed)
+    round_data = managed.engine.get_round_summary()
     await websocket.send_json({
         "type": "connected",
         "data": {
@@ -153,45 +117,12 @@ async def _send_connected(websocket: WebSocket, managed: ManagedGame, game_id: s
             "phase": engine.state.phase.value,
             "current_player_id": engine.state.current_player_id,
             "players": [player.model_dump() for player in engine.state.players],
+            "host_player_id": managed.host_player_id,
             **round_data,
         },
     })
     # Send hand data immediately so the player can act right away
     await _handle_get_hand(managed, player_id, websocket)
-
-
-def _build_round_data(managed: ManagedGame) -> dict:
-    rm = managed.engine._round_manager
-    if not rm:
-        return {}
-    return {
-        "round_number": rm.state.round_number,
-        "num_cards": rm.num_cards,
-        "trump_suit": rm.state.trump_suit.value,
-        "dealer_id": rm.state.dealer_id,
-        "bids": [bid.model_dump() for bid in rm.state.bids],
-        "current_trick": [play.model_dump() for play in rm.state.current_trick.plays],
-        "tricks_won": dict(rm.state.tricks_won),
-    }
-
-
-async def _send_hand_if_my_turn(
-    managed: ManagedGame, player_id: str, websocket: WebSocket
-) -> None:
-    """Auto-send hand data when it's this player's turn.
-
-    This avoids relying on the client to request get_hand via useEffect,
-    which can miss turn changes due to React 18 state batching.
-    """
-    if managed.engine.state.current_player_id == player_id:
-        await _handle_get_hand(managed, player_id, websocket)
-
-
-_ACTION_HANDLERS = {
-    "bid": _handle_bid,
-    "play": _handle_play_card,
-    "get_hand": _handle_get_hand,
-}
 
 
 async def _dispatch_message(
@@ -208,6 +139,46 @@ async def _dispatch_message(
         await _handle_get_hand(managed, player_id, websocket)
 
 
+# --- Writer / Reader tasks ---
+
+
+async def _writer_task(
+    queue: asyncio.Queue,
+    websocket: WebSocket,
+    player_id: str,
+    managed: ManagedGame,
+) -> None:
+    """Continuously drain the event queue and send to this client."""
+    while True:
+        event: GameEvent = await queue.get()
+        # Filter targeted events: only send if meant for this player or broadcast
+        if event.player_id and event.player_id != player_id:
+            continue
+
+        message = {"type": event.event_type.value, "data": event.data}
+        await websocket.send_json(message)
+
+        delay = _get_event_delay(event.event_type, managed)
+        if delay > 0:
+            await asyncio.sleep(delay)
+
+        # After events that change whose turn it is, auto-send hand data
+        if event.event_type == EventType.TURN_CHANGED:
+            if managed.engine.state.current_player_id == player_id:
+                await _handle_get_hand(managed, player_id, websocket)
+
+
+async def _reader_task(
+    websocket: WebSocket,
+    managed: ManagedGame,
+    player_id: str,
+) -> None:
+    """Handle incoming client messages independently of event delivery."""
+    while True:
+        raw_text = await websocket.receive_text()
+        await _dispatch_message(managed, player_id, raw_text, websocket)
+
+
 # --- WebSocket endpoint ---
 
 
@@ -218,26 +189,36 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str, player_id: str)
         await websocket.close(code=4004, reason="Game not found")
         return
 
-    await connection_manager.connect(game_id, player_id, websocket)
+    old_socket = await connection_manager.connect(game_id, player_id, websocket)
+    if old_socket:
+        # Close old connection gracefully (reconnection scenario)
+        try:
+            await old_socket.close(code=4001, reason="Replaced by new connection")
+        except Exception:
+            pass
 
-    pending_events: list = []
+    queue: asyncio.Queue = asyncio.Queue()
 
     def collect_event(event: GameEvent) -> None:
-        pending_events.append(event)
+        queue.put_nowait(event)
 
     managed.add_event_callback(collect_event)
 
     try:
         await _send_connected(websocket, managed, game_id, player_id)
 
-        while True:
-            raw_text = await websocket.receive_text()
-            await _dispatch_message(managed, player_id, raw_text, websocket)
-            await _flush_pending_events(pending_events, game_id, connection_manager, managed)
-            await _send_hand_if_my_turn(managed, player_id, websocket)
+        writer = asyncio.create_task(_writer_task(queue, websocket, player_id, managed))
+        reader = asyncio.create_task(_reader_task(websocket, managed, player_id))
+
+        done, pending = await asyncio.wait(
+            [writer, reader],
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        for task in pending:
+            task.cancel()
 
     except WebSocketDisconnect:
         pass
     finally:
         managed.remove_event_callback(collect_event)
-        connection_manager.disconnect(game_id, player_id)
+        connection_manager.disconnect(game_id, player_id, websocket)

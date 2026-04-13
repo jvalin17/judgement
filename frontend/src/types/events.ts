@@ -16,6 +16,12 @@ export const ServerEventType = {
   INVALID_ACTION: "invalid_action",
   HAND: "hand",
   ERROR: "error",
+  PLAYER_JOINED: "player_joined",
+  PLAYER_LEFT: "player_left",
+  AUTO_START_COUNTDOWN: "auto_start_countdown",
+  GAME_STARTING: "game_starting",
+  PLAYER_RECONNECTED: "player_reconnected",
+  PLAYER_DISCONNECTED: "player_disconnected",
 } as const;
 
 export type ServerEventType = (typeof ServerEventType)[keyof typeof ServerEventType];
@@ -95,6 +101,22 @@ export interface HandEventData {
 
 export interface ErrorEventData {
   message: string;
+}
+
+export interface PlayerJoinedEventData {
+  player_id: string;
+  player_name: string;
+  player_count: number;
+}
+
+export interface PlayerLeftEventData {
+  player_id: string;
+  player_name: string;
+  player_count: number;
+}
+
+export interface AutoStartCountdownEventData {
+  seconds_remaining: number;
 }
 
 export const ClientAction = {
