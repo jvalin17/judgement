@@ -64,3 +64,29 @@ python3 -m pytest backend/tests/ -v   # Run tests (190)
 - **Frontend:** React 19, TypeScript, Vite
 - **Desktop:** pywebview (optional)
 - **AI:** Three difficulty levels (easy, medium, hard)
+
+## Project Structure
+
+```
+judgement/
+├── play                    # One-command launcher
+├── setup                   # One-time dependency installer
+├── backend/
+│   ├── app/
+│   │   ├── models/         # Pydantic data models
+│   │   ├── game/           # Rules engine (pure logic, no I/O)
+│   │   ├── ai/             # AI strategies (easy, medium, hard)
+│   │   ├── api/            # REST + WebSocket transport
+│   │   ├── game_manager.py # Orchestrator
+│   │   └── main.py         # FastAPI entry point
+│   └── tests/              # 190 tests
+├── frontend/src/
+│   ├── components/         # React components
+│   ├── hooks/              # useGame, useWebSocket
+│   ├── context/            # GameContext provider
+│   ├── services/           # REST + WebSocket clients
+│   └── styles/             # CSS Modules
+├── desktop/                # pywebview desktop launcher
+├── scripts/                # dev, build, serve
+└── Dockerfile              # Single container deployment
+```
