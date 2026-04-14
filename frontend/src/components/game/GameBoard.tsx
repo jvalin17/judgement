@@ -191,6 +191,9 @@ export function GameBoard() {
           validBids={state.validBids}
           numCards={state.numCards}
           onBid={handleBid}
+          bids={state.bids}
+          players={state.players}
+          playerId={state.playerId}
         />
       ) : (
         <PlayerInfo
