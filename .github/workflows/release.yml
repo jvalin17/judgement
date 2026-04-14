@@ -19,6 +19,7 @@ jobs:
             artifact_name: Judgement-macOS
             archive_cmd: tar -czf Judgement-macOS.tar.gz -C dist Judgement.app
             archive_file: Judgement-macOS.tar.gz
+            archive_shell: bash
           - os: windows-latest
             python: '3.11'
             artifact_name: Judgement-Windows
@@ -30,6 +31,7 @@ jobs:
             artifact_name: Judgement-Linux
             archive_cmd: tar -czf Judgement-Linux.tar.gz -C dist Judgement
             archive_file: Judgement-Linux.tar.gz
+            archive_shell: bash
 
     runs-on: ${{ matrix.os }}
 
@@ -192,7 +194,7 @@ jobs:
 
       - name: Archive build
         run: ${{ matrix.archive_cmd }}
-        shell: ${{ matrix.archive_shell || 'bash' }}
+        shell: ${{ matrix.archive_shell }}
 
       - uses: actions/upload-artifact@v4
         with:
