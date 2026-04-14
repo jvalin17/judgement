@@ -18,21 +18,15 @@ jobs:
           - os: macos-latest
             python: '3.11'
             artifact_name: Judgement-macOS
-            archive_cmd: tar -czf Judgement-macOS.tar.gz -C dist Judgement.app
             archive_file: Judgement-macOS.tar.gz
-            archive_shell: bash
           - os: windows-latest
             python: '3.11'
             artifact_name: Judgement-Windows
-            archive_cmd: Compress-Archive -Path dist\Judgement -DestinationPath Judgement-Windows.zip
             archive_file: Judgement-Windows.zip
-            archive_shell: pwsh
           - os: ubuntu-latest
             python: '3.11'
             artifact_name: Judgement-Linux
-            archive_cmd: tar -czf Judgement-Linux.tar.gz -C dist Judgement
             archive_file: Judgement-Linux.tar.gz
-            archive_shell: bash
 
     runs-on: ${{ matrix.os }}
 
@@ -193,9 +187,18 @@ jobs:
             desktop/main.py
         shell: pwsh
 
-      - name: Archive build
-        run: ${{ matrix.archive_cmd }}
-        shell: ${{ matrix.archive_shell }}
+      - name: Archive build (macOS)
+        if: runner.os == 'macOS'
+        run: tar -czf Judgement-macOS.tar.gz -C dist Judgement.app
+
+      - name: Archive build (Windows)
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path dist\Judgement -DestinationPath Judgement-Windows.zip
+        shell: pwsh
+
+      - name: Archive build (Linux)
+        if: runner.os == 'Linux'
+        run: tar -czf Judgement-Linux.tar.gz -C dist Judgement
 
       - uses: actions/upload-artifact@v4
         with:
