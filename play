@@ -1,21 +1,90 @@
 #!/usr/bin/env bash
 # One command to build and play Judgement.
 # Launches as desktop app (pywebview) if installed, otherwise opens browser.
+#
+# Architecture note: On macOS Apple Silicon, the system Python 3.9 is a
+# universal binary (x86_64 + arm64). Compiled .so wheels (pydantic_core etc.)
+# are single-arch. This script auto-detects which arch can load them.
 set -e
 cd "$(dirname "$0")"
+
+PORT="${JUDGEMENT_PORT:-8000}"
+
+# --- Detect working Python architecture ---
+# The system Python is a universal binary. Compiled wheels are single-arch.
+# We must match the arch to whatever was installed by pip.
+detect_python() {
+    # Try native arm64 first (Apple Silicon default)
+    if arch -arm64 python3 -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo "arch -arm64 python3"
+        return
+    fi
+    # Try x86_64 (Rosetta)
+    if arch -x86_64 python3 -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo "arch -x86_64 python3"
+        return
+    fi
+    # Try bare python3 (non-macOS or already correct)
+    if python3 -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo "python3"
+        return
+    fi
+    echo ""
+}
+
+PYTHON=$(detect_python)
+if [ -z "$PYTHON" ]; then
+    echo "ERROR: Cannot load pydantic_core under any architecture."
+    echo "Fix:   pip3 install --force-reinstall pydantic pydantic-core"
+    exit 1
+fi
 
 echo "Building frontend..."
 cd frontend && npm run build
 cd ..
 
-lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+# Kill any old server on our port
+lsof -ti:"$PORT" | xargs kill -9 2>/dev/null || true
 sleep 0.5
 
-if python3 -c "import webview" 2>/dev/null; then
+# Start server with the correct arch
+$PYTHON -m uvicorn backend.app.main:app \
+    --host 127.0.0.1 --port "$PORT" --ws websockets --log-level warning &
+SERVER_PID=$!
+
+# Wait for server to be ready
+echo "Starting server..."
+for i in $(seq 1 30); do
+    if curl -s "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
+        break
+    fi
+    if ! kill -0 $SERVER_PID 2>/dev/null; then
+        echo "Server crashed. Check: $PYTHON -c 'from backend.app.main import app'"
+        exit 1
+    fi
+    sleep 0.5
+done
+
+if ! curl -s "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
+    echo "Server did not respond in time."
+    kill $SERVER_PID 2>/dev/null
+    exit 1
+fi
+
+# Clean up server on exit
+cleanup() {
+    kill $SERVER_PID 2>/dev/null
+    wait $SERVER_PID 2>/dev/null
+}
+trap cleanup EXIT
+
+SERVER_URL="http://127.0.0.1:$PORT"
+
+if $PYTHON -c "import webview" 2>/dev/null; then
     echo "Launching desktop app..."
-    exec python3 desktop/main.py
+    JUDGEMENT_SERVER="$SERVER_URL" $PYTHON desktop/main.py
 else
-    echo "Starting server on http://localhost:8000 ..."
-    (sleep 2 && open "http://localhost:8000" 2>/dev/null || xdg-open "http://localhost:8000" 2>/dev/null) &
-    exec python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --ws websockets
+    echo "Game ready at $SERVER_URL"
+    (open "$SERVER_URL" 2>/dev/null || xdg-open "$SERVER_URL" 2>/dev/null) &
+    wait $SERVER_PID
 fi
