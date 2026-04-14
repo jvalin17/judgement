@@ -18,7 +18,7 @@ Go to the [Releases](../../releases) page and download the latest build for your
 
 - **macOS:** Download `Judgement-macOS.tar.gz`, extract, and move `Judgement.app` to Applications
 - **Windows:** Download `Judgement-Windows.zip`, extract, and run `Judgement.exe`
-- **Linux:** Download `Judgement-Linux.tar.gz`, extract, and run `./Judgement`
+- **Linux:** Use [Option 3: Run from Source](#option-3-run-from-source)
 
 No Python or Node.js needed — just download and play.
 
