@@ -1,28 +1,41 @@
 # Judgement
 
-Indian trick-taking card game (also known as Kachuful). Play against AI opponents or with friends online.
+Indian trick-taking card game (also known as Kachuful). Play against AI opponents in offline mode.
 
-## System Requirements
+> **Note:** This is currently an offline single-player game against AI opponents. Online multiplayer is planned for a future release.
 
-- **Python** 3.9+
-- **Node.js** 18+
+## Download & Install
+
+### Prerequisites
+
+- **Python** 3.9+ — [python.org/downloads](https://www.python.org/downloads/)
+- **Node.js** 18+ — [nodejs.org](https://nodejs.org/)
 - **OS:** macOS, Windows, Linux
 
-## Install & Play
+### Option 1: Desktop App (recommended)
+
+Build a standalone app that runs with a double-click — no Python or Node needed after building.
 
 ```bash
+git clone <repo-url> && cd judgement
+./setup                  # Install build dependencies
+./scripts/package.sh     # Build the app
+```
+
+Then install:
+- **macOS:** Copy `dist/Judgement.app` to your Applications folder, or run `open dist/Judgement.app`
+- **Windows:** Run `dist/Judgement/Judgement.exe`
+- **Linux:** Run `dist/Judgement/Judgement`
+
+### Option 2: Run from Source
+
+```bash
+git clone <repo-url> && cd judgement
 ./setup    # One-time: installs all dependencies
 ./play     # Build frontend, start server, open game
 ```
 
 Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is available, otherwise opens in your browser at `http://localhost:8000`.
-
-### Standalone Desktop App (no dependencies needed to run)
-
-```bash
-./scripts/package.sh    # Build Judgement.app (macOS) or Judgement.exe (Windows)
-open dist/Judgement.app  # Double-click to play — no Python/Node needed
-```
 
 ## Common Workflows
 
