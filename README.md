@@ -11,23 +11,33 @@ Indian trick-taking card game (also known as Kachuful). Play against AI opponent
 ## Install & Play
 
 ```bash
-# One-time setup (installs all dependencies)
-./setup
-
-# Play
-./play
+./setup    # One-time: installs all dependencies
+./play     # Build frontend, start server, open game
 ```
 
 Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is available, otherwise opens in your browser at `http://localhost:8000`.
 
-### Manual Install
+### Standalone Desktop App (no dependencies needed to run)
 
 ```bash
-pip3 install -r backend/requirements.txt
-pip3 install pywebview          # optional — desktop window mode
-cd frontend && npm install && npm run build && cd ..
-./play
+./scripts/package.sh    # Build Judgement.app (macOS) or Judgement.exe (Windows)
+open dist/Judgement.app  # Double-click to play — no Python/Node needed
 ```
+
+## Common Workflows
+
+| Task | Command |
+|------|---------|
+| First time setup | `./setup` |
+| Play the game | `./play` |
+| Build standalone app | `./scripts/package.sh` |
+| Run tests | `python3 -m pytest backend/tests/ -v` |
+| Dev server (backend) | `./scripts/dev.sh` |
+| Dev server (frontend) | `cd frontend && npm run dev` |
+| Build frontend only | `cd frontend && npm run build` |
+| Production server | `./scripts/build.sh && ./scripts/serve.sh` |
+| Security scan | `python3 scripts/security_scan.py` |
+| Docker | `docker build -t judgement . && docker run -p 8000:8000 judgement` |
 
 ## How to Play
 
@@ -50,19 +60,11 @@ cd frontend && npm install && npm run build && cd ..
 | 8 → 1 → 8 | 16 | 6 |
 | 10 → 1 → 10 | 20 | 5 |
 
-## Development
-
-```bash
-./scripts/dev.sh              # Backend with hot reload
-cd frontend && npm run dev    # Frontend dev server
-python3 -m pytest backend/tests/ -v   # Run tests (190)
-```
-
 ## Tech Stack
 
 - **Backend:** Python 3.9, FastAPI, WebSockets
 - **Frontend:** React 19, TypeScript, Vite
-- **Desktop:** pywebview (optional)
+- **Desktop:** pywebview (optional) / PyInstaller (standalone)
 - **AI:** Three difficulty levels (easy, medium, hard)
 
 ## Project Structure
@@ -87,6 +89,6 @@ judgement/
 │   ├── services/           # REST + WebSocket clients
 │   └── styles/             # CSS Modules
 ├── desktop/                # pywebview desktop launcher
-├── scripts/                # dev, build, serve
+├── scripts/                # dev, build, serve, package, security scan
 └── Dockerfile              # Single container deployment
 ```
