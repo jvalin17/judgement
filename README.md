@@ -5,20 +5,21 @@ Indian trick-taking card game (also known as Kachuful). Play against AI opponent
 ## Quick Start
 
 ```bash
-# Install dependencies (first time only)
-pip3 install -r backend/requirements.txt
-cd frontend && npm install && cd ..
+# First time setup (installs everything, handles Apple Silicon)
+./setup
 
 # Play
 ./play
 ```
 
-This builds the frontend, starts the server, and opens the game — as a desktop window if [pywebview](https://pywebview.flowrl.com/) is installed, or in your browser otherwise.
+`./play` builds the frontend, starts the server, and opens the game — as a desktop window if [pywebview](https://pywebview.flowrl.com/) is installed, or in your browser otherwise.
 
-### Desktop App (optional)
+### Manual Install (if you prefer)
 
 ```bash
-pip3 install pywebview
+pip3 install -r backend/requirements.txt
+cd frontend && npm install && cd ..
+pip3 install pywebview  # optional, for desktop mode
 ./play
 ```
 
@@ -42,6 +43,19 @@ pip3 install pywebview
 | 10 → 1 | 10 | 5 |
 | 8 → 1 → 8 | 16 | 6 |
 | 10 → 1 → 10 | 20 | 5 |
+
+## Mobile Testing
+
+The game is mobile-friendly. To test on your phone:
+
+```bash
+# Start the server (accessible on local network)
+./scripts/build.sh
+python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --ws websockets
+```
+
+Then open `http://<your-computer-ip>:8000` on your phone (same WiFi network).
+Find your IP with `ifconfig | grep "inet "` on Mac or `hostname -I` on Linux.
 
 ## Development
 
@@ -88,6 +102,7 @@ docker run -p 8000:8000 judgement
 ```
 judgement/
 ├── play                    # One-command launcher
+├── setup                   # One-time dependency installer
 ├── backend/
 │   ├── app/
 │   │   ├── models/         # Pydantic data models
