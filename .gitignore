@@ -53,3 +53,6 @@ SUMMARY.md
 code_mapping.md
 ARCH_ANALYSIS.md
 TODO.md
+
+# PyInstaller
+*.spec

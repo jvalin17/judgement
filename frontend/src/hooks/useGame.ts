@@ -237,6 +237,9 @@ function handleRoundComplete(state: GameState, data: RoundCompleteEventData): Ga
     hand: [],
     validCards: [],
     validBids: [],
+    currentTrick: [],
+    trickWinner: null,
+    trickCollecting: false,
     pendingEvents: [],
     roundOverAcknowledged: false,
   };

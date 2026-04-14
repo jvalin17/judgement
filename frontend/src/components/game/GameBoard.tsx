@@ -243,17 +243,14 @@ interface StatusMessageProps {
 }
 
 function StatusMessage({ state, myTurn }: StatusMessageProps) {
-  // Show animated banner for "your turn"
+  // Show animated banner for "your turn" only
   if (myTurn && (state.phase === GamePhase.BIDDING || state.phase === GamePhase.PLAYING)) {
     const action = state.phase === GamePhase.BIDDING ? "bid" : "play";
     return <TurnBanner key={`${state.currentPlayerId}-${state.phase}`} action={action} />;
   }
 
-  // Quiet status for waiting on others
-  const message = buildWaitingMessage(state);
-  if (!message) return null;
-
-  return <div className={styles.statusBar}>{message}</div>;
+  // No floating text for waiting — the hourglass on the active player's avatar is enough
+  return null;
 }
 
 function TurnBanner({ action }: { action: string }) {
@@ -262,23 +259,6 @@ function TurnBanner({ action }: { action: string }) {
       Your turn to {action}!
     </div>
   );
-}
-
-function buildWaitingMessage(
-  state: { phase: GamePhase; currentPlayerId: string | null; playerId: string | null; players: Array<{ id: string; name: string }> },
-): string {
-  if (state.phase === GamePhase.BIDDING) {
-    return `Waiting for ${findCurrentPlayerName(state)} to bid...`;
-  }
-  if (state.phase === GamePhase.PLAYING) {
-    return `Waiting for ${findCurrentPlayerName(state)}...`;
-  }
-  return "";
-}
-
-function findCurrentPlayerName(state: { currentPlayerId: string | null; players: Array<{ id: string; name: string }> }): string {
-  const player = state.players.find((player) => player.id === state.currentPlayerId);
-  return player?.name ?? "opponent";
 }
 
 // --- Helpers ---

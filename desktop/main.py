@@ -1,27 +1,51 @@
-"""Judgement — Desktop window launcher.
+"""Judgement — Desktop app entry point.
 
-Opens a native pywebview window pointing at a running server.
-The server is started separately (by ./play) to avoid architecture
-conflicts between pyobjc (arm64) and pydantic_core (x86_64) on
-macOS with Rosetta.
+When frozen (PyInstaller bundle): runs server in-thread, opens native window.
+When run from source: starts server as subprocess to avoid arch conflicts.
 
 Usage:
+    # From source (./play calls this with JUDGEMENT_SERVER set)
     JUDGEMENT_SERVER=http://127.0.0.1:8000 python3 desktop/main.py
+
+    # From PyInstaller bundle (double-click Judgement.app)
+    # Server runs in-thread, no external dependencies needed
 """
 
 import os
 import subprocess
 import sys
+import threading
 import time
-
-import webview
 
 
 DEFAULT_PORT = 8000
 
 
+def _is_frozen() -> bool:
+    """True when running inside a PyInstaller bundle."""
+    return getattr(sys, "frozen", False)
+
+
+def start_server_thread(port: int) -> threading.Thread:
+    """Run uvicorn in a daemon thread (for PyInstaller bundles)."""
+    import uvicorn
+
+    def run():
+        uvicorn.run(
+            "backend.app.main:app",
+            host="127.0.0.1",
+            port=port,
+            ws="websockets",
+            log_level="warning",
+        )
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    return thread
+
+
 def start_server_process(port: int) -> subprocess.Popen:
-    """Launch uvicorn as a separate process using arch -x86_64 on macOS."""
+    """Launch uvicorn as a separate process (for dev/source mode)."""
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     cmd = [
@@ -33,7 +57,7 @@ def start_server_process(port: int) -> subprocess.Popen:
         "--log-level", "warning",
     ]
 
-    # On macOS Apple Silicon, force x86_64 to match pydantic_core wheels
+    # On macOS Apple Silicon, force matching arch for pydantic_core
     if sys.platform == "darwin":
         cmd = ["arch", "-x86_64"] + cmd
 
@@ -55,20 +79,27 @@ def wait_for_server(port: int, timeout: float = 15.0) -> bool:
 
 
 def main() -> None:
+    import webview
+
     port = int(os.environ.get("JUDGEMENT_PORT", DEFAULT_PORT))
     server_url = os.environ.get("JUDGEMENT_SERVER", "")
     server_proc = None
 
     if not server_url:
-        # Standalone mode: start server ourselves with arch fix
-        server_proc = start_server_process(port)
+        if _is_frozen():
+            # PyInstaller bundle: run server in-thread (same process, same arch)
+            start_server_thread(port)
+        else:
+            # Dev/source: run as subprocess to avoid arch conflicts
+            server_proc = start_server_process(port)
 
         if not wait_for_server(port):
-            if server_proc.poll() is not None:
+            if server_proc and server_proc.poll() is not None:
                 stderr_output = server_proc.stderr.read().decode() if server_proc.stderr else ""
                 print(f"Server failed to start:\n{stderr_output}", file=sys.stderr)
             else:
-                server_proc.terminate()
+                if server_proc:
+                    server_proc.terminate()
                 print("Server failed to respond within timeout", file=sys.stderr)
             sys.exit(1)
 
@@ -83,7 +114,7 @@ def main() -> None:
     )
     webview.start()
 
-    # Clean up server when window closes
+    # Clean up server process when window closes
     if server_proc and server_proc.poll() is None:
         server_proc.terminate()
         try:
