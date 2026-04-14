@@ -231,6 +231,17 @@
   font-weight: 700;
   font-size: var(--font-size-lg);
   color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+
+.bidTrump {
+  font-size: var(--font-size-lg);
+}
+
+.bidRoundInfo {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
   margin-bottom: var(--space-md);
 }
 
@@ -353,7 +364,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-  padding: 20px 0 var(--space-xs);
+  padding: 0 0 var(--space-xs);
 }
 
 .handLabel {
@@ -364,19 +375,28 @@
 .handCards {
   display: flex;
   justify-content: center;
-  padding: var(--space-xs) var(--space-sm);
-  overflow-x: auto;
+  padding: 20px var(--space-md) 6px;
   max-width: 100%;
+  overflow: visible;
   -webkit-overflow-scrolling: touch;
 }
 
 .handCards > * {
-  margin-left: -12px;
+  margin-left: -10px;
   transition: transform var(--transition-fast), margin var(--transition-fast);
 }
 
 .handCards > *:first-child {
   margin-left: 0;
+}
+
+/* On hover, spread neighbours apart to reveal the card */
+.handCards > *:hover {
+  z-index: 5;
+}
+
+.handCards > *:hover + * {
+  margin-left: 4px;
 }
 
 /* Player info bar — above hand */

@@ -38,8 +38,8 @@
   --space-2xl: 48px;
 
   /* Card dimensions (mobile-first) */
-  --card-width: 90px;
-  --card-height: 130px;
+  --card-width: 72px;
+  --card-height: 104px;
   --card-width-sm: 52px;
   --card-height-sm: 78px;
   --card-radius: 8px;

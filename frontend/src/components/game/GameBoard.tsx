@@ -194,6 +194,7 @@ export function GameBoard() {
           bids={state.bids}
           players={state.players}
           playerId={state.playerId}
+          trumpSuit={state.trumpSuit}
         />
       ) : (
         <PlayerInfo
