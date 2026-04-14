@@ -12,9 +12,17 @@ Indian trick-taking card game (also known as Kachuful). Play against AI opponent
 - **Node.js** 18+ — [nodejs.org](https://nodejs.org/)
 - **OS:** macOS, Windows, Linux
 
-### Option 1: Desktop App (recommended)
+### Option 1: Download a Release (recommended)
 
-Build a standalone app that runs with a double-click — no Python or Node needed after building.
+Go to the [Releases](../../releases) page and download the latest build for your OS:
+
+- **macOS:** Download `Judgement-macOS.tar.gz`, extract, and move `Judgement.app` to Applications
+- **Windows:** Download `Judgement-Windows.zip`, extract, and run `Judgement.exe`
+- **Linux:** Download `Judgement-Linux.tar.gz`, extract, and run `./Judgement`
+
+No Python or Node.js needed — just download and play.
+
+### Option 2: Build Desktop App from Source
 
 ```bash
 git clone <repo-url> && cd judgement
@@ -27,7 +35,7 @@ Then install:
 - **Windows:** Run `dist/Judgement/Judgement.exe`
 - **Linux:** Run `dist/Judgement/Judgement`
 
-### Option 2: Run from Source
+### Option 3: Run from Source
 
 ```bash
 git clone <repo-url> && cd judgement
