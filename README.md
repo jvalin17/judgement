@@ -34,6 +34,12 @@ git clone <repo-url> && cd judgement
 - **macOS:** `open dist/Judgement.app` (or copy to `/Applications/`)
 - **Windows:** Run `dist/Judgement/Judgement.exe`
 
+To update to the latest version:
+
+```bash
+./scripts/update.sh      # Pulls latest, rebuilds, installs to /Applications/
+```
+
 ### Option 3: Run from Source
 
 ```bash
@@ -51,6 +57,7 @@ Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is avail
 | First time setup | `./setup` |
 | Play the game | `./play` |
 | Build standalone app | `./scripts/package.sh` |
+| Update & reinstall | `./scripts/update.sh` |
 | Run tests | `python3 -m pytest backend/tests/ -v` |
 | Dev server (backend) | `./scripts/dev.sh` |
 | Dev server (frontend) | `cd frontend && npm run dev` |

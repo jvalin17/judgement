@@ -25,6 +25,12 @@ echo "Platform: $OS $NATIVE_ARCH"
 echo "Installing Python dependencies..."
 $PIP install -r backend/requirements.txt -q
 
+# Ensure pydantic is built for the correct arch (Rosetta can install wrong wheels)
+if ! $PYTHON -c "from pydantic_core import __version__" 2>/dev/null; then
+    echo "Fixing pydantic architecture..."
+    $PIP install --force-reinstall pydantic pydantic-core
+fi
+
 if ! $PYTHON -c "import PyInstaller" 2>/dev/null; then
     echo "Installing PyInstaller..."
     $PIP install pyinstaller
