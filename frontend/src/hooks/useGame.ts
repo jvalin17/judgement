@@ -240,7 +240,6 @@ function handleRoundComplete(state: GameState, data: RoundCompleteEventData): Ga
     currentTrick: [],
     trickWinner: null,
     trickCollecting: false,
-    pendingEvents: [],
     roundOverAcknowledged: false,
   };
 }

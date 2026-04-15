@@ -71,6 +71,9 @@ def _read_until_hand(ws, collector=None):
     (via _send_hand_if_my_turn), so this won't block forever.
 
     Also stops on game_over to avoid blocking when the game ends.
+
+    When a round_complete event is seen, automatically sends a next_round
+    action so the engine advances (engine no longer auto-advances).
     """
     events = []
     while True:
@@ -78,6 +81,9 @@ def _read_until_hand(ws, collector=None):
         events.append(evt)
         if collector is not None:
             collector.append(evt)
+        if evt["type"] == "round_complete":
+            # Engine stays in ROUND_OVER until client sends next_round
+            ws.send_json({"action": "next_round"})
         if evt["type"] == "hand":
             return evt["data"], events
         if evt["type"] == "game_over":

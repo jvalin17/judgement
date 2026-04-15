@@ -128,6 +128,7 @@ class TestScorePersistence:
         if engine.state.phase == GamePhase.GAME_OVER:
             return  # Game ended after 1 round (shouldn't happen with 10_to_1 but guard)
 
+        engine.continue_game()
         _play_full_round(engine)
 
         # Scores should have changed (extremely unlikely all 3 players score 0 twice)
@@ -206,14 +207,20 @@ class TestAllVariantsPlayable:
     def test_ten_to_one(self):
         engine, _ = _setup_game(3, DealingVariant.TEN_TO_ONE)
         _play_full_round(engine)
+        assert engine.state.phase == GamePhase.ROUND_OVER
+        engine.continue_game()
         assert engine.state.phase in (GamePhase.BIDDING, GamePhase.GAME_OVER)
 
     def test_eight_down_up(self):
         engine, _ = _setup_game(3, DealingVariant.EIGHT_DOWN_UP)
         _play_full_round(engine)
+        assert engine.state.phase == GamePhase.ROUND_OVER
+        engine.continue_game()
         assert engine.state.phase in (GamePhase.BIDDING, GamePhase.GAME_OVER)
 
     def test_ten_down_up(self):
         engine, _ = _setup_game(3, DealingVariant.TEN_DOWN_UP)
         _play_full_round(engine)
+        assert engine.state.phase == GamePhase.ROUND_OVER
+        engine.continue_game()
         assert engine.state.phase in (GamePhase.BIDDING, GamePhase.GAME_OVER)

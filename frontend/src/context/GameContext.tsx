@@ -81,6 +81,7 @@ export function GameProvider({ children }: GameProviderProps) {
     sendBid,
     sendPlayCard,
     sendGetHand,
+    sendNextRound,
   } = useWebSocket({
     gameId: state.gameId,
     playerId: state.playerId,
@@ -98,6 +99,11 @@ export function GameProvider({ children }: GameProviderProps) {
     disconnect();
   }, [disconnect]);
 
+  const wrappedAcknowledgeRoundOver = useMemo(() => () => {
+    acknowledgeRoundOver();
+    sendNextRound();
+  }, [acknowledgeRoundOver, sendNextRound]);
+
   const actions: GameActions = useMemo(
     () => ({
       setGameInfo,
@@ -108,11 +114,11 @@ export function GameProvider({ children }: GameProviderProps) {
       sendBid,
       sendPlayCard,
       sendGetHand,
-      acknowledgeRoundOver,
+      acknowledgeRoundOver: wrappedAcknowledgeRoundOver,
       startTrickCollect,
       clearTrick,
     }),
-    [setGameInfo, wrappedResetGame, clearError, connect, wrappedDisconnect, sendBid, sendPlayCard, sendGetHand, acknowledgeRoundOver, startTrickCollect, clearTrick],
+    [setGameInfo, wrappedResetGame, clearError, connect, wrappedDisconnect, sendBid, sendPlayCard, sendGetHand, wrappedAcknowledgeRoundOver, startTrickCollect, clearTrick],
   );
 
   const contextValue: GameContextValue = useMemo(

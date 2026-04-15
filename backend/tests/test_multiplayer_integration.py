@@ -37,6 +37,9 @@ def _read_until_hand(ws, collector=None):
         events.append(evt)
         if collector is not None:
             collector.append(evt)
+        if evt["type"] == "round_complete":
+            # Engine stays in ROUND_OVER until client sends next_round
+            ws.send_json({"action": "next_round"})
         if evt["type"] == "hand":
             return evt["data"], events
         if evt["type"] == "game_over":

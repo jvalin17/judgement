@@ -99,11 +99,14 @@ class TestFullRound:
                 assert len(valid) > 0, f"No valid cards for {current}"
                 assert engine.play_card(current, valid[0])
 
-        # Round should be over, and since variant is 10→1 with 10 rounds,
-        # a new round should have started automatically
-        assert engine.state.phase in (GamePhase.BIDDING, GamePhase.GAME_OVER)
+        # Round should be over, waiting for continue_game()
+        assert engine.state.phase == GamePhase.ROUND_OVER
         round_complete = [e for e in events if e.event_type == EventType.ROUND_COMPLETE]
-        assert len(round_complete) >= 1
+        assert len(round_complete) == 1
+
+        # Advance to next round
+        assert engine.continue_game()
+        assert engine.state.phase == GamePhase.BIDDING
 
 
 class TestTurnOrder:
@@ -145,6 +148,60 @@ class TestValidActions:
         assert len(valid) > 0
 
 
+class TestRoundOverGating:
+    """Engine must NOT auto-advance after a round. The client calls continue_game()."""
+
+    def test_round_stays_in_round_over(self):
+        engine, events = _setup_game(3)
+        engine.place_bid("p2", 3)
+        engine.place_bid("p3", 2)
+        engine.place_bid("p1", 4)
+
+        for _ in range(10):
+            for _ in range(3):
+                current = engine.state.current_player_id
+                valid = engine.get_valid_cards(current)
+                engine.play_card(current, valid[0])
+
+        # Must be ROUND_OVER, not BIDDING
+        assert engine.state.phase == GamePhase.ROUND_OVER
+
+        # No ROUND_STARTED after ROUND_COMPLETE
+        event_types = [e.event_type for e in events]
+        round_complete_idx = next(
+            i for i, t in enumerate(event_types) if t == EventType.ROUND_COMPLETE
+        )
+        events_after = event_types[round_complete_idx + 1:]
+        assert EventType.ROUND_STARTED not in events_after
+        assert EventType.CARDS_DEALT not in events_after
+
+    def test_continue_game_advances_to_bidding(self):
+        engine, events = _setup_game(3)
+        engine.place_bid("p2", 3)
+        engine.place_bid("p3", 2)
+        engine.place_bid("p1", 4)
+
+        for _ in range(10):
+            for _ in range(3):
+                current = engine.state.current_player_id
+                valid = engine.get_valid_cards(current)
+                engine.play_card(current, valid[0])
+
+        assert engine.state.phase == GamePhase.ROUND_OVER
+        events.clear()
+
+        assert engine.continue_game()
+        assert engine.state.phase == GamePhase.BIDDING
+        event_types = [e.event_type for e in events]
+        assert EventType.ROUND_STARTED in event_types
+        assert EventType.CARDS_DEALT in event_types
+
+    def test_continue_game_rejects_wrong_phase(self):
+        engine, _ = _setup_game(3)
+        assert engine.state.phase == GamePhase.BIDDING
+        assert not engine.continue_game()
+
+
 class TestDealerRotation:
     def test_dealer_rotates_each_round(self):
         engine, events = _setup_game(3)
@@ -161,6 +218,10 @@ class TestDealerRotation:
                 current = engine.state.current_player_id
                 valid = engine.get_valid_cards(current)
                 engine.play_card(current, valid[0])
+
+        # Advance to next round
+        assert engine.state.phase == GamePhase.ROUND_OVER
+        engine.continue_game()
 
         # Second round should have p2 as dealer
         if engine.state.phase != GamePhase.GAME_OVER:

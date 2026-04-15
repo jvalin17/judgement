@@ -137,6 +137,8 @@ async def _dispatch_message(
         await _handle_play_card(managed, player_id, message, websocket)
     elif action == "get_hand":
         await _handle_get_hand(managed, player_id, websocket)
+    elif action == "next_round":
+        managed.engine.continue_game()
 
 
 # --- Writer / Reader tasks ---

@@ -1,6 +1,7 @@
 import type { TrickPlay, Player } from "../../types";
 import { Card } from "../common";
 import styles from "../../styles/game.module.css";
+import cardStyles from "../../styles/card.module.css";
 import animStyles from "../../styles/animations.module.css";
 
 interface SeatPosition {
@@ -46,6 +47,7 @@ export function TrickArea({
         )}
         {currentTrick.map((play, index) => {
           const isWinner = trickWinner === play.player_id;
+          const isLead = index === 0;
           const origin = getSeatOrigin(play.player_id, orderedPlayers, seatPositions);
           const isNew = index === currentTrick.length - 1 && !trickWinner;
           return (
@@ -54,6 +56,7 @@ export function TrickArea({
               play={play}
               playerName={findPlayerName(players, play.player_id)}
               isWinner={isWinner}
+              isLead={isLead}
               originX={origin.x}
               originY={origin.y}
               isNew={isNew}
@@ -92,12 +95,13 @@ interface TrickCardSlotProps {
   play: TrickPlay;
   playerName: string;
   isWinner: boolean;
+  isLead: boolean;
   originX: number;
   originY: number;
   isNew: boolean;
 }
 
-function TrickCardSlot({ play, playerName, isWinner, originX, originY, isNew }: TrickCardSlotProps) {
+function TrickCardSlot({ play, playerName, isWinner, isLead, originX, originY, isNew }: TrickCardSlotProps) {
   const slotClass = [
     styles.trickCardSlot,
     isWinner ? styles.trickCardWinner : "",
@@ -112,7 +116,10 @@ function TrickCardSlot({ play, playerName, isWinner, originX, originY, isNew }: 
   return (
     <div className={slotClass} style={flyStyle}>
       <span className={styles.trickPlayerName}>{playerName}</span>
-      <Card card={play.card} />
+      <div style={{ position: "relative" }}>
+        <Card card={play.card} />
+        {isLead && <span className={cardStyles.leadCardBadge}>★</span>}
+      </div>
     </div>
   );
 }

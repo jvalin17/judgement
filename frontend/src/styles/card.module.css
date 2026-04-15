@@ -1,74 +1,97 @@
-/* --- Card container --- */
+/* ===================================================================
+   Playing Card — Premium casino-grade design
+   =================================================================== */
 
 .card {
   width: var(--card-width);
   height: var(--card-height);
-  background: var(--color-card-bg);
-  background-image:
-    radial-gradient(ellipse at 30% 15%, rgba(255, 255, 255, 0.5) 0%, transparent 50%),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, transparent 30%);
-  border: 1.5px solid var(--color-card-border);
   border-radius: var(--card-radius);
   display: flex;
   flex-direction: column;
   padding: 4px 5px;
   cursor: default;
   user-select: none;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  will-change: transform;
   position: relative;
   flex-shrink: 0;
   overflow: hidden;
+  will-change: transform;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  /* Multi-layer card stock: light catch + edge fade + linen weave + warm base */
+  background:
+    radial-gradient(ellipse at 30% 8%, rgba(255, 255, 255, 0.85) 0%, transparent 50%),
+    linear-gradient(to bottom, transparent 60%, rgba(200, 185, 160, 0.12) 100%),
+    repeating-linear-gradient(0deg,   transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px),
+    repeating-linear-gradient(90deg,  transparent, transparent 2px, rgba(0,0,0,0.010) 2px, rgba(0,0,0,0.010) 4px),
+    linear-gradient(178deg, #fdfaf4, #f5efe4 35%, #eee7d8 70%, #e8e0d0);
+
+  /* Realistic depth: edge highlight + card thickness + felt shadow */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+    inset 1px 0 0 rgba(255, 255, 255, 0.4),
+    inset -1px 0 0 rgba(0, 0, 0, 0.03),
+    0 1px 1px rgba(0, 0, 0, 0.18),
+    0 2px 3px rgba(0, 0, 0, 0.10),
+    0 5px 14px rgba(0, 0, 0, 0.08);
+
+  border: 1px solid #c4baa6;
 }
 
-/* Suit colors */
-
-.card.red {
-  color: var(--color-card-red);
+/* Inner printed frame — the rectangle real cards have inside the border */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 3.5px;
+  border: 0.5px solid rgba(0, 0, 0, 0.07);
+  border-radius: calc(var(--card-radius) - 2px);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.card.black {
-  color: var(--color-card-black);
-}
+/* ---- Suit colors ---- */
 
-.card.blue {
-  color: var(--color-card-blue);
-}
+.card.red   { color: #c62828; }
+.card.black { color: #1a1a2e; }
+.card.blue  { color: #1565c0; }
+.card.green { color: #2e7d32; }
 
-.card.green {
-  color: var(--color-card-green);
-}
-
-/* --- Interactive states --- */
+/* ---- Interactive states ---- */
 
 .card.playable {
   cursor: pointer;
-  box-shadow: 0 0 10px 3px rgba(230, 126, 34, 0.6), 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-8px);
   border-color: var(--color-accent);
-  transform: translateY(-6px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 0 0 1px var(--color-accent),
+    0 0 12px 3px rgba(230, 126, 34, 0.45),
+    0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
 .card.playable:hover {
-  transform: translateY(-14px);
-  box-shadow: 0 0 18px 5px rgba(230, 126, 34, 0.8), 0 8px 16px rgba(0, 0, 0, 0.3);
+  transform: translateY(-16px) scale(1.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 0 0 1.5px var(--color-accent),
+    0 0 20px 6px rgba(230, 126, 34, 0.6),
+    0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
 .card.selected {
   transform: translateY(-12px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
   outline: 2px solid var(--color-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .card.dimmed {
-  opacity: 0.45;
-  filter: brightness(0.75);
+  opacity: 0.4;
+  filter: brightness(0.7) saturate(0.5);
 }
 
-/* --- Small variant --- */
+/* ---- Small variant ---- */
 
 .card.small {
   width: var(--card-width-sm);
@@ -76,14 +99,18 @@
   padding: 2px 3px;
 }
 
-/* --- Corner rank/suit --- */
+.card.small::before {
+  inset: 2px;
+}
+
+/* ---- Corner rank / suit ---- */
 
 .cornerTop {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   line-height: 1;
-  gap: 0px;
+  gap: 0;
   z-index: 1;
 }
 
@@ -93,15 +120,16 @@
   align-items: flex-end;
   transform: rotate(180deg);
   line-height: 1;
-  gap: 0px;
+  gap: 0;
   z-index: 1;
 }
 
 .rank {
-  font-family: "Georgia", "Times New Roman", serif;
-  font-size: 1rem;
+  font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+  font-size: 1.05rem;
   font-weight: 700;
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .cornerSuit {
@@ -109,7 +137,7 @@
   display: block;
 }
 
-/* --- Card body (center content area) --- */
+/* ---- Card body (center content) ---- */
 
 .cardBody {
   flex: 1;
@@ -117,7 +145,7 @@
   min-height: 0;
 }
 
-/* --- Pip layout for number cards --- */
+/* ---- Pip grid (number cards) ---- */
 
 .pipGrid {
   position: absolute;
@@ -129,7 +157,7 @@
   line-height: 0;
 }
 
-/* --- Face card design (J, Q, K) --- */
+/* ---- Face card (J, Q, K) ---- */
 
 .faceCardCenter {
   position: absolute;
@@ -141,7 +169,7 @@
   overflow: hidden;
 }
 
-/* --- Ace design --- */
+/* ---- Ace center ---- */
 
 .aceSymbol {
   position: absolute;
@@ -149,22 +177,27 @@
   left: 50%;
   transform: translate(-50%, -50%);
   line-height: 0;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
 }
 
-/* --- Card back --- */
+/* ===================================================================
+   Card Back
+   =================================================================== */
 
 .cardBack {
   width: var(--card-width);
   height: var(--card-height);
-  background: linear-gradient(135deg, #1a3a5c, #2c5f8a);
-  border: 1.5px solid #4a7fb5;
   border-radius: var(--card-radius);
-  box-shadow: var(--shadow-card);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: linear-gradient(145deg, #1e3f62, #2a6090, #1e3f62);
+  border: 1px solid #4a80b8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 10px rgba(0, 0, 0, 0.10);
 }
 
 .cardBack.small {
@@ -175,95 +208,105 @@
 .backPattern {
   width: calc(100% - 8px);
   height: calc(100% - 8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: calc(var(--card-radius) - 2px);
   background:
     repeating-linear-gradient(
       45deg,
-      transparent,
-      transparent 4px,
-      rgba(255, 255, 255, 0.06) 4px,
-      rgba(255, 255, 255, 0.06) 8px
+      transparent, transparent 4px,
+      rgba(255, 255, 255, 0.05) 4px,
+      rgba(255, 255, 255, 0.05) 8px
     );
 }
 
-/* --- Card back design variants --- */
+/* ---- Back design variants ---- */
 
-/* Classic Blue (default - enhanced) */
 .backClassicBlue {
-  background: linear-gradient(135deg, #1a3a5c, #2c5f8a);
-  border-color: #4a7fb5;
+  background: linear-gradient(145deg, #1e3f62, #2a6090, #1e3f62);
+  border-color: #4a80b8;
 }
 .backClassicBlue .backPattern {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: repeating-linear-gradient(
-    45deg,
-    transparent, transparent 4px,
-    rgba(255, 255, 255, 0.06) 4px,
-    rgba(255, 255, 255, 0.06) 8px
-  );
+  border-color: rgba(255, 255, 255, 0.18);
+  background: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.05) 4px, rgba(255,255,255,0.05) 8px);
 }
 
-/* Red Damask */
 .backRedDamask {
-  background: linear-gradient(135deg, #5c1a1a, #8a2c2c);
+  background: linear-gradient(145deg, #5c1a1a, #8a2c2c, #5c1a1a);
   border-color: #b54a4a;
 }
 .backRedDamask .backPattern {
-  border-color: rgba(218, 165, 32, 0.3);
+  border-color: rgba(218, 165, 32, 0.25);
   background:
-    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(218, 165, 32, 0.06) 8px, rgba(218, 165, 32, 0.06) 9px),
-    repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(218, 165, 32, 0.06) 8px, rgba(218, 165, 32, 0.06) 9px),
-    repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(218, 165, 32, 0.04) 12px, rgba(218, 165, 32, 0.04) 13px),
-    repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(218, 165, 32, 0.04) 12px, rgba(218, 165, 32, 0.04) 13px);
+    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(218,165,32,0.05) 8px, rgba(218,165,32,0.05) 9px),
+    repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(218,165,32,0.05) 8px, rgba(218,165,32,0.05) 9px);
 }
 
-/* Green Celtic */
 .backGreenCeltic {
-  background: linear-gradient(135deg, #1a4a2a, #2a6a3a);
+  background: linear-gradient(145deg, #1a4a2a, #2a6a3a, #1a4a2a);
   border-color: #4a8a5a;
 }
 .backGreenCeltic .backPattern {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
   background:
-    radial-gradient(circle at 25% 25%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px),
-    radial-gradient(circle at 75% 75%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px),
-    radial-gradient(circle at 75% 25%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px),
-    radial-gradient(circle at 25% 75%, transparent 8px, rgba(255, 255, 255, 0.05) 8px, rgba(255, 255, 255, 0.05) 10px, transparent 10px);
+    radial-gradient(circle at 25% 25%, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 10px, transparent 10px),
+    radial-gradient(circle at 75% 75%, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 10px, transparent 10px);
   background-size: 24px 24px;
 }
 
-/* Royal Purple */
 .backRoyalPurple {
-  background: linear-gradient(135deg, #2a1a4a, #4a2c6a);
+  background: linear-gradient(145deg, #2a1a4a, #4a2c6a, #2a1a4a);
   border-color: #6a4a8a;
 }
 .backRoyalPurple .backPattern {
-  border-color: rgba(192, 192, 192, 0.25);
+  border-color: rgba(192, 192, 192, 0.2);
   background:
-    repeating-linear-gradient(60deg, transparent, transparent 6px, rgba(192, 192, 192, 0.05) 6px, rgba(192, 192, 192, 0.05) 7px),
-    repeating-linear-gradient(-60deg, transparent, transparent 6px, rgba(192, 192, 192, 0.05) 6px, rgba(192, 192, 192, 0.05) 7px);
+    repeating-linear-gradient(60deg, transparent, transparent 6px, rgba(192,192,192,0.04) 6px, rgba(192,192,192,0.04) 7px),
+    repeating-linear-gradient(-60deg, transparent, transparent 6px, rgba(192,192,192,0.04) 6px, rgba(192,192,192,0.04) 7px);
 }
 
-/* Gold Ornate */
 .backGoldOrnate {
-  background: linear-gradient(135deg, #4a3a1a, #6a5a2a);
+  background: linear-gradient(145deg, #4a3a1a, #6a5a2a, #4a3a1a);
   border-color: #8a7a3a;
 }
 .backGoldOrnate .backPattern {
-  border-color: rgba(255, 215, 0, 0.3);
+  border-color: rgba(255, 215, 0, 0.25);
   background:
-    repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(255, 215, 0, 0.06) 6px, rgba(255, 215, 0, 0.06) 7px),
-    repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(255, 215, 0, 0.06) 6px, rgba(255, 215, 0, 0.06) 7px),
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 215, 0, 0.04) 10px, rgba(255, 215, 0, 0.04) 11px),
-    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255, 215, 0, 0.04) 10px, rgba(255, 215, 0, 0.04) 11px);
+    repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(255,215,0,0.05) 6px, rgba(255,215,0,0.05) 7px),
+    repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(255,215,0,0.05) 6px, rgba(255,215,0,0.05) 7px);
 }
 
-/* --- Tablet+ responsive --- */
+/* ===================================================================
+   Lead card badge (trick area)
+   =================================================================== */
+
+.leadCardBadge {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f1c40f, #e67e22);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ===================================================================
+   Responsive (tablet+)
+   =================================================================== */
 
 @media (min-width: 768px) {
   .rank {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
   }
 
   .card.small {
@@ -274,5 +317,13 @@
   .cardBack.small {
     width: var(--card-width-sm);
     height: var(--card-height-sm);
+  }
+
+  .leadCardBadge {
+    width: 22px;
+    height: 22px;
+    font-size: 0.65rem;
+    top: -10px;
+    right: -8px;
   }
 }

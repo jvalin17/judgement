@@ -71,6 +71,10 @@ export class GameWebSocket {
     this.sendMessage({ action: ClientAction.GET_HAND });
   }
 
+  sendNextRound(): void {
+    this.sendMessage({ action: ClientAction.NEXT_ROUND });
+  }
+
   // --- Socket lifecycle ---
 
   private createSocket(): void {

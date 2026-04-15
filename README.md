@@ -1,8 +1,10 @@
 # Judgement
 
-Indian trick-taking card game (also known as Kachuful). Play against AI opponents in offline mode.
+Indian trick-taking card game (also known as Kachuful). Play solo against AI or online with friends.
 
-> **Note:** This is currently an offline single-player game against AI opponents. Online multiplayer is planned for a future release.
+- **Single player** — instant game against easy/medium/hard AI
+- **Multiplayer** — create a lobby, share the join code, play over WebSocket
+- **Desktop app** — standalone macOS/Windows app via PyInstaller
 
 ## Download & Install
 
@@ -63,8 +65,9 @@ Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is avail
 ## How to Play
 
 - **Quick Play** — instant game against AI opponents
-- **Create Game** — set up a lobby, choose variant and players
-- **Join Game** — enter a join code to play with friends
+- **Create Game** — set up a lobby, choose variant, add human/AI players
+- **Join Game** — enter a 6-character join code to play with friends
+- **Multiplayer** — real-time WebSocket play, auto-reconnect on disconnect
 
 ### Rules
 
@@ -103,7 +106,7 @@ judgement/
 │   │   ├── api/            # REST + WebSocket transport
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
-│   └── tests/              # 190 tests
+│   └── tests/              # 210 tests
 ├── frontend/src/
 │   ├── components/         # React components
 │   ├── hooks/              # useGame, useWebSocket

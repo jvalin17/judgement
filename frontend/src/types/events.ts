@@ -123,6 +123,7 @@ export const ClientAction = {
   BID: "bid",
   PLAY: "play",
   GET_HAND: "get_hand",
+  NEXT_ROUND: "next_round",
 } as const;
 
 export type ClientAction = (typeof ClientAction)[keyof typeof ClientAction];

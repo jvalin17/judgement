@@ -137,7 +137,18 @@ class GameEngine:
     def _end_round(self) -> None:
         self._score_round()
         self._emit_round_complete()
+        # Do NOT auto-advance. Wait for continue_game() to be called
+        # so the frontend can show the scoreboard first.
+
+    def continue_game(self) -> bool:
+        """Advance from ROUND_OVER to the next round (or game over).
+
+        Called by the transport layer after the client acknowledges the scoreboard.
+        """
+        if self.state.phase != GamePhase.ROUND_OVER:
+            return False
         self._advance_to_next_round()
+        return True
 
     def _score_round(self) -> None:
         scores = self._round_manager.calculate_scores()

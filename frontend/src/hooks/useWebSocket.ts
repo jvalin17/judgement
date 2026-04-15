@@ -16,6 +16,7 @@ interface UseWebSocketResult {
   sendBid: (amount: number) => void;
   sendPlayCard: (card: { suit: string; rank: number }) => void;
   sendGetHand: () => void;
+  sendNextRound: () => void;
 }
 
 export function useWebSocket({
@@ -78,6 +79,10 @@ export function useWebSocket({
     socketRef.current?.sendGetHand();
   }, []);
 
+  const sendNextRound = useCallback(() => {
+    socketRef.current?.sendNextRound();
+  }, []);
+
   return {
     connectionStatus,
     connect: createAndConnect,
@@ -85,6 +90,7 @@ export function useWebSocket({
     sendBid,
     sendPlayCard,
     sendGetHand,
+    sendNextRound,
   };
 }
 

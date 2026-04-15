@@ -110,14 +110,26 @@ class ManagedGame:
         ctx = self._build_context(pid)
         hand = self.engine.get_player_hand(pid)
 
-        if self.engine.state.phase == GamePhase.BIDDING:
-            valid_bids = self.engine.get_valid_bids(pid)
-            bid = strategy.choose_bid(hand, valid_bids, ctx)
-            self.engine.place_bid(pid, bid)
-        elif self.engine.state.phase == GamePhase.PLAYING:
-            valid_cards = self.engine.get_valid_cards(pid)
-            card = strategy.choose_card(hand, valid_cards, ctx)
-            self.engine.play_card(pid, card)
+        try:
+            if self.engine.state.phase == GamePhase.BIDDING:
+                valid_bids = self.engine.get_valid_bids(pid)
+                bid = strategy.choose_bid(hand, valid_bids, ctx)
+                self.engine.place_bid(pid, bid)
+            elif self.engine.state.phase == GamePhase.PLAYING:
+                valid_cards = self.engine.get_valid_cards(pid)
+                card = strategy.choose_card(hand, valid_cards, ctx)
+                self.engine.play_card(pid, card)
+        except Exception:
+            # Fallback: pick a random valid move so the game doesn't get stuck
+            import random
+            if self.engine.state.phase == GamePhase.BIDDING:
+                valid_bids = self.engine.get_valid_bids(pid)
+                if valid_bids:
+                    self.engine.place_bid(pid, random.choice(valid_bids))
+            elif self.engine.state.phase == GamePhase.PLAYING:
+                valid_cards = self.engine.get_valid_cards(pid)
+                if valid_cards:
+                    self.engine.play_card(pid, random.choice(valid_cards))
 
     # --- Context building ---
 

@@ -30,7 +30,6 @@ export function PlayerInfo({ playerId, playerName, bids, tricksWon, cumulativeSc
       <div className={styles.playerInfoAvatar} style={{ backgroundColor: avatarColor }}>
         {initials}
       </div>
-      <span className={styles.playerInfoName}>{playerName}</span>
       <StatBadge score={myScore} bid={myBid} tricksWon={myTricks} />
     </div>
   );
