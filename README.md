@@ -129,17 +129,38 @@ Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is avail
 
 ## How to Play
 
-1. **Quick Play** — start an instant game against AI opponents
-2. **Create Game** — set up a lobby, choose a dealing variant, add human or AI players
-3. **Join Game** — enter a 6-character join code to play with friends
+### Getting Started
 
-### Rules
+1. **Quick Play** — start an instant game against AI opponents. Choose your name, pick a difficulty, and you're playing in seconds.
+2. **Create Game** — set up a lobby, choose a dealing variant, add a mix of human and AI players, then share the 6-character join code with friends.
+3. **Join Game** — enter a friend's join code to hop into their lobby.
 
-- Standard 52-card deck. Trump suit rotates each round (Spades → Diamonds → Clubs → Hearts)
-- Each round: bid how many tricks you expect to win, then play tricks
-- Must follow lead suit if able. Highest trump wins, else highest of lead suit
-- Bid met: positive points. Missed: negative points
-- Dealer cannot bid to make total bids equal the number of cards (ensures someone must miss)
+### Game Flow
+
+Each game consists of multiple rounds. In each round:
+
+1. **Deal** — Cards are dealt face-down. The number of cards changes each round depending on the variant.
+2. **Bid** — Starting from the player left of the dealer, each player bids how many tricks they think they can win (0 to the number of cards in hand). The dealer bids last and is restricted — they cannot make the total bids equal the number of cards, so at least one player is guaranteed to miss their bid.
+3. **Play Tricks** — The player left of the dealer leads the first trick. Each player plays one card clockwise. You **must follow the lead suit** if you have it. If you don't, you can play any card (including trump).
+4. **Trick Winner** — The highest trump card wins. If no trump was played, the highest card of the lead suit wins. The winner leads the next trick.
+5. **Scoring** — After all tricks are played, points are awarded based on whether you hit your bid.
+6. **Next Round** — Review the scoreboard, then continue to the next round. The dealer rotates clockwise and the number of cards changes.
+
+### Trump Suit
+
+The trump suit rotates in a fixed order each round: **Spades → Diamonds → Clubs → Hearts**, then repeats. Trump cards beat any non-trump card, regardless of rank.
+
+### Card Ranking
+
+Cards rank from lowest to highest: **2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King, Ace**
+
+### Rules Summary
+
+- Standard 52-card deck
+- Must follow lead suit if able
+- Highest trump wins the trick; if no trump, highest of lead suit wins
+- Dealer's bid is restricted (total bids cannot equal number of cards)
+- **Must-lose mode** (optional): All players are restricted, not just the dealer
 
 ### Dealing Variants
 
@@ -158,6 +179,14 @@ Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is avail
 | 1 | Made | +11 |
 | N (2+) | Made | +N x 10 |
 | Any | Missed | Same values, negated |
+
+### Strategy Tips
+
+- **Bidding 0 is powerful** — you earn +10 points for making it, and in rounds with fewer cards it's often the safest bet
+- **Count trumps** — know how many trumps are out. If you hold the Ace of trump, it's almost guaranteed to win
+- **Watch the bids** — if total bids exceed the number of cards, play aggressively. If they're under, play conservatively
+- **Create voids** — being out of a suit lets you trump in, which is valuable for winning tricks you need
+- **Dump high cards early** when you're trying to lose — they become liabilities as the round progresses
 
 ---
 
