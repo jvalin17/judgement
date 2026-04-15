@@ -222,6 +222,7 @@ judgement/
 ## Roadmap
 
 - **Online multiplayer** — lobby system with join codes, real-time WebSocket play, auto-reconnect, mixed human/AI games
+- **Developer API** — public REST API with API key authentication for building bots, running tournaments, and third-party integrations
 - **Leaderboards** — persistent player stats and rankings
 - **Custom rules** — configurable scoring, trump selection, and house rules
 - **Mobile app** — native iOS/Android versions

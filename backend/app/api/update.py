@@ -1,4 +1,8 @@
-"""In-app update endpoints: version info, check for updates, apply update."""
+"""In-app update endpoints: version info, check for updates, apply update.
+
+Security: The /apply endpoint only works when running as a desktop app
+(localhost). It is restricted to requests from 127.0.0.1 / ::1.
+"""
 from __future__ import annotations
 
 import json
@@ -9,7 +13,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Request
 
 router = APIRouter(prefix="/api/update", tags=["update"])
 
@@ -72,8 +76,19 @@ async def check_for_update():
         }
 
 
+def _is_localhost(request: Request) -> bool:
+    """Check if the request originates from localhost."""
+    client = request.client
+    if not client:
+        return False
+    return client.host in ("127.0.0.1", "::1", "localhost")
+
+
 @router.post("/apply")
-async def apply_update():
+async def apply_update(request: Request):
+    if not _is_localhost(request):
+        raise HTTPException(403, "Update can only be triggered from localhost")
+
     info = _load_version_info()
     source_dir = info.get("source_dir")
 
