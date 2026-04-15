@@ -37,3 +37,18 @@ def dump_lowest(valid_cards: List[Card], trump: Suit) -> Card:
     if non_trump:
         return min(non_trump, key=lambda card: card.rank)
     return min(valid_cards, key=lambda card: card.rank)
+
+
+def lowest_winning_trump(
+    valid_cards: List[Card],
+    trick_cards: List[Card],
+    trump: Suit,
+) -> Optional[Card]:
+    """Find the cheapest trump card that beats the current trick."""
+    trump_winners = [
+        card for card in valid_cards
+        if card.suit == trump and would_win(card, trick_cards, trick_cards[0].suit, trump)
+    ]
+    if not trump_winners:
+        return None
+    return min(trump_winners, key=lambda card: card.rank)

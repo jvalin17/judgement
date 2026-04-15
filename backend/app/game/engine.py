@@ -290,6 +290,10 @@ class GameEngine:
             play.card for trick in rm.state.tricks for play in trick.plays
         ]
         current_cards = [play.card for play in rm.state.current_trick.plays]
+        trick_history = [
+            list(trick.plays) for trick in rm.state.tricks
+        ]
+        current_trick_plays = list(rm.state.current_trick.plays)
         return RoundContext(
             player_id=player_id,
             trump_suit=rm.state.trump_suit,
@@ -299,6 +303,9 @@ class GameEngine:
             tricks_won=dict(rm.state.tricks_won),
             cards_played=completed_cards + current_cards,
             current_trick_cards=current_cards,
+            trick_history=trick_history,
+            current_trick_plays=current_trick_plays,
+            play_order=list(rm.play_order),
         )
 
     def get_round_summary(self) -> dict:

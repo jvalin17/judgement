@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from backend.app.models import Card, Suit, Bid
+from backend.app.models.game import TrickPlay
 
 
 class RoundContext:
@@ -19,6 +20,9 @@ class RoundContext:
         tricks_won: dict,
         cards_played: List[Card],
         current_trick_cards: List[Card],
+        trick_history: Optional[List[List[TrickPlay]]] = None,
+        current_trick_plays: Optional[List[TrickPlay]] = None,
+        play_order: Optional[List[str]] = None,
     ):
         self.player_id = player_id
         self.trump_suit = trump_suit
@@ -28,6 +32,9 @@ class RoundContext:
         self.tricks_won = tricks_won
         self.cards_played = cards_played
         self.current_trick_cards = current_trick_cards
+        self.trick_history = trick_history or []
+        self.current_trick_plays = current_trick_plays or []
+        self.play_order = play_order or []
 
 
 class AIStrategy(ABC):
