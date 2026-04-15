@@ -10,6 +10,7 @@ const VARIANTS: DealingVariant[] = [
   DealingVariant.TEN_TO_ONE,
   DealingVariant.EIGHT_DOWN_UP,
   DealingVariant.TEN_DOWN_UP,
+  DealingVariant.EIGHT_DOWN_UP_SHORT,
 ];
 
 export function VariantSelector({ selected, onChange }: VariantSelectorProps) {

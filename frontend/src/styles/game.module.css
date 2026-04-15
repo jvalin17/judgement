@@ -373,7 +373,7 @@
 
 .playerInfo {
   position: absolute;
-  bottom: calc(var(--card-height) + 16px);
+  bottom: calc(var(--card-height) + 36px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
