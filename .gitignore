@@ -56,3 +56,6 @@ TODO.md
 
 # PyInstaller
 *.spec
+
+# Build artifacts
+backend/app/version_info.json

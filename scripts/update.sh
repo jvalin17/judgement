@@ -14,11 +14,15 @@ AFTER=$(git rev-parse HEAD)
 
 if [ "$BEFORE" = "$AFTER" ]; then
     echo "Already up to date."
-    echo ""
-    read -p "Rebuild anyway? [y/N] " -n 1 -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Nothing to do."
+    if [ -t 0 ]; then
+        read -p "Rebuild anyway? [y/N] " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Nothing to do."
+            exit 0
+        fi
+    else
+        echo "No changes, skipping rebuild."
         exit 0
     fi
 else

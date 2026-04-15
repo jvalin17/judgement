@@ -212,3 +212,33 @@ export async function getLobbyState(
   const response = await fetch(`${BASE_URL}/${gameId}/lobby`);
   return handleResponse<LobbyStateResponse>(response);
 }
+
+// --- Update API ---
+
+export interface VersionInfo {
+  git_sha: string;
+  build_date: string | null;
+}
+
+export interface UpdateCheckResponse {
+  update_available: boolean;
+  current_sha: string;
+  latest_sha: string | null;
+  latest_message: string | null;
+  error: string | null;
+}
+
+export async function getVersion(): Promise<VersionInfo> {
+  const response = await fetch("/api/update/version");
+  return handleResponse<VersionInfo>(response);
+}
+
+export async function checkForUpdate(): Promise<UpdateCheckResponse> {
+  const response = await fetch("/api/update/check");
+  return handleResponse<UpdateCheckResponse>(response);
+}
+
+export async function applyUpdate(): Promise<{ success: boolean; message: string }> {
+  const response = await postJson("/api/update/apply", {});
+  return handleResponse<{ success: boolean; message: string }>(response);
+}

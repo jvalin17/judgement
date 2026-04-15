@@ -58,6 +58,17 @@ if [ ! -f "frontend/dist/index.html" ]; then
     exit 1
 fi
 
+# --- Write version info ---
+echo ""
+echo "Writing version info..."
+GIT_SHA=$(git rev-parse --short HEAD)
+BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+SOURCE_DIR=$(pwd)
+cat > backend/app/version_info.json <<VEOF
+{"git_sha": "$GIT_SHA", "build_date": "$BUILD_DATE", "source_dir": "$SOURCE_DIR"}
+VEOF
+echo "  Version: $GIT_SHA ($BUILD_DATE)"
+
 # --- Run PyInstaller ---
 echo ""
 echo "Running PyInstaller..."
@@ -73,6 +84,7 @@ $PYTHON -m PyInstaller \
     --clean \
     --add-data "frontend/dist:frontend/dist" \
     --add-data "backend/app/game/rounds:backend/app/game/rounds" \
+    --add-data "backend/app/version_info.json:backend/app" \
     --hidden-import "backend" \
     --hidden-import "backend.app" \
     --hidden-import "backend.app.main" \
@@ -80,6 +92,7 @@ $PYTHON -m PyInstaller \
     --hidden-import "backend.app.api.rest" \
     --hidden-import "backend.app.api.websocket" \
     --hidden-import "backend.app.api.schemas" \
+    --hidden-import "backend.app.api.update" \
     --hidden-import "backend.app.models" \
     --hidden-import "backend.app.models.card" \
     --hidden-import "backend.app.models.player" \

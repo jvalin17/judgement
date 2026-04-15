@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Modal } from "./Modal";
 import { useSettings } from "../../context/SettingsContext";
 import {
@@ -9,6 +10,8 @@ import {
   CARD_BACK_LABELS,
   ANIMATION_SPEED_LABELS,
 } from "../../types";
+import { getVersion, checkForUpdate, applyUpdate } from "../../services/api";
+import type { VersionInfo, UpdateCheckResponse } from "../../services/api";
 import styles from "../../styles/settings.module.css";
 import cardStyles from "../../styles/card.module.css";
 
@@ -47,6 +50,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         <CardBackPicker selected={settings.cardBack} onSelect={updateCardBack} />
         <TableColorPicker selected={settings.tableColor} onSelect={updateTableColor} />
         <AnimationSpeedPicker selected={settings.animationSpeed} onSelect={updateAnimationSpeed} />
+        <UpdateSection />
       </div>
     </Modal>
   );
@@ -156,6 +160,114 @@ function AnimationSpeedPicker({ selected, onSelect }: AnimationSpeedPickerProps)
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// --- Update Section ---
+
+type UpdateStatus = "idle" | "checking" | "up-to-date" | "update-available" | "updating" | "error";
+
+function UpdateSection() {
+  const [status, setStatus] = useState<UpdateStatus>("idle");
+  const [version, setVersion] = useState<VersionInfo | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<UpdateCheckResponse | null>(null);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    getVersion().then(setVersion).catch(() => {});
+  }, []);
+
+  const handleCheck = async () => {
+    setStatus("checking");
+    setMessage("");
+    try {
+      const result = await checkForUpdate();
+      setUpdateInfo(result);
+      if (result.error) {
+        setStatus("error");
+        setMessage(result.error);
+      } else if (result.update_available) {
+        setStatus("update-available");
+      } else {
+        setStatus("up-to-date");
+      }
+    } catch {
+      setStatus("error");
+      setMessage("Could not reach server");
+    }
+  };
+
+  const handleUpdate = async () => {
+    setStatus("updating");
+    setMessage("Updating... the app will restart shortly.");
+    try {
+      const result = await applyUpdate();
+      if (!result.success) {
+        setStatus("error");
+        setMessage(result.message);
+      }
+    } catch {
+      setStatus("error");
+      setMessage("Update failed");
+    }
+  };
+
+  const buttonLabel = {
+    idle: "Check for Updates",
+    checking: "Checking...",
+    "up-to-date": "Up to Date",
+    "update-available": "Update Now",
+    updating: "Updating...",
+    error: "Retry",
+  }[status];
+
+  const isDisabled = status === "checking" || status === "updating";
+
+  const handleClick = () => {
+    if (status === "update-available") {
+      handleUpdate();
+    } else {
+      handleCheck();
+    }
+  };
+
+  return (
+    <div className={styles.settingsSection} style={{ borderTop: "1px solid var(--color-surface-light)", paddingTop: "var(--space-lg)" }}>
+      <span className={styles.sectionTitle}>Updates</span>
+      <button
+        className={styles.updateButton}
+        onClick={handleClick}
+        disabled={isDisabled}
+      >
+        {buttonLabel}
+      </button>
+      {status === "up-to-date" && (
+        <div className={styles.updateStatus} style={{ color: "var(--color-success)" }}>
+          You're on the latest version
+        </div>
+      )}
+      {status === "update-available" && updateInfo && (
+        <div className={styles.updateStatus}>
+          New version available: {updateInfo.latest_sha}
+          {updateInfo.latest_message && <> — {updateInfo.latest_message}</>}
+        </div>
+      )}
+      {status === "updating" && (
+        <div className={styles.updateStatus} style={{ color: "var(--color-accent)" }}>
+          {message}
+        </div>
+      )}
+      {status === "error" && message && (
+        <div className={styles.updateStatus} style={{ color: "var(--color-danger)" }}>
+          {message}
+        </div>
+      )}
+      {version && (
+        <div className={styles.versionInfo}>
+          Version: {version.git_sha}{version.build_date ? ` · Built ${version.build_date.split("T")[0]}` : ""}
+        </div>
+      )}
     </div>
   );
 }

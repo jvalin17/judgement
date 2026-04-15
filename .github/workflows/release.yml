@@ -61,6 +61,13 @@ jobs:
           pip install pywebview pyinstaller
         shell: bash
 
+      - name: Write version info
+        run: |
+          GIT_SHA=$(git rev-parse --short HEAD)
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"git_sha\": \"$GIT_SHA\", \"build_date\": \"$BUILD_DATE\", \"source_dir\": \"\"}" > backend/app/version_info.json
+        shell: bash
+
       - name: Build with PyInstaller (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -72,6 +79,7 @@ jobs:
             --clean \
             --add-data "frontend/dist:frontend/dist" \
             --add-data "backend/app/game/rounds:backend/app/game/rounds" \
+            --add-data "backend/app/version_info.json:backend/app" \
             --hidden-import "backend" \
             --hidden-import "backend.app" \
             --hidden-import "backend.app.main" \
@@ -79,6 +87,7 @@ jobs:
             --hidden-import "backend.app.api.rest" \
             --hidden-import "backend.app.api.websocket" \
             --hidden-import "backend.app.api.schemas" \
+            --hidden-import "backend.app.api.update" \
             --hidden-import "backend.app.models" \
             --hidden-import "backend.app.models.card" \
             --hidden-import "backend.app.models.player" \
@@ -129,6 +138,7 @@ jobs:
             --clean `
             --add-data "frontend/dist;frontend/dist" `
             --add-data "backend/app/game/rounds;backend/app/game/rounds" `
+            --add-data "backend/app/version_info.json;backend/app" `
             --hidden-import "backend" `
             --hidden-import "backend.app" `
             --hidden-import "backend.app.main" `
@@ -136,6 +146,7 @@ jobs:
             --hidden-import "backend.app.api.rest" `
             --hidden-import "backend.app.api.websocket" `
             --hidden-import "backend.app.api.schemas" `
+            --hidden-import "backend.app.api.update" `
             --hidden-import "backend.app.models" `
             --hidden-import "backend.app.models.card" `
             --hidden-import "backend.app.models.player" `
