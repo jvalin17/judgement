@@ -1,6 +1,6 @@
 # Judgement (Kachu Phool)
 
-A full-stack, real-time trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents or online with friends. Available as a web app, standalone desktop app, or Docker container.
+A full-stack trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents. Available as a web app, standalone desktop app, or Docker container.
 
 Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
@@ -10,7 +10,6 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 ### Gameplay
 - **Single-player mode** with three AI difficulty levels (Easy, Medium, Hard)
-- **Real-time multiplayer** over WebSockets with lobby system and join codes
 - **Four dealing variants** — 10→1, 8→1→8, 10→1→10, 8→5→8
 - **Must-lose mode** — optional rule variant where all players are constrained (not just the dealer)
 - **Full trick-taking rules** — follow-suit enforcement, trump rotation, bid constraints
@@ -27,13 +26,6 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 - **Responsive layout** — works on desktop and mobile browsers
 - **Live scoreboard** with round-by-round tracking
 
-### Multiplayer
-- **Lobby system** — create games, share 6-character join codes
-- **Quick Join** — auto-match into an open lobby
-- **WebSocket-based** real-time state sync
-- **Auto-reconnect** with exponential backoff on disconnect
-- **Mixed human/AI games** — fill empty seats with AI players
-
 ### Desktop App
 - **Standalone macOS/Windows application** via PyInstaller
 - **One-command build** — `./scripts/package.sh` handles all dependencies
@@ -42,7 +34,7 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 ### Infrastructure
 - **Dockerized** — single container deployment with `docker build && docker run`
-- **Automated test suite** — 210+ tests covering game logic, AI, REST API, WebSocket, and multiplayer integration
+- **Automated test suite** — 210+ tests covering game logic, AI, REST API, and WebSocket
 - **CI-ready** — `python3 -m pytest backend/tests/ -v`
 - **Security scanning** — `python3 scripts/security_scan.py`
 
@@ -132,8 +124,7 @@ Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is avail
 ### Getting Started
 
 1. **Quick Play** — start an instant game against AI opponents. Choose your name, pick a difficulty, and you're playing in seconds.
-2. **Create Game** — set up a lobby, choose a dealing variant, add a mix of human and AI players, then share the 6-character join code with friends.
-3. **Join Game** — enter a friend's join code to hop into their lobby.
+2. **Create Game** — set up a lobby, choose a dealing variant, and add AI players of varying difficulty.
 
 ### Game Flow
 
@@ -228,6 +219,9 @@ judgement/
 
 ---
 
-## License
+## Roadmap
 
-MIT
+- **Online multiplayer** — lobby system with join codes, real-time WebSocket play, auto-reconnect, mixed human/AI games
+- **Leaderboards** — persistent player stats and rankings
+- **Custom rules** — configurable scoring, trump selection, and house rules
+- **Mobile app** — native iOS/Android versions
