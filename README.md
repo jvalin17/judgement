@@ -80,6 +80,7 @@ Opens as a desktop window if [pywebview](https://pywebview.flowrl.com/) is avail
 | 10 → 1 | 10 | 5 |
 | 8 → 1 → 8 | 16 | 6 |
 | 10 → 1 → 10 | 20 | 5 |
+| 8 → 4 → 8 | 10 | 6 |
 
 ## Tech Stack
 

@@ -14,6 +14,7 @@ _VARIANT_FILE_MAP = {
     DealingVariant.TEN_TO_ONE: "10_to_1.json",
     DealingVariant.EIGHT_DOWN_UP: "8_down_up.json",
     DealingVariant.TEN_DOWN_UP: "10_down_up.json",
+    DealingVariant.EIGHT_DOWN_UP_SHORT: "8_down_up_short.json",
 }
 
 
