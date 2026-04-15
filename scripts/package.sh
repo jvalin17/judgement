@@ -21,23 +21,29 @@ fi
 
 echo "Platform: $OS $NATIVE_ARCH"
 
-# --- Check PyInstaller ---
+# --- Install Python dependencies ---
+echo "Installing Python dependencies..."
+$PIP install -r backend/requirements.txt -q
+
 if ! $PYTHON -c "import PyInstaller" 2>/dev/null; then
     echo "Installing PyInstaller..."
     $PIP install pyinstaller
 fi
 
-# --- Check pywebview ---
 if ! $PYTHON -c "import webview" 2>/dev/null; then
-    echo "ERROR: pywebview is required for desktop packaging."
-    echo "Install: $PIP install pywebview"
-    exit 1
+    echo "Installing pywebview..."
+    $PIP install pywebview
 fi
 
 # --- Build frontend ---
 echo ""
 echo "Building frontend..."
-cd frontend && npm run build
+cd frontend
+if [ ! -d "node_modules" ]; then
+    echo "Installing frontend dependencies..."
+    npm install
+fi
+npm run build
 cd ..
 
 # --- Verify frontend dist ---

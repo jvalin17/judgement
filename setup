@@ -64,16 +64,16 @@ fi
 # Verify
 $PYTHON -c "from pydantic_core import __version__; print('  pydantic_core OK')"
 
-# --- Desktop support (pywebview) ---
+# --- Desktop support (pywebview + PyInstaller) ---
 echo ""
-echo "Installing desktop app support (pywebview)..."
+echo "Installing desktop app support (pywebview, PyInstaller)..."
 if [ "$OS" = "Darwin" ]; then
-    $PIP install pywebview 2>&1 | tail -3
+    $PIP install pywebview pyinstaller 2>&1 | tail -3
 elif [ "$OS" = "Linux" ]; then
-    $PIP install pywebview 2>&1 | tail -3
+    $PIP install pywebview pyinstaller 2>&1 | tail -3
     echo "  Note: you may need: sudo apt install python3-gi gir1.2-webkit2-4.1"
 else
-    $PIP install pywebview 2>&1 | tail -3
+    $PIP install pywebview pyinstaller 2>&1 | tail -3
 fi
 
 # Verify pywebview

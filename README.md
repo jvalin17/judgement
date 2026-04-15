@@ -28,14 +28,11 @@ No Python or Node.js needed — just download and play.
 
 ```bash
 git clone <repo-url> && cd judgement
-./setup                  # Install build dependencies
-./scripts/package.sh     # Build the app
+./scripts/package.sh     # Installs deps automatically, builds the app
 ```
 
-Then install:
-- **macOS:** Copy `dist/Judgement.app` to your Applications folder, or run `open dist/Judgement.app`
+- **macOS:** `open dist/Judgement.app` (or copy to `/Applications/`)
 - **Windows:** Run `dist/Judgement/Judgement.exe`
-- **Linux:** Run `dist/Judgement/Judgement`
 
 ### Option 3: Run from Source
 
