@@ -2,6 +2,17 @@
 
 Security: The /apply endpoint only works when running as a desktop app
 (localhost). It is restricted to requests from 127.0.0.1 / ::1.
+
+Update lifecycle (state machine, exposed via GET /api/update/status):
+
+    idle  ──apply──>  running  ──exit 0, sha bumped──>  success  ──relaunch──> [process dies]
+                          │   ──exit 0, sha unchanged─>  up_to_date
+                          └── ──exit != 0 / exception─>  error
+
+The frontend polls /status while updating so it can show before -> after
+SHA on success, or the tail of the log on error. We only relaunch the
+app when the SHA actually moved, so a failed git pull or build never
+results in a silent "phantom" restart.
 """
 from __future__ import annotations
 
@@ -12,8 +23,9 @@ import subprocess
 import sys
 import threading
 import time
+from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -22,6 +34,32 @@ router = APIRouter(prefix="/api/update", tags=["update"])
 GITHUB_REPO = "jvalin17/judgement"
 
 
+# ---------------------------------------------------------------------------
+# Update progress state (in-process, lives until os._exit on relaunch).
+# ---------------------------------------------------------------------------
+_state_lock = threading.Lock()
+_update_state: Dict[str, Any] = {
+    "state": "idle",          # idle | running | success | up_to_date | error
+    "message": "",
+    "before_sha": None,
+    "after_sha": None,
+    "log_path": None,
+}
+
+
+def _set_state(**kwargs: Any) -> None:
+    with _state_lock:
+        _update_state.update(kwargs)
+
+
+def _read_state() -> Dict[str, Any]:
+    with _state_lock:
+        return dict(_update_state)
+
+
+# ---------------------------------------------------------------------------
+# Version info helpers.
+# ---------------------------------------------------------------------------
 def _load_version_info() -> dict:
     """Load version_info.json from bundled app or source tree."""
     if getattr(sys, "frozen", False):
@@ -34,6 +72,48 @@ def _load_version_info() -> dict:
     return {"git_sha": "dev", "build_date": None, "source_dir": None}
 
 
+def _read_source_sha(source_dir: str) -> Optional[str]:
+    """Read git_sha from the source tree's version_info.json.
+
+    package.sh rewrites this file on every successful build, so after
+    update.sh finishes we can read it to learn what SHA the *new* bundle
+    was built from.
+    """
+    candidate = Path(source_dir) / "backend" / "app" / "version_info.json"
+    if not candidate.exists():
+        return None
+    try:
+        return json.loads(candidate.read_text()).get("git_sha")
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Logging helpers.
+# ---------------------------------------------------------------------------
+def _open_log_file() -> Path:
+    """Create a timestamped log file under the platform's logs directory."""
+    if sys.platform == "darwin":
+        log_dir = Path.home() / "Library" / "Logs" / "Judgement"
+    else:
+        log_dir = Path.home() / ".judgement" / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return log_dir / f"update-{timestamp}.log"
+
+
+def _tail(path: Path, lines: int = 20) -> str:
+    """Return the last N lines of a file, or empty string on any failure."""
+    try:
+        with path.open() as fh:
+            return "".join(fh.readlines()[-lines:])
+    except Exception:
+        return ""
+
+
+# ---------------------------------------------------------------------------
+# Endpoints.
+# ---------------------------------------------------------------------------
 @router.get("/version")
 async def get_version():
     info = _load_version_info()
@@ -41,6 +121,12 @@ async def get_version():
         "git_sha": info.get("git_sha", "dev"),
         "build_date": info.get("build_date"),
     }
+
+
+@router.get("/status")
+async def get_update_status():
+    """Return the current update progress (polled by the UI while updating)."""
+    return _read_state()
 
 
 @router.get("/check")
@@ -91,6 +177,9 @@ async def apply_update(request: Request):
     if not _is_localhost(request):
         raise HTTPException(403, "Update can only be triggered from localhost")
 
+    if _read_state()["state"] == "running":
+        return {"success": False, "message": "An update is already in progress."}
+
     info = _load_version_info()
     source_dir = info.get("source_dir")
 
@@ -101,27 +190,101 @@ async def apply_update(request: Request):
     if not update_script.exists():
         return {"success": False, "message": "Update script not found."}
 
-    def run_update():
-        """Run update in background, then relaunch the app."""
-        try:
-            subprocess.run(
-                ["bash", str(update_script)],
+    before_sha = info.get("git_sha", "dev")
+    log_path = _open_log_file()
+    _set_state(
+        state="running",
+        message="Pulling latest changes and rebuilding...",
+        before_sha=before_sha,
+        after_sha=None,
+        log_path=str(log_path),
+    )
+
+    threading.Thread(
+        target=_run_update,
+        args=(str(update_script), source_dir, before_sha, log_path),
+        daemon=True,
+    ).start()
+
+    return {"success": True, "message": "Updating... watch the Updates section for progress."}
+
+
+def _run_update(
+    update_script: str,
+    source_dir: str,
+    before_sha: str,
+    log_path: Path,
+) -> None:
+    """Background worker: run update.sh, verify the SHA bumped, then relaunch.
+
+    Critical correctness point: we ONLY relaunch when (a) the script exited
+    cleanly AND (b) source_dir/backend/app/version_info.json now contains a
+    different SHA. If either check fails we leave the old app running and
+    surface the failure via /api/update/status, so the user is never told
+    "updated!" without something actually changing.
+    """
+    try:
+        with log_path.open("w") as log_file:
+            log_file.write(f"=== Update started at {datetime.now().isoformat()} ===\n")
+            log_file.write(f"Before SHA: {before_sha}\n")
+            log_file.write(f"Source dir: {source_dir}\n\n")
+            log_file.flush()
+
+            result = subprocess.run(
+                ["bash", update_script],
                 cwd=source_dir,
-                timeout=300,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                timeout=600,
             )
-            # Relaunch the app after update
-            if sys.platform == "darwin":
-                app_path = "/Applications/Judgement.app"
-                if Path(app_path).exists():
-                    _relaunch_after_exit_macos(app_path)
-                    time.sleep(0.3)
-                    os._exit(0)
-        except Exception:
-            pass
 
-    threading.Thread(target=run_update, daemon=True).start()
+        if result.returncode != 0:
+            _set_state(
+                state="error",
+                message=(
+                    f"Update script failed (exit {result.returncode}). "
+                    f"Last lines of {log_path.name}:\n{_tail(log_path, 15)}"
+                ),
+            )
+            return
 
-    return {"success": True, "message": "Updating... the app will restart shortly."}
+        after_sha = _read_source_sha(source_dir) or "unknown"
+        _set_state(after_sha=after_sha)
+
+        if after_sha == before_sha:
+            _set_state(
+                state="up_to_date",
+                message=(
+                    f"Already on the latest version ({before_sha}). "
+                    "No restart needed."
+                ),
+            )
+            return
+
+        _set_state(
+            state="success",
+            message=f"Updated {before_sha} → {after_sha}. Restarting...",
+        )
+
+        # Give the UI ~2.5s to poll /status and render the success state
+        # before we kill this process.
+        if sys.platform == "darwin":
+            app_path = "/Applications/Judgement.app"
+            if Path(app_path).exists():
+                time.sleep(2.5)
+                _relaunch_after_exit_macos(app_path)
+                time.sleep(0.3)
+                os._exit(0)
+    except subprocess.TimeoutExpired:
+        _set_state(
+            state="error",
+            message=f"Update timed out after 10 minutes. See {log_path}.",
+        )
+    except Exception as exc:
+        _set_state(
+            state="error",
+            message=f"Update failed: {exc}. See {log_path}.",
+        )
 
 
 def _relaunch_after_exit_macos(app_path: str) -> None:

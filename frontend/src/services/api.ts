@@ -242,3 +242,23 @@ export async function applyUpdate(): Promise<{ success: boolean; message: string
   const response = await postJson("/api/update/apply", {});
   return handleResponse<{ success: boolean; message: string }>(response);
 }
+
+export type UpdateStatusState =
+  | "idle"
+  | "running"
+  | "success"
+  | "up_to_date"
+  | "error";
+
+export interface UpdateStatusResponse {
+  state: UpdateStatusState;
+  message: string;
+  before_sha: string | null;
+  after_sha: string | null;
+  log_path: string | null;
+}
+
+export async function getUpdateStatus(): Promise<UpdateStatusResponse> {
+  const response = await fetch("/api/update/status");
+  return handleResponse<UpdateStatusResponse>(response);
+}

@@ -10,8 +10,17 @@ import {
   CARD_BACK_LABELS,
   ANIMATION_SPEED_LABELS,
 } from "../../types";
-import { getVersion, checkForUpdate, applyUpdate } from "../../services/api";
-import type { VersionInfo, UpdateCheckResponse } from "../../services/api";
+import {
+  getVersion,
+  checkForUpdate,
+  applyUpdate,
+  getUpdateStatus,
+} from "../../services/api";
+import type {
+  VersionInfo,
+  UpdateCheckResponse,
+  UpdateStatusResponse,
+} from "../../services/api";
 import styles from "../../styles/settings.module.css";
 import cardStyles from "../../styles/card.module.css";
 
@@ -174,18 +183,91 @@ function AnimationSpeedPicker({ selected, onSelect }: AnimationSpeedPickerProps)
 }
 
 // --- Update Section ---
+//
+// UI states (local to this component, distinct from the server's update
+// state machine):
+//   idle              — initial, after a benign result, or after a fresh check
+//   checking          — calling /check
+//   update-available  — /check returned a newer SHA on origin/main
+//   updating          — /apply succeeded; we're polling /status
+//   success           — /status returned success; app is about to restart
+//   up-to-date        — either /check or /status confirmed no change
+//   error             — anything that went wrong
+//
+// We poll /api/update/status every 1.5s while updating so the user sees
+// before -> after SHA on success, or the tail of the build log on failure.
+// The old flow just said "Updating..." and then either restarted (often
+// silently into the same version) or hung — there was no way to tell what
+// actually happened.
 
-type UpdateStatus = "idle" | "checking" | "up-to-date" | "update-available" | "updating" | "error";
+type UpdateStatus =
+  | "idle"
+  | "checking"
+  | "up-to-date"
+  | "update-available"
+  | "updating"
+  | "success"
+  | "error";
+
+const STATUS_POLL_MS = 1500;
 
 function UpdateSection() {
   const [status, setStatus] = useState<UpdateStatus>("idle");
   const [version, setVersion] = useState<VersionInfo | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResponse | null>(null);
+  const [serverStatus, setServerStatus] = useState<UpdateStatusResponse | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     getVersion().then(setVersion).catch(() => {});
   }, []);
+
+  // Poll the backend's update state while an update is in flight.
+  useEffect(() => {
+    if (status !== "updating") return;
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const result = await getUpdateStatus();
+        if (cancelled) return;
+        setServerStatus(result);
+
+        if (result.state === "success") {
+          setStatus("success");
+          setMessage(result.message);
+          // The backend will kill the process in ~2.5s; the helper shell
+          // then opens the freshly-built bundle. Refresh the version label
+          // optimistically so the user sees the new SHA before restart.
+          if (result.after_sha) {
+            setVersion((current) =>
+              current
+                ? { ...current, git_sha: result.after_sha! }
+                : { git_sha: result.after_sha!, build_date: null },
+            );
+          }
+        } else if (result.state === "up_to_date") {
+          setStatus("up-to-date");
+          setMessage(result.message);
+        } else if (result.state === "error") {
+          setStatus("error");
+          setMessage(result.message);
+        }
+      } catch {
+        // Server may be restarting after a successful update — that's the
+        // expected end state, so swallow this. If status was already
+        // "success" the user will see the success message until the new
+        // app's UI loads.
+      }
+    };
+
+    poll();
+    const handle = window.setInterval(poll, STATUS_POLL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(handle);
+    };
+  }, [status]);
 
   const handleCheck = async () => {
     setStatus("checking");
@@ -200,6 +282,7 @@ function UpdateSection() {
         setStatus("update-available");
       } else {
         setStatus("up-to-date");
+        setMessage("You're on the latest version.");
       }
     } catch {
       setStatus("error");
@@ -209,7 +292,8 @@ function UpdateSection() {
 
   const handleUpdate = async () => {
     setStatus("updating");
-    setMessage("Updating... the app will restart shortly.");
+    setMessage("Pulling latest changes and rebuilding...");
+    setServerStatus(null);
     try {
       const result = await applyUpdate();
       if (!result.success) {
@@ -225,13 +309,14 @@ function UpdateSection() {
   const buttonLabel = {
     idle: "Check for Updates",
     checking: "Checking...",
-    "up-to-date": "Up to Date",
+    "up-to-date": "Check Again",
     "update-available": "Update Now",
     updating: "Updating...",
+    success: "Restarting...",
     error: "Retry",
   }[status];
 
-  const isDisabled = status === "checking" || status === "updating";
+  const isDisabled = status === "checking" || status === "updating" || status === "success";
 
   const handleClick = () => {
     if (status === "update-available") {
@@ -253,7 +338,7 @@ function UpdateSection() {
       </button>
       {status === "up-to-date" && (
         <div className={styles.updateStatus} style={{ color: "var(--color-success)" }}>
-          You're on the latest version
+          {message || "You're on the latest version"}
         </div>
       )}
       {status === "update-available" && updateInfo && (
@@ -267,8 +352,13 @@ function UpdateSection() {
           {message}
         </div>
       )}
+      {status === "success" && serverStatus && (
+        <div className={styles.updateStatus} style={{ color: "var(--color-success)" }}>
+          Updated {serverStatus.before_sha} → {serverStatus.after_sha}. Restarting...
+        </div>
+      )}
       {status === "error" && message && (
-        <div className={styles.updateStatus} style={{ color: "var(--color-danger)" }}>
+        <div className={styles.updateStatus} style={{ color: "var(--color-danger)", whiteSpace: "pre-wrap" }}>
           {message}
         </div>
       )}
