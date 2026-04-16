@@ -36,9 +36,10 @@ export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, sc
             <CardBack small />
           </div>
         ))}
+        {isCurrentTurn && <span className={styles.turnHourglass}>{"\u23F3"}</span>}
       </div>
       <div className={avatarClass} style={{ backgroundColor: avatarColor }}>
-        {isCurrentTurn ? "\u23F3" : initials}
+        {initials}
       </div>
       <span className={styles.seatName}>{player.name}</span>
       <StatBadge score={score} bid={bid} tricksWon={tricksWon} />

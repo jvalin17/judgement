@@ -135,17 +135,17 @@ function PlayerRow({
 
 // --- Helpers ---
 
-const AI_DESSERT_NAMES = ["Tiramisu", "Cannoli", "Eclair", "Macaron", "Pavlova"];
+const AI_SWEETS_NAMES = ["Gulab Jamun", "Jalebi", "Rasgulla", "Barfi", "Ladoo", "Kaju Katli"];
 
 function generateAiName(index: number, players: PlayerConfig[]): string {
   const usedNames = new Set(players.map((player) => player.name));
-  const availableName = AI_DESSERT_NAMES.find((name) => !usedNames.has(name));
+  const availableName = AI_SWEETS_NAMES.find((name) => !usedNames.has(name));
   return availableName ?? `Bot ${index + 1}`;
 }
 
 export function createDefaultAiPlayer(index: number): PlayerConfig {
   return {
-    name: AI_DESSERT_NAMES[index] ?? `Bot ${index + 1}`,
+    name: AI_SWEETS_NAMES[index] ?? `Bot ${index + 1}`,
     playerType: PlayerType.AI,
     aiDifficulty: AIDifficulty.MEDIUM,
   };

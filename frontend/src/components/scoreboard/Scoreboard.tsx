@@ -18,6 +18,7 @@ export function Scoreboard({
   roundScores,
   currentPlayerId,
 }: ScoreboardProps) {
+  const leaderIds = findLeaderIds(players, cumulativeScores);
   return (
     <div className={styles.scoreboard}>
       <table className={styles.scoreTable}>
@@ -40,6 +41,7 @@ export function Scoreboard({
               score={cumulativeScores[player.id] ?? 0}
               roundScore={roundScores ? (roundScores[player.id] ?? 0) : undefined}
               isCurrentPlayer={player.id === currentPlayerId}
+              isLeader={leaderIds.has(player.id)}
             />
           ))}
         </tbody>
@@ -55,12 +57,15 @@ interface ScoreRowProps {
   score: number;
   roundScore?: number;
   isCurrentPlayer: boolean;
+  isLeader: boolean;
 }
 
-function ScoreRow({ player, bid, tricks, score, roundScore, isCurrentPlayer }: ScoreRowProps) {
+function ScoreRow({ player, bid, tricks, score, roundScore, isCurrentPlayer, isLeader }: ScoreRowProps) {
+  const rowClass = isLeader ? styles.leaderRow : "";
   return (
-    <tr>
+    <tr className={rowClass}>
       <td className={styles.playerNameCell}>
+        {isLeader && <span className={styles.leaderBadge} title="Leader">★</span>}
         {isCurrentPlayer ? <span className={styles.highlight}>{player.name}</span> : player.name}
       </td>
       <td>{bid !== null ? bid : "—"}</td>
@@ -73,6 +78,20 @@ function ScoreRow({ player, bid, tricks, score, roundScore, isCurrentPlayer }: S
       <td className={styles.highlight}>{score}</td>
     </tr>
   );
+}
+
+function findLeaderIds(players: Player[], cumulativeScores: Record<string, number>): Set<string> {
+  if (players.length === 0) return new Set();
+  let topScore = -Infinity;
+  for (const player of players) {
+    const score = cumulativeScores[player.id] ?? 0;
+    if (score > topScore) topScore = score;
+  }
+  const leaders = new Set<string>();
+  for (const player of players) {
+    if ((cumulativeScores[player.id] ?? 0) === topScore) leaders.add(player.id);
+  }
+  return leaders;
 }
 
 function findPlayerBid(bids: Bid[], playerId: string): number | null {

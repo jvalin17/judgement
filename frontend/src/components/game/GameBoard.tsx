@@ -34,18 +34,18 @@ const SEAT_LAYOUTS: Record<number, SeatPosition[]> = {
   ],
   5: [
     { left: "50%", top: "82%" },
-    { left: "10%", top: "58%" },
-    { left: "14%", top: "14%" },
-    { left: "86%", top: "14%" },
-    { left: "90%", top: "58%" },
+    { left: "10%", top: "36%" },
+    { left: "24%", top: "12%" },
+    { left: "76%", top: "12%" },
+    { left: "90%", top: "36%" },
   ],
   6: [
     { left: "50%", top: "82%" },
-    { left: "8%", top: "58%" },
-    { left: "12%", top: "12%" },
-    { left: "50%", top: "5%" },
-    { left: "88%", top: "12%" },
-    { left: "92%", top: "58%" },
+    { left: "9%", top: "38%" },
+    { left: "18%", top: "12%" },
+    { left: "50%", top: "8%" },
+    { left: "82%", top: "12%" },
+    { left: "91%", top: "38%" },
   ],
 };
 

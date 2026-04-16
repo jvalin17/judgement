@@ -220,89 +220,93 @@
   letter-spacing: 0.05em;
 }
 
-.bidContent {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-}
-
 @keyframes bidBarIn {
   from { opacity: 0; transform: translateX(-50%) translateY(8px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* Left section: trump + round info */
-.bidInfo {
+/* Header row: trump + label + total */
+.bidHeader {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding-right: var(--space-md);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  gap: var(--space-sm);
+  width: 100%;
 }
 
 .bidTrump {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   line-height: 1;
 }
 
-.bidRoundInfo {
+/* Bid table: row 1 = player names, row 2 = bids */
+.bidTable {
+  border-collapse: separate;
+  border-spacing: 4px 0;
+  margin: 2px 0;
+}
+
+.bidTableName {
+  padding: 2px 6px;
   font-size: 0.65rem;
+  font-weight: 600;
   color: var(--color-text-muted);
-  white-space: nowrap;
-}
-
-/* Middle section: other players' bids */
-.bidHistory {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-right: var(--space-md);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bidHistoryChip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.bidHistoryDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.bidHistoryName {
-  font-size: 0.7rem;
-  color: var(--color-text-muted);
-}
-
-.bidHistoryValue {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--color-text);
-  min-width: 12px;
   text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
 }
 
-.bidHistoryWaiting {
-  font-size: 0.65rem;
-  color: var(--color-text-muted);
-  opacity: 0.5;
+.bidTableName .bidTableDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
 }
 
-.bidHistoryYou {
+.bidTableNameText {
+  vertical-align: middle;
+  max-width: 60px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bidTableNameSelf {
   color: var(--color-accent);
 }
 
-/* Right section: bid buttons */
+.bidTableValue {
+  padding: 4px 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text);
+  min-width: 28px;
+}
+
+.bidTableValuePlaced {
+  color: var(--color-text);
+}
+
+.bidTableValueWaiting {
+  color: var(--color-text-muted);
+  opacity: 0.55;
+  font-weight: 500;
+}
+
+.bidTableValueSelf {
+  color: var(--color-accent);
+}
+
+/* Selection bar: bid buttons */
 .bidOptions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .bidButton {
@@ -333,6 +337,7 @@
   font-size: 0.65rem;
   color: var(--color-text-muted);
   white-space: nowrap;
+  margin-left: auto;
 }
 
 /* Player hand — bottom center */
@@ -363,6 +368,7 @@
   max-width: 100%;
   overflow: visible;
   -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 .handCards > * {
@@ -404,19 +410,19 @@
 }
 
 .playerInfoActive {
-  border-color: #00e5ff;
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4), 0 0 32px rgba(0, 229, 255, 0.15);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 16px rgba(230, 126, 34, 0.5), 0 0 32px rgba(230, 126, 34, 0.2);
   animation: activeInfoPulse 1.5s ease-in-out infinite;
 }
 
 @keyframes activeInfoPulse {
   0%, 100% {
-    box-shadow: 0 0 16px rgba(0, 229, 255, 0.4), 0 0 32px rgba(0, 229, 255, 0.15);
-    border-color: #00e5ff;
+    box-shadow: 0 0 16px rgba(230, 126, 34, 0.5), 0 0 32px rgba(230, 126, 34, 0.2);
+    border-color: var(--color-accent);
   }
   50% {
-    box-shadow: 0 0 24px rgba(0, 229, 255, 0.6), 0 0 48px rgba(0, 229, 255, 0.25);
-    border-color: #40efff;
+    box-shadow: 0 0 26px rgba(230, 126, 34, 0.7), 0 0 50px rgba(230, 126, 34, 0.3);
+    border-color: var(--color-accent-hover);
   }
 }
 
@@ -558,22 +564,22 @@
 }
 
 .avatarActive {
-  border-color: #00e5ff;
-  filter: brightness(1.5);
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.6), 0 0 32px rgba(0, 229, 255, 0.3);
+  border-color: var(--color-accent);
+  filter: brightness(1.4);
+  box-shadow: 0 0 16px rgba(230, 126, 34, 0.7), 0 0 32px rgba(230, 126, 34, 0.35);
   animation: activePulse 1.5s ease-in-out infinite;
 }
 
 @keyframes activePulse {
   0%, 100% {
-    filter: brightness(1.5);
-    box-shadow: 0 0 16px rgba(0, 229, 255, 0.6), 0 0 32px rgba(0, 229, 255, 0.3);
-    border-color: #00e5ff;
+    filter: brightness(1.4);
+    box-shadow: 0 0 16px rgba(230, 126, 34, 0.7), 0 0 32px rgba(230, 126, 34, 0.35);
+    border-color: var(--color-accent);
   }
   50% {
-    filter: brightness(1.8);
-    box-shadow: 0 0 24px rgba(0, 229, 255, 0.8), 0 0 48px rgba(0, 229, 255, 0.4);
-    border-color: #40efff;
+    filter: brightness(1.7);
+    box-shadow: 0 0 26px rgba(230, 126, 34, 0.9), 0 0 50px rgba(230, 126, 34, 0.45);
+    border-color: var(--color-accent-hover);
   }
 }
 
@@ -582,10 +588,15 @@
   font-weight: 600;
   color: var(--color-text);
   text-align: center;
-  max-width: 80px;
+  max-width: 96px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  position: relative;
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
 }
 
 /* Stat badge — split circle: top=score, bottom=won/bid */
@@ -635,11 +646,57 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;
+  width: var(--card-width-sm);
+  height: var(--card-height-sm);
 }
 
 .seatCard {
   position: absolute;
   transform-origin: bottom center;
+}
+
+/* Hourglass turn indicator — top-right of player's cards */
+.turnHourglass {
+  position: absolute;
+  top: -14px;
+  right: -22px;
+  z-index: 6;
+  font-size: 1.1rem;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(230, 126, 34, 0.7), 0 2px 6px rgba(0, 0, 0, 0.5);
+  animation: hourglassPulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.handTurnHourglass {
+  position: absolute;
+  top: 0;
+  right: 8px;
+  z-index: 12;
+  font-size: 1.4rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(230, 126, 34, 0.75), 0 2px 6px rgba(0, 0, 0, 0.5);
+  animation: hourglassPulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes hourglassPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(230, 126, 34, 0.6), 0 2px 6px rgba(0, 0, 0, 0.5); }
+  50% { transform: scale(1.12); box-shadow: 0 0 20px rgba(230, 126, 34, 0.9), 0 2px 6px rgba(0, 0, 0, 0.5); }
 }
 
 @keyframes pulse {

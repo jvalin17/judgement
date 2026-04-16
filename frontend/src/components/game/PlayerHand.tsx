@@ -43,6 +43,7 @@ export function PlayerHand({ hand, validCards, isMyTurn, onPlayCard }: PlayerHan
             />
           );
         })}
+        {isMyTurn && <span className={styles.handTurnHourglass}>{"\u23F3"}</span>}
       </div>
     </div>
   );

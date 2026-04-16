@@ -44,6 +44,21 @@
   font-weight: 700;
 }
 
+.leaderRow td {
+  background: rgba(230, 126, 34, 0.14);
+}
+
+.leaderRow td:first-child {
+  border-left: 3px solid var(--color-accent);
+}
+
+.leaderBadge {
+  color: var(--color-accent);
+  margin-right: 6px;
+  font-size: 0.85rem;
+  text-shadow: 0 0 6px rgba(230, 126, 34, 0.6);
+}
+
 /* Final results */
 
 .finalResults {

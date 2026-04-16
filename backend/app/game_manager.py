@@ -25,6 +25,8 @@ STRATEGY_MAP = {
     AIDifficulty.HARD: HardAI,
 }
 
+AI_SWEETS_NAMES = ("Gulab Jamun", "Jalebi", "Rasgulla", "Barfi", "Ladoo", "Kaju Katli")
+
 
 def _make_strategy(difficulty: AIDifficulty) -> AIStrategy:
     cls = STRATEGY_MAP.get(difficulty, EasyAI)
@@ -219,8 +221,13 @@ class GameManager:
         engine = managed.engine
         max_p = max_players_for_variant(engine.state.config.variant)
         current_count = len(engine.state.players)
+        used_names = {player.name for player in engine.state.players}
         for index in range(current_count, max_p):
-            ai_name = f"AI {index + 1}"
+            ai_name = next(
+                (name for name in AI_SWEETS_NAMES if name not in used_names),
+                f"Bot {index + 1}",
+            )
+            used_names.add(ai_name)
             ai_player = Player(
                 id=f"ai-backfill-{index}",
                 name=ai_name,
