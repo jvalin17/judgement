@@ -99,37 +99,7 @@ body {
   font-family: var(--font-primary);
   font-size: var(--font-size-base);
   color: var(--color-text);
-  background:
-    /* Radial vignette - dark edges like overhead lighting */
-    radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.4) 100%),
-    /* Center highlight for overhead lamp effect */
-    radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
-    /* Indian paisley / mandala lattice — repeating petal arcs */
-    radial-gradient(circle at 50% 0%, rgba(218, 165, 32, 0.04) 0%, transparent 60%) 0 0 / 80px 80px,
-    radial-gradient(circle at 0% 50%, rgba(218, 165, 32, 0.03) 0%, transparent 60%) 40px 40px / 80px 80px,
-    /* Diamond jali pattern — overlapping diagonal lines like Indian latticework */
-    repeating-linear-gradient(
-      60deg,
-      transparent,
-      transparent 18px,
-      rgba(218, 165, 32, 0.025) 18px,
-      rgba(218, 165, 32, 0.025) 19px
-    ),
-    repeating-linear-gradient(
-      -60deg,
-      transparent,
-      transparent 18px,
-      rgba(218, 165, 32, 0.025) 18px,
-      rgba(218, 165, 32, 0.025) 19px
-    ),
-    /* Subtle felt grain texture */
-    repeating-conic-gradient(
-      rgba(0, 0, 0, 0.03) 0% 25%,
-      transparent 0% 50%
-    ) 0 0 / 4px 4px,
-    /* Base color gradient — deep jewel tone */
-    linear-gradient(135deg, #0e3d20, var(--color-table), #1a5c35);
-  background-attachment: fixed;
+  background: var(--color-table);
   min-height: 100dvh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;

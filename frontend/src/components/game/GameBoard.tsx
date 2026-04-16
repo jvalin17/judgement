@@ -182,8 +182,6 @@ export function GameBoard() {
         />
       )}
 
-      <StatusMessage state={state} myTurn={myTurn} />
-
       {state.error && <div className={styles.errorBar}>{state.error}</div>}
 
       {showBidSelector ? (
@@ -231,32 +229,6 @@ export function GameBoard() {
           </div>
         </Modal>
       )}
-    </div>
-  );
-}
-
-// --- Status message ---
-
-interface StatusMessageProps {
-  state: { phase: GamePhase; currentPlayerId: string | null; playerId: string | null; players: Array<{ id: string; name: string }> };
-  myTurn: boolean;
-}
-
-function StatusMessage({ state, myTurn }: StatusMessageProps) {
-  // Show animated banner for "your turn" only
-  if (myTurn && (state.phase === GamePhase.BIDDING || state.phase === GamePhase.PLAYING)) {
-    const action = state.phase === GamePhase.BIDDING ? "bid" : "play";
-    return <TurnBanner key={`${state.currentPlayerId}-${state.phase}`} action={action} />;
-  }
-
-  // No floating text for waiting — the hourglass on the active player's avatar is enough
-  return null;
-}
-
-function TurnBanner({ action }: { action: string }) {
-  return (
-    <div className={styles.turnBanner}>
-      Your turn to {action}!
     </div>
   );
 }
