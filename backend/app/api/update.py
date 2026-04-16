@@ -99,19 +99,27 @@ def _build_subprocess_env() -> Dict[str, str]:
     Homebrew and user-bin directories where `npm`, `node`, and many
     other build tools actually live, so `update.sh` would fail at the
     `npm run build` step with "command not found" and we'd silently
-    relaunch the unchanged app. Prepending the common locations means
-    the script finds the same tools the user has in their shell.
+    relaunch the unchanged app. We extend the PATH to find these tools.
+
+    Ordering matters: `/usr/bin` MUST come before `/opt/homebrew/bin`.
+    The user's package.sh runs `arch -arm64 python3`, which resolves
+    `python3` via PATH. The Xcode CLT Python at `/usr/bin/python3`
+    (delegated to /Library/Developer/CommandLineTools/...) ships pydantic
+    and is not PEP 668-locked. Homebrew's Python at /opt/homebrew/bin/
+    refuses `pip install` with "externally-managed-environment", which
+    breaks the rebuild. This ordering matches the user's interactive
+    shell PATH where `python3` -> /usr/bin/python3 works.
     """
     env = os.environ.copy()
     extra_paths = [
-        "/opt/homebrew/bin",   # Apple Silicon Homebrew
-        "/opt/homebrew/sbin",
-        "/usr/local/bin",      # Intel Homebrew + many user installs
-        "/usr/local/sbin",
         "/usr/bin",
         "/bin",
         "/usr/sbin",
         "/sbin",
+        "/usr/local/bin",      # Intel Homebrew + many user installs
+        "/usr/local/sbin",
+        "/opt/homebrew/bin",   # Apple Silicon Homebrew (npm/node live here)
+        "/opt/homebrew/sbin",
     ]
     existing = env.get("PATH", "").split(":")
     merged = []
