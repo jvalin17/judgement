@@ -44,7 +44,7 @@ runs-on: ${{ matrix.os }}
 steps:
   - uses: actions/checkout@v4
   - uses: actions/setup-node@v4 (node-version: '20', cache: 'npm', cache-dependency-path: frontend/package-lock.json)
-  - cd frontend && npm ci
+  - cd frontend && npm install --no-audit --no-fund   # not 'npm ci' — see "Why not npm ci" below
   # npm run lint intentionally NOT gated in the initial PR — see "lint deferred" below
   - cd frontend && npm run build        # tsc -b && vite build — covers typecheck + build
 ```
@@ -52,6 +52,11 @@ steps:
 `npm run build` runs `tsc -b` first, so this catches any TypeScript errors (including `erasableSyntaxOnly` violations, which are an easy thing to break when adding new types). Matrixing on Windows catches path-separator bugs (`frontend/dist` vs `frontend\dist` come up in Vite plugin paths) before they hit the Windows release build.
 
 **Why lint is deferred:** `npm run lint` currently reports 8 pre-existing errors on `main` (react-refresh / react-hooks rules). Adding it to CI today would immediately fail the first run and defeat the green-baseline purpose of this PR. Lint gets wired in as a gate in a follow-up PR once the baseline is clean.
+
+**Why not `npm ci`:** Vite's rolldown pipeline pulls in optional platform-specific `@emnapi/*` / `@napi-rs/*` binary deps that are recorded inconsistently across npm major versions. A lock file generated on macOS/npm 11 fails strict `npm ci` verification on Ubuntu/npm 10 even though the resolvable dependency set is identical. `npm install` resolves per-OS and sidesteps the mismatch. Tradeoff: we lose byte-for-byte reproducibility guarantees of `npm ci`. Acceptable because:
+- The frontend has ~170 transitive deps, none security-sensitive (no auth, no crypto, no network calls beyond fetch)
+- The release workflow (`release.yml`) still uses `npm install` and has built reliably for months
+- Revisit by either (a) pinning the lock-generating npm version with `engines.npm` + a `package.json` hook, or (b) committing a separate Linux-generated lock if reproducibility ever matters
 
 ### Why Windows in CI
 
