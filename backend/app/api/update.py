@@ -6,6 +6,8 @@ Security: The /apply endpoint only works when running as a desktop app
 from __future__ import annotations
 
 import json
+import os
+import shlex
 import subprocess
 import sys
 import threading
@@ -111,10 +113,8 @@ async def apply_update(request: Request):
             if sys.platform == "darwin":
                 app_path = "/Applications/Judgement.app"
                 if Path(app_path).exists():
-                    time.sleep(1)
-                    subprocess.Popen(["open", app_path])
-                    time.sleep(0.5)
-                    import os
+                    _relaunch_after_exit_macos(app_path)
+                    time.sleep(0.3)
                     os._exit(0)
         except Exception:
             pass
@@ -122,3 +122,33 @@ async def apply_update(request: Request):
     threading.Thread(target=run_update, daemon=True).start()
 
     return {"success": True, "message": "Updating... the app will restart shortly."}
+
+
+def _relaunch_after_exit_macos(app_path: str) -> None:
+    """Spawn a detached helper that waits for this process to exit, then
+    launches a fresh instance of the app.
+
+    The helper:
+      - Survives the current process exiting (start_new_session=True).
+      - Polls until the parent PID is gone, so launchd no longer sees the
+        bundle as running.
+      - Uses `open -n` to force a new instance even if launchd briefly
+        thinks the app is still running.
+    """
+    parent_pid = os.getpid()
+    quoted_app = shlex.quote(app_path)
+    helper_script = (
+        f"for _ in $(seq 1 100); do "
+        f"  kill -0 {parent_pid} 2>/dev/null || break; "
+        f"  sleep 0.1; "
+        f"done; "
+        f"sleep 0.5; "
+        f"open -n {quoted_app}"
+    )
+    subprocess.Popen(
+        ["/bin/sh", "-c", helper_script],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
