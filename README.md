@@ -13,30 +13,48 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 - **Four dealing variants** — 10→1, 8→1→8, 10→1→10, 8→5→8
 - **Must-lose mode** — optional rule variant where all players are constrained (not just the dealer)
 - **Full trick-taking rules** — follow-suit enforcement, trump rotation, bid constraints
+- **Quick Play** — jump straight into a game against the default AI lineup with a single click
+- **Custom lobby** — pick variant, mix AI difficulties, and tune game options before starting
+- **Round-by-round scoreboard** — see bids, tricks won, round delta, and cumulative scores
+- **Final results screen** — rankings and full session log when the game ends
 
 ### AI Opponents
-- **Easy** — random valid moves
+- **Easy** — random valid moves; good for first-time players
 - **Medium** — hand evaluation, strategic leads, situational trick-taking
-- **Hard** — card counting, positional play, trump management, opponent modeling, personality system with randomized strategy variation per game
+- **Hard** — card counting, positional play, trump management, opponent modeling, and a personality system that gives each opponent randomized strategy variation per game
 
 ### User Interface
-- **CSS-rendered playing cards** — no image assets, fully scalable
-- **Animated card dealing, playing, and trick collection**
-- **Customizable settings** — card back designs, table colors, animation speed
-- **Responsive layout** — works on desktop and mobile browsers
-- **Live scoreboard** with round-by-round tracking
+- **CSS-rendered playing cards** — no image assets, fully scalable on any screen
+- **Smooth animations** for dealing, playing, trick collection, and round transitions
+- **Visual table** — green felt with a central rangoli motif that resizes with the window
+- **Card back gallery** — Classic Blue, Red Damask, Green Celtic, Royal Purple, Gold Ornate, Black Carbon, Rose Floral, Teal Diamonds, Indigo Stars
+- **Table color picker** — 10 themed colors (Classic Green, Navy, Burgundy, Dark Wood, Slate, Emerald, Midnight Black, Teal Ocean, Royal Purple, Coffee Brown)
+- **Animation speed control** — Slow / Medium / Fast
+- **Subtle turn indicator** — gold border on the active player; no overlapping banners
+- **Responsive layout** — desktop and mobile browsers
+- **Auto-reconnect** — exponential backoff WebSocket reconnect, plus session restore on tab refresh
 
 ### Desktop App
-- **Standalone macOS/Windows application** via PyInstaller
-- **One-command build** — `./scripts/package.sh` handles all dependencies
-- **In-app update button** — check for and apply updates without using the terminal
-- **Native window** via pywebview (no browser required)
+- **Standalone macOS and Windows application** packaged with PyInstaller
+- **Native window** via pywebview (no browser tab, no URL bar)
+- **Custom app icon** — lightweight J-card on a violet→magenta tile
+- **One-command build** — `./scripts/package.sh` installs all deps and produces a ready-to-ship bundle
+- **In-app updater** — check for new versions and install them from the Settings panel; no terminal required
+- **Settings panel** — toggle cards/tables/animations and view the installed version + build date
+
+### Security & Reliability
+- **Update endpoint locked to localhost** — `/api/update/apply` rejects non-loopback requests, so a remote attacker on the same network cannot trigger an update
+- **No telemetry** — the app never phones home; the only outbound request is the update check to GitHub, and only when you click it
+- **Dependency scanner** — `python3 scripts/security_scan.py` runs `pip-audit` + `npm audit` against current lockfiles
+- **AI information isolation** — AI players only see public game state (bids, tricks played, current trick), never other players' hands
+- See [Security Guidelines](#security-guidelines) below for the full trust model
 
 ### Infrastructure
 - **Dockerized** — single container deployment with `docker build && docker run`
 - **Automated test suite** — 210+ tests covering game logic, AI, REST API, and WebSocket
 - **CI-ready** — `python3 -m pytest backend/tests/ -v`
-- **Security scanning** — `python3 scripts/security_scan.py`
+- **GitHub Actions release pipeline** — tag-triggered build of macOS + Windows artifacts, attached to a GitHub Release
+- **Configuration via JSON** — round definitions live in `backend/app/game/rounds/*.json` and are loaded once, cached immutably
 
 ---
 
@@ -219,8 +237,66 @@ judgement/
 
 ---
 
+## Security Guidelines
+
+This section documents the security model of the app, what it protects against, what it does **not** protect against, and how to report issues.
+
+### Trust model
+
+When you install or update Judgement, you are trusting:
+
+1. **GitHub as the publisher.** All release artifacts are downloaded from `github.com` over TLS, validated by your operating system's certificate store. There is no other delivery channel.
+2. **The GitHub Actions workflow in this repo.** Builds happen in CI from the source you can read at `.github/workflows/release.yml`. No binaries are built on a private machine and uploaded by hand.
+3. **The release tag you choose to install.** Each release lists the exact commit it was built from. The desktop app reports its installed version under Settings.
+
+### What the app protects against
+
+- **Remote update triggering.** `/api/update/apply` only accepts requests from `127.0.0.1` / `::1`. An attacker on the same Wi-Fi cannot force an update.
+- **Tampering in transit.** All update checks and downloads use HTTPS to `api.github.com`. The OS validates GitHub's certificate.
+- **Unwanted network chatter.** No analytics, no crash reporting, no "phone home" call. The only outbound request is the manual update check, and only after you click it.
+- **AI cheating.** AI strategies receive a `RoundContext` containing only publicly visible information (trump suit, bids, tricks played, current trick, the AI's own hand). They never see other players' hands.
+
+### What the app does NOT protect against (be aware)
+
+- **Compromise of the GitHub repo.** If an attacker pushes malicious code to `main`, CI will dutifully build and publish it. Mitigations the maintainer should keep in place: 2FA on the GitHub account, branch protection on `main`, signed commits, and required reviews on PRs.
+- **macOS Gatekeeper warnings.** This project does not pay for an Apple Developer ID. The first time you open the app from a fresh download, macOS will warn "unidentified developer". You must right-click → Open to confirm. Subsequent launches are silent. There is currently no way around this without code signing.
+- **Compromise of your own machine.** Anything already running as your user can read or replace the app on disk. Standard OS hygiene applies.
+- **Old, vulnerable installs.** If you stop updating, you stop receiving fixes. Use the in-app updater periodically.
+
+### Recommendations for users
+
+- **Download only from the official GitHub Releases page.** Do not trust a third party that has zipped up "Judgement" and posted it elsewhere.
+- **Verify the version after install.** Open Settings → check the displayed version against the latest tag on GitHub.
+- **Keep the app updated.** Click "Check for Updates" in Settings periodically. There is no auto-update on launch — it is always your decision to apply.
+
+### Recommendations for the maintainer
+
+- **Enable 2FA + signed commits** on the GitHub account that owns this repo.
+- **Branch-protect `main`** and require PR review before merge.
+- **Run `python3 scripts/security_scan.py`** before tagging a release. It runs `pip-audit` (Python deps) and `npm audit` (Node deps) and exits non-zero on known vulnerabilities.
+- **Pin GitHub Actions** to commit SHAs (not floating tags) for sensitive steps in `.github/workflows/release.yml`.
+
+### Reporting a vulnerability
+
+If you find a security issue, please **do not** open a public GitHub issue. Email the maintainer or open a private security advisory through GitHub's "Security" tab on the repository. Include:
+
+- A description of the issue and its impact
+- Steps to reproduce
+- The version of Judgement you were running
+
+You will receive an acknowledgement and a timeline for the fix.
+
+---
+
+## Release Notes
+
+See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the full changelog. Every published release on the [Releases page](../../releases) also lists the changes since the previous tag.
+
+---
+
 ## Roadmap
 
+- **Auto-updater v2** — replace the current rebuild-from-source updater with a download-and-replace flow that fetches signed-by-SHA256 binaries from GitHub Releases. See [`plans/auto_update.md`](plans/auto_update.md) for the full design.
 - **Online multiplayer** — lobby system with join codes, real-time WebSocket play, auto-reconnect, mixed human/AI games
 - **Developer API** — public REST API with API key authentication for building bots, running tournaments, and third-party integrations
 - **Leaderboards** — persistent player stats and rankings
