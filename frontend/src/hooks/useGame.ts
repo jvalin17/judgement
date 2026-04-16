@@ -175,6 +175,7 @@ function handleRoundStarted(state: GameState, data: RoundStartedEventData): Game
     bids: [],
     currentTrick: [],
     tricksWon: {},
+    roundOverAcknowledged: false,
     error: null,
   };
 }
@@ -319,6 +320,12 @@ function handleClearTrick(state: GameState): GameState {
 }
 
 function handleAcknowledgeRoundOver(state: GameState): GameState {
+  // Set roundOverAcknowledged so the scoreboard modal closes immediately on
+  // click. We deliberately do NOT reset it back to false here — if we did,
+  // and ROUND_STARTED for the next round hadn't arrived yet (it can't, until
+  // the backend processes our next_round message), the modal would reopen
+  // and the user would need a second click. handleRoundStarted resets it
+  // when the next round actually begins.
   let newState = { ...state, roundOverAcknowledged: true };
   for (const event of state.pendingEvents) {
     newState = handleServerEvent(newState, event);
@@ -326,7 +333,6 @@ function handleAcknowledgeRoundOver(state: GameState): GameState {
   return {
     ...newState,
     pendingEvents: [],
-    roundOverAcknowledged: false,
   };
 }
 
