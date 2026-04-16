@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-200 -200 400 400">
   <!-- Traditional rangoli / kolam — 8-fold symmetry, lotus + dot motifs -->
-  <g fill="none" stroke="#f5f0e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <g fill="none" stroke="#c9a360" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <!-- Center dot -->
-    <circle r="3" fill="#f5f0e8" stroke="none"/>
+    <circle r="3" fill="#c9a360" stroke="none"/>
 
     <!-- Inner ring -->
     <circle r="14"/>
@@ -20,7 +20,7 @@
     </g>
 
     <!-- 8 small dots between inner petals -->
-    <g fill="#f5f0e8" stroke="none">
+    <g fill="#c9a360" stroke="none">
       <circle cx="0" cy="-58" r="2.5" transform="rotate(22.5)"/>
       <circle cx="0" cy="-58" r="2.5" transform="rotate(67.5)"/>
       <circle cx="0" cy="-58" r="2.5" transform="rotate(112.5)"/>
@@ -58,7 +58,7 @@
     <circle r="148"/>
 
     <!-- 24 outer dots (every 15°) -->
-    <g fill="#f5f0e8" stroke="none">
+    <g fill="#c9a360" stroke="none">
       <circle cx="0" cy="-162" r="2.8"/>
       <circle cx="0" cy="-162" r="2.8" transform="rotate(15)"/>
       <circle cx="0" cy="-162" r="2.8" transform="rotate(30)"/>
