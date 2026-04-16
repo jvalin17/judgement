@@ -4,7 +4,7 @@ from backend.app.game.scorer import score_round
 
 def test_bid_zero_met():
     bids = [Bid(player_id="p1", amount=0)]
-    assert score_round(bids, {"p1": 0}) == {"p1": 99999}  # INTENTIONAL BREAK for CI validation
+    assert score_round(bids, {"p1": 0}) == {"p1": 10}
 
 
 def test_bid_zero_missed():
