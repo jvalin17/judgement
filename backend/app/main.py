@@ -59,5 +59,20 @@ if DIST_DIR.is_dir():
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        """Catch-all: serve index.html for SPA client-side routing."""
+        """Catch-all: serve a real file from frontend/dist if one exists at
+        that path (e.g. /rangoli.svg, /favicon.png), otherwise fall back to
+        index.html for SPA client-side routing.
+
+        Without the file check, requests like /rangoli.svg returned the SPA
+        HTML, the browser silently failed to render it as an image, and the
+        page looked broken (no favicon, no rangoli table motif).
+        """
+        candidate = (DIST_DIR / full_path).resolve()
+        # Guard against path traversal: candidate must stay inside DIST_DIR
+        try:
+            candidate.relative_to(DIST_DIR.resolve())
+        except ValueError:
+            return FileResponse(DIST_DIR / "index.html")
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
         return FileResponse(DIST_DIR / "index.html")
