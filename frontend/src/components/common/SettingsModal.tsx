@@ -25,6 +25,10 @@ const CARD_BACK_OPTIONS: CardBackDesign[] = [
   CardBackDesign.GREEN_CELTIC,
   CardBackDesign.ROYAL_PURPLE,
   CardBackDesign.GOLD_ORNATE,
+  CardBackDesign.BLACK_CARBON,
+  CardBackDesign.ROSE_FLORAL,
+  CardBackDesign.TEAL_DIAMONDS,
+  CardBackDesign.INDIGO_STARS,
 ];
 
 const TABLE_COLOR_OPTIONS: TableColor[] = [
@@ -33,6 +37,11 @@ const TABLE_COLOR_OPTIONS: TableColor[] = [
   TableColor.BURGUNDY,
   TableColor.DARK_WOOD,
   TableColor.SLATE_GRAY,
+  TableColor.EMERALD,
+  TableColor.MIDNIGHT_BLACK,
+  TableColor.TEAL_OCEAN,
+  TableColor.ROYAL_PURPLE,
+  TableColor.COFFEE_BROWN,
 ];
 
 const ANIMATION_SPEED_OPTIONS: AnimationSpeed[] = [
@@ -280,4 +289,8 @@ export const CARD_BACK_DESIGN_CLASS: Record<CardBackDesign, string> = {
   [CardBackDesign.GREEN_CELTIC]: cardStyles.backGreenCeltic ?? "",
   [CardBackDesign.ROYAL_PURPLE]: cardStyles.backRoyalPurple ?? "",
   [CardBackDesign.GOLD_ORNATE]: cardStyles.backGoldOrnate ?? "",
+  [CardBackDesign.BLACK_CARBON]: cardStyles.backBlackCarbon ?? "",
+  [CardBackDesign.ROSE_FLORAL]: cardStyles.backRoseFloral ?? "",
+  [CardBackDesign.TEAL_DIAMONDS]: cardStyles.backTealDiamonds ?? "",
+  [CardBackDesign.INDIGO_STARS]: cardStyles.backIndigoStars ?? "",
 };
