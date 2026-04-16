@@ -91,6 +91,39 @@ def _read_source_sha(source_dir: str) -> Optional[str]:
 # ---------------------------------------------------------------------------
 # Logging helpers.
 # ---------------------------------------------------------------------------
+def _build_subprocess_env() -> Dict[str, str]:
+    """Build an environment for the update subprocess with a sane PATH.
+
+    macOS launches .app bundles via launchd, which inherits a stripped
+    PATH (typically `/usr/bin:/bin:/usr/sbin:/sbin`). That excludes the
+    Homebrew and user-bin directories where `npm`, `node`, and many
+    other build tools actually live, so `update.sh` would fail at the
+    `npm run build` step with "command not found" and we'd silently
+    relaunch the unchanged app. Prepending the common locations means
+    the script finds the same tools the user has in their shell.
+    """
+    env = os.environ.copy()
+    extra_paths = [
+        "/opt/homebrew/bin",   # Apple Silicon Homebrew
+        "/opt/homebrew/sbin",
+        "/usr/local/bin",      # Intel Homebrew + many user installs
+        "/usr/local/sbin",
+        "/usr/bin",
+        "/bin",
+        "/usr/sbin",
+        "/sbin",
+    ]
+    existing = env.get("PATH", "").split(":")
+    merged = []
+    seen = set()
+    for entry in extra_paths + existing:
+        if entry and entry not in seen:
+            merged.append(entry)
+            seen.add(entry)
+    env["PATH"] = ":".join(merged)
+    return env
+
+
 def _open_log_file() -> Path:
     """Create a timestamped log file under the platform's logs directory."""
     if sys.platform == "darwin":
@@ -224,10 +257,12 @@ def _run_update(
     "updated!" without something actually changing.
     """
     try:
+        env = _build_subprocess_env()
         with log_path.open("w") as log_file:
             log_file.write(f"=== Update started at {datetime.now().isoformat()} ===\n")
             log_file.write(f"Before SHA: {before_sha}\n")
-            log_file.write(f"Source dir: {source_dir}\n\n")
+            log_file.write(f"Source dir: {source_dir}\n")
+            log_file.write(f"PATH: {env['PATH']}\n\n")
             log_file.flush()
 
             result = subprocess.run(
@@ -236,6 +271,7 @@ def _run_update(
                 stdout=log_file,
                 stderr=subprocess.STDOUT,
                 timeout=600,
+                env=env,
             )
 
         if result.returncode != 0:
