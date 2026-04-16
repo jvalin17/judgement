@@ -1,9 +1,6 @@
 import type { Card } from "./card";
 import type { ServerEvent } from "./events";
 
-// INTENTIONAL BREAK for CI validation — will revert
-export enum DeliberateBreak { Foo = "foo" }
-
 export const GamePhase = {
   LOBBY: "lobby",
   WAITING: "waiting",
