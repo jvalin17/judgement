@@ -71,6 +71,57 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 ---
 
+## System Requirements
+
+Judgement is small and lightweight. There is no embedded Chromium — the desktop app reuses the OS's native WebView, which is why the bundle stays under 50 MB.
+
+### Disk
+
+| Platform | Installed size |
+|----------|----------------|
+| macOS (`Judgement.app`) | ~46 MB |
+| Windows (`Judgement\` folder) | ~45 MB |
+
+Breakdown of the macOS bundle:
+- `Frameworks/` (~24 MB) — Python interpreter and dynamic libraries
+- `Resources/` (~12 MB) — bundled frontend (HTML/JS/CSS), app icon, Python stdlib
+- `MacOS/` (~10 MB) — launcher binary
+
+### Memory
+
+- **~80–150 MB RSS** while running. That's mostly the Python interpreter and the WebKit view; the game state itself is a few KB even mid-game.
+- An idle desktop session — even with multiple games tracked in memory — won't exceed ~200 MB.
+
+### CPU
+
+Effectively negligible.
+
+- AI is **rule-based** (no machine learning, no neural net). Even Hard AI is dictionary lookups and heuristics — a move decision takes microseconds.
+- Rendering is CSS-rendered playing cards in WebKit. No GPU-heavy graphics.
+- Idle CPU during a game is essentially 0%; spikes to ~1–2% briefly when AI thinks or animations play.
+
+### Storage usage over time
+
+- Update logs at `~/Library/Logs/Judgement/` (macOS) or `~/.judgement/logs/` (Linux) — a few KB per update attempt.
+- Settings live in the WebView's localStorage — handful of bytes.
+- No game persistence yet (session log is in memory only).
+
+### Minimum supported OS
+
+| Platform | Minimum |
+|----------|---------|
+| macOS | 10.13 High Sierra (Apple Silicon and Intel both supported) |
+| Windows | Windows 10 / 11, x64 |
+| Linux | Any distro with Python 3.9+ and GTK/WebKit (build from source) |
+| RAM | 256 MB free is plenty |
+| Internet | **Not required to play.** Only needed for the manual "Check for Updates" click |
+
+### Comparison
+
+For context, common desktop apps on disk: VS Code ~400 MB, Discord ~250 MB, Slack ~250 MB. Judgement is small because it doesn't ship its own browser engine.
+
+---
+
 ## Download & Install
 
 ### Prerequisites
