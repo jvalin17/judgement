@@ -36,7 +36,7 @@ export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, sc
             <CardBack small />
           </div>
         ))}
-        {isCurrentTurn && <span className={styles.turnHourglass}>{"\u23F3"}</span>}
+        {isCurrentTurn && <span className={styles.turnPill}>NOW</span>}
       </div>
       <div className={avatarClass} style={{ backgroundColor: avatarColor }}>
         {initials}
