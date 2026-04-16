@@ -76,12 +76,25 @@ echo "Running PyInstaller..."
 # Clean previous builds
 rm -rf build/Judgement dist/Judgement dist/Judgement.app
 
+# Make sure the .icns exists (regenerate if the SVG has changed and someone
+# forgot to rerun build_icons.sh).
+if [ ! -f "assets/icon.icns" ] && [ -f "assets/icon.svg" ]; then
+    echo "Generating app icon..."
+    ./scripts/build_icons.sh
+fi
+
+ICON_FLAG=()
+if [ -f "assets/icon.icns" ]; then
+    ICON_FLAG=(--icon assets/icon.icns)
+fi
+
 $PYTHON -m PyInstaller \
     --name "Judgement" \
     --windowed \
     --onedir \
     --noconfirm \
     --clean \
+    "${ICON_FLAG[@]}" \
     --add-data "frontend/dist:frontend/dist" \
     --add-data "backend/app/game/rounds:backend/app/game/rounds" \
     --add-data "backend/app/version_info.json:backend/app" \
