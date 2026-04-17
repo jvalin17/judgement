@@ -261,6 +261,7 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
         variant: createVariant,
         must_lose_mode: createMustLose,
         players: [{ name: hostName.trim(), is_ai: false, ai_difficulty: null }] as PlayerSetupRequest[],
+        auto_start: false,
       };
       const response = await createGame(request);
       const playerId = response.player_ids[hostName.trim()];

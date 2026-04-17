@@ -526,6 +526,77 @@ class TestQuickJoin:
         assert resp.json()["game_id"] != data["game_id"]
 
 
+class TestSinglePlayerLobbyCreation:
+    """Verify that creating a multiplayer room with 1 player works when auto_start=False."""
+
+    def test_single_player_lobby_succeeds(self):
+        """A single human can create a lobby (auto_start=False) — no 2-player minimum."""
+        resp = client.post("/api/games", json={
+            "variant": "10_to_1",
+            "must_lose_mode": False,
+            "players": [{"name": "Host", "is_ai": False}],
+            "auto_start": False,
+        })
+        assert resp.status_code == 200
+        assert "game_id" in resp.json()
+
+    def test_single_player_auto_start_fails(self):
+        """A single player with auto_start=True (default) is rejected — needs 2+ to start."""
+        resp = client.post("/api/games", json={
+            "variant": "10_to_1",
+            "must_lose_mode": False,
+            "players": [{"name": "Solo", "is_ai": False}],
+        })
+        assert resp.status_code == 400
+
+    def test_lobby_create_join_start_flow(self):
+        """Full multiplayer flow: host creates lobby → friend joins → host starts."""
+        # Host creates room
+        create_resp = client.post("/api/games", json={
+            "variant": "8_down_up",
+            "must_lose_mode": False,
+            "players": [{"name": "Host", "is_ai": False}],
+            "auto_start": False,
+        })
+        assert create_resp.status_code == 200
+        data = create_resp.json()
+        game_id = data["game_id"]
+        host_id = data["player_ids"]["Host"]
+
+        # Verify lobby phase
+        state = client.get(f"/api/games/{game_id}").json()
+        assert state["phase"] == "lobby"
+
+        # Friend joins
+        join_resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "Friend"})
+        assert join_resp.status_code == 200
+
+        # Host starts the game
+        start_resp = client.post(f"/api/games/{game_id}/start?player_id={host_id}")
+        assert start_resp.status_code == 200
+
+        # Game should now be in bidding phase
+        state = client.get(f"/api/games/{game_id}").json()
+        assert state["phase"] == "bidding"
+        player_names = [p["name"] for p in state["players"]]
+        assert "Host" in player_names
+        assert "Friend" in player_names
+
+    def test_lobby_with_must_lose_mode(self):
+        """Lobby creation preserves must_lose_mode setting."""
+        resp = client.post("/api/games", json={
+            "variant": "10_to_1",
+            "must_lose_mode": True,
+            "players": [{"name": "Host", "is_ai": False}],
+            "auto_start": False,
+        })
+        assert resp.status_code == 200
+        game_id = resp.json()["game_id"]
+
+        lobby = client.get(f"/api/games/{game_id}/lobby").json()
+        assert lobby["must_lose_mode"] is True
+
+
 class TestFillWithAI:
     def test_fill_with_ai(self, fresh_manager):
         data = _create_public_lobby()
