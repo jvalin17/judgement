@@ -511,17 +511,44 @@
   transform: rotate(-25deg) translateX(4px) translateY(-2px);
 }
 
-/* --- Join game link --- */
+/* --- Settings button (control tower) --- */
+
+.settingsButton {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.15s ease;
+  line-height: 1;
+}
+
+.settingsButton:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: scale(1.08);
+}
+
+/* --- Play with friends link --- */
 
 .joinLink {
   background: none;
   border: none;
   color: #2d5a8e;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
+  font-weight: 600;
   cursor: pointer;
-  padding: 4px 0;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  padding: 6px 0;
   transition: color 0.2s ease;
 }
 
@@ -529,14 +556,93 @@
   color: #1a365d;
 }
 
-.joinSection {
+/* --- Multiplayer page --- */
+
+.backButton {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #2d5a8e;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s ease;
+}
+
+.backButton:hover {
+  color: #1a365d;
+}
+
+.glassCard {
   width: 100%;
   background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.cardHeading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a365d;
+  margin: 0;
+}
+
+.skyButton {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #3a8fd6, #2670b0);
+  border: none;
   border-radius: 12px;
-  padding: 16px;
+  color: #fff;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 14px rgba(58, 143, 214, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.skyButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 20px rgba(58, 143, 214, 0.45);
+}
+
+.skyButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.skyButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(26, 54, 93, 0.15);
+}
+
+.dividerText {
+  font-size: var(--font-size-sm);
+  color: #6b8eb8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 /* --- Error --- */
