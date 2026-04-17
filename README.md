@@ -1,5 +1,7 @@
 # Judgement (Kachu Phool)
 
+[![Test](https://github.com/jvalin17/judgement/actions/workflows/test.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test.yml)
+
 A full-stack trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents. Available as a web app, standalone desktop app, or Docker container.
 
 Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
