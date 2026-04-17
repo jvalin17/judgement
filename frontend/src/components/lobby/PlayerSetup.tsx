@@ -49,7 +49,7 @@ export function PlayerSetup({ players, maxPlayers, onChange }: PlayerSetupProps)
 
   return (
     <div className={styles.section}>
-      <span className={styles.sectionLabel}>Players ({players.length}/{maxPlayers})</span>
+      <span className={styles.sectionLabel}>Opponents ({players.length}/{maxPlayers})</span>
       <div className={styles.playerList}>
         {players.map((player, index) => (
           <PlayerRow
@@ -66,7 +66,7 @@ export function PlayerSetup({ players, maxPlayers, onChange }: PlayerSetupProps)
       </div>
       {players.length < maxPlayers && (
         <button className={styles.addPlayerButton} onClick={handleAddPlayer}>
-          + Add Player
+          + Add Opponent
         </button>
       )}
     </div>
@@ -147,7 +147,7 @@ export function createDefaultAiPlayer(index: number): PlayerConfig {
   return {
     name: AI_SWEETS_NAMES[index] ?? `Bot ${index + 1}`,
     playerType: PlayerType.AI,
-    aiDifficulty: AIDifficulty.MEDIUM,
+    aiDifficulty: AIDifficulty.HARD,
   };
 }
 
@@ -155,6 +155,6 @@ export function createDefaultHumanPlayer(): PlayerConfig {
   return {
     name: "",
     playerType: PlayerType.HUMAN,
-    aiDifficulty: AIDifficulty.MEDIUM,
+    aiDifficulty: AIDifficulty.HARD,
   };
 }

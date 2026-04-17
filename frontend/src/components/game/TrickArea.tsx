@@ -40,11 +40,6 @@ export function TrickArea({
   return (
     <div className={styles.trickArea}>
       <div className={pileClass}>
-        {trickWinner && !trickCollecting && (
-          <div className={styles.trickWinnerLabel}>
-            {winnerName} wins!
-          </div>
-        )}
         {currentTrick.map((play, index) => {
           const isWinner = trickWinner === play.player_id;
           const isLead = index === 0;
@@ -60,6 +55,8 @@ export function TrickArea({
               originX={origin.x}
               originY={origin.y}
               isNew={isNew}
+              showWinnerBanner={isWinner && !trickCollecting}
+              winnerName={winnerName}
             />
           );
         })}
@@ -99,9 +96,11 @@ interface TrickCardSlotProps {
   originX: number;
   originY: number;
   isNew: boolean;
+  showWinnerBanner: boolean;
+  winnerName: string | null;
 }
 
-function TrickCardSlot({ play, playerName, isWinner, isLead, originX, originY, isNew }: TrickCardSlotProps) {
+function TrickCardSlot({ play, playerName, isWinner, isLead, originX, originY, isNew, showWinnerBanner, winnerName }: TrickCardSlotProps) {
   const slotClass = [
     styles.trickCardSlot,
     isWinner ? styles.trickCardWinner : "",
@@ -115,6 +114,11 @@ function TrickCardSlot({ play, playerName, isWinner, isLead, originX, originY, i
 
   return (
     <div className={slotClass} style={flyStyle}>
+      {showWinnerBanner && (
+        <div className={styles.trickWinnerLabel}>
+          {winnerName} wins!
+        </div>
+      )}
       <span className={styles.trickPlayerName}>{playerName}</span>
       <div style={{ position: "relative" }}>
         <Card card={play.card} />

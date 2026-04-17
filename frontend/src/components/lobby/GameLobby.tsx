@@ -1,26 +1,99 @@
 import { useState, useCallback } from "react";
 import type { DealingVariant } from "../../types";
-import { VARIANT_MAX_PLAYERS, PlayerType } from "../../types";
+import { VARIANT_MAX_PLAYERS, VARIANT_LABELS, DealingVariant as DV, PlayerType } from "../../types";
 import { createGame } from "../../services/api";
 import type { PlayerSetup as PlayerSetupRequest } from "../../services/api";
 import { Button, SettingsModal } from "../common";
-import { VariantSelector } from "./VariantSelector";
-import { PlayerSetup, createDefaultHumanPlayer, createDefaultAiPlayer } from "./PlayerSetup";
+import { PlayerSetup, createDefaultAiPlayer } from "./PlayerSetup";
 import { JoinGameForm } from "./JoinGameForm";
-import { QuickPlayForm } from "./QuickPlayForm";
 import type { PlayerConfig } from "./PlayerSetup";
 import styles from "../../styles/lobby.module.css";
 import settingsStyles from "../../styles/settings.module.css";
 
-type LobbyTab = "create" | "join" | "quick";
+const VARIANTS: DealingVariant[] = [
+  DV.TEN_TO_ONE,
+  DV.EIGHT_DOWN_UP,
+  DV.TEN_DOWN_UP,
+  DV.EIGHT_DOWN_UP_SHORT,
+];
 
 interface GameLobbyProps {
   onGameCreated: (gameId: string, playerId: string) => void;
 }
 
 export function GameLobby({ onGameCreated }: GameLobbyProps) {
-  const [activeTab, setActiveTab] = useState<LobbyTab>("create");
   const [showSettings, setShowSettings] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const [playerName, setPlayerName] = useState("");
+  const [variant, setVariant] = useState<DealingVariant>("10_to_1");
+  const [mustLoseMode, setMustLoseMode] = useState(false);
+  const [opponents, setOpponents] = useState<PlayerConfig[]>(buildDefaultOpponents);
+  const [error, setError] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const maxPlayers = VARIANT_MAX_PLAYERS[variant];
+  const maxOpponents = maxPlayers - 1;
+
+  const handleVariantChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newVariant = event.target.value as DealingVariant;
+    setVariant(newVariant);
+    const newMax = VARIANT_MAX_PLAYERS[newVariant] - 1;
+    setOpponents((current) => current.slice(0, newMax));
+  }, []);
+
+  const handleOpponentsChange = useCallback((players: PlayerConfig[]) => {
+    setOpponents(players.slice(0, maxOpponents));
+  }, [maxOpponents]);
+
+  const handleStartGame = useCallback(async () => {
+    if (!playerName.trim()) {
+      setError("Enter your name to start");
+      return;
+    }
+
+    const allPlayers: PlayerConfig[] = [
+      { name: playerName.trim(), playerType: PlayerType.HUMAN, aiDifficulty: "hard" as PlayerConfig["aiDifficulty"] },
+      ...opponents,
+    ];
+
+    if (allPlayers.length < 2) {
+      setError("Add at least one opponent");
+      return;
+    }
+
+    const names = allPlayers.map((player) => player.name.trim().toLowerCase());
+    if (new Set(names).size !== names.length) {
+      setError("Player names must be unique");
+      return;
+    }
+
+    setError(null);
+    setIsCreating(true);
+
+    try {
+      const request = {
+        variant,
+        must_lose_mode: mustLoseMode,
+        players: allPlayers.map((player): PlayerSetupRequest => ({
+          name: player.name.trim(),
+          is_ai: player.playerType === PlayerType.AI,
+          ai_difficulty: player.playerType === PlayerType.AI ? player.aiDifficulty : null,
+        })),
+      };
+      const response = await createGame(request);
+      const playerId = response.player_ids[playerName.trim()];
+      onGameCreated(response.game_id, playerId);
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Failed to create game");
+    } finally {
+      setIsCreating(false);
+    }
+  }, [playerName, opponents, variant, mustLoseMode, onGameCreated]);
+
+  const switchClass = [styles.toggleSwitch, mustLoseMode ? styles.active : ""]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={styles.lobby}>
@@ -36,154 +109,69 @@ export function GameLobby({ onGameCreated }: GameLobbyProps) {
       <h1 className={styles.title}>Judgement</h1>
       <p className={styles.subtitle}>Indian trick-taking card game</p>
 
-      <div className={styles.tabBar}>
-        <button
-          className={`${styles.tab} ${activeTab === "create" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("create")}
-        >
-          Create
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "join" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("join")}
-        >
-          Join
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "quick" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("quick")}
-        >
-          Quick Play
-        </button>
+      <div className={styles.section}>
+        <span className={styles.sectionLabel}>Your Name</span>
+        <input
+          className={styles.textInput}
+          type="text"
+          placeholder="Enter your name"
+          value={playerName}
+          onChange={(event) => setPlayerName(event.target.value)}
+          maxLength={20}
+          autoFocus
+        />
       </div>
 
-      {activeTab === "create" && <CreateGameTab onGameCreated={onGameCreated} />}
-      {activeTab === "join" && <JoinGameForm onJoined={onGameCreated} />}
-      {activeTab === "quick" && <QuickPlayForm onJoined={onGameCreated} />}
-    </div>
-  );
-}
+      <div className={styles.section}>
+        <span className={styles.sectionLabel}>Rounds</span>
+        <select
+          className={styles.variantSelect}
+          value={variant}
+          onChange={handleVariantChange}
+        >
+          {VARIANTS.map((variantOption) => (
+            <option key={variantOption} value={variantOption}>
+              {VARIANT_LABELS[variantOption]}
+            </option>
+          ))}
+        </select>
+      </div>
 
-// --- Create game tab (existing flow, slightly modified) ---
+      <PlayerSetup players={opponents} maxPlayers={maxOpponents} onChange={handleOpponentsChange} />
 
-interface CreateGameTabProps {
-  onGameCreated: (gameId: string, playerId: string) => void;
-}
+      <button
+        className={styles.advancedToggle}
+        onClick={() => setShowAdvanced(!showAdvanced)}
+      >
+        {showAdvanced ? "\u25BE" : "\u25B8"} Advanced options
+      </button>
 
-function CreateGameTab({ onGameCreated }: CreateGameTabProps) {
-  const [variant, setVariant] = useState<DealingVariant>("10_to_1");
-  const [mustLoseMode, setMustLoseMode] = useState(false);
-  const [players, setPlayers] = useState<PlayerConfig[]>(buildDefaultPlayers);
-  const [error, setError] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+      {showAdvanced && (
+        <div className={styles.advancedSection}>
+          <div className={styles.toggle}>
+            <div>
+              <span>Must-Lose Mode</span>
+              <p className={styles.advancedHint}>All players are constrained (not just dealer)</p>
+            </div>
+            <div className={switchClass} onClick={() => setMustLoseMode(!mustLoseMode)} role="switch" aria-checked={mustLoseMode}>
+              <div className={styles.toggleKnob} />
+            </div>
+          </div>
+          <JoinGameForm onJoined={onGameCreated} />
+        </div>
+      )}
 
-  const maxPlayers = VARIANT_MAX_PLAYERS[variant];
-
-  const handleVariantChange = useCallback((newVariant: DealingVariant) => {
-    setVariant(newVariant);
-    const newMax = VARIANT_MAX_PLAYERS[newVariant];
-    setPlayers((current) => current.slice(0, newMax));
-  }, []);
-
-  const handleCreateGame = useCallback(async () => {
-    const validationError = validatePlayers(players);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setError(null);
-    setIsCreating(true);
-
-    try {
-      const humanPlayer = findHumanPlayer(players);
-      const request = buildCreateRequest(variant, mustLoseMode, players);
-      const response = await createGame(request);
-      const playerId = humanPlayer ? response.player_ids[humanPlayer.name] : "";
-      onGameCreated(response.game_id, playerId);
-    } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "Failed to create game");
-    } finally {
-      setIsCreating(false);
-    }
-  }, [players, variant, mustLoseMode, onGameCreated]);
-
-  return (
-    <>
-      <VariantSelector selected={variant} onChange={handleVariantChange} />
-      <MustLoseToggle enabled={mustLoseMode} onToggle={setMustLoseMode} />
-      <PlayerSetup players={players} maxPlayers={maxPlayers} onChange={setPlayers} />
       {error && <p className={styles.error}>{error}</p>}
+
       <div className={styles.actions}>
-        <Button variant="primary" size="large" fullWidth onClick={handleCreateGame} disabled={isCreating}>
+        <Button variant="primary" size="large" fullWidth onClick={handleStartGame} disabled={isCreating}>
           {isCreating ? "Creating..." : "Start Game"}
         </Button>
       </div>
-    </>
-  );
-}
-
-// --- Must-lose toggle ---
-
-interface MustLoseToggleProps {
-  enabled: boolean;
-  onToggle: (enabled: boolean) => void;
-}
-
-function MustLoseToggle({ enabled, onToggle }: MustLoseToggleProps) {
-  const switchClass = [styles.toggleSwitch, enabled ? styles.active : ""]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <div className={styles.section}>
-      <div className={styles.toggle}>
-        <span>Must-Lose Mode</span>
-        <div className={switchClass} onClick={() => onToggle(!enabled)} role="switch" aria-checked={enabled}>
-          <div className={styles.toggleKnob} />
-        </div>
-      </div>
     </div>
   );
 }
 
-// --- Helpers ---
-
-function buildDefaultPlayers(): PlayerConfig[] {
-  return [createDefaultHumanPlayer(), createDefaultAiPlayer(1), createDefaultAiPlayer(2)];
-}
-
-function validatePlayers(players: PlayerConfig[]): string | null {
-  if (players.length < 2) return "At least 2 players required";
-
-  const humanPlayers = players.filter((player) => player.playerType === PlayerType.HUMAN);
-  for (const human of humanPlayers) {
-    if (!human.name.trim()) return "All human players need a name";
-  }
-
-  const names = players.map((player) => player.name.trim().toLowerCase());
-  const uniqueNames = new Set(names);
-  if (uniqueNames.size !== names.length) return "Player names must be unique";
-
-  return null;
-}
-
-function findHumanPlayer(players: PlayerConfig[]): PlayerConfig | undefined {
-  return players.find((player) => player.playerType === PlayerType.HUMAN);
-}
-
-function buildCreateRequest(
-  variant: DealingVariant,
-  mustLoseMode: boolean,
-  players: PlayerConfig[],
-): { variant: DealingVariant; must_lose_mode: boolean; players: PlayerSetupRequest[] } {
-  return {
-    variant,
-    must_lose_mode: mustLoseMode,
-    players: players.map((player) => ({
-      name: player.name.trim(),
-      is_ai: player.playerType === PlayerType.AI,
-      ai_difficulty: player.playerType === PlayerType.AI ? player.aiDifficulty : null,
-    })),
-  };
+function buildDefaultOpponents(): PlayerConfig[] {
+  return [createDefaultAiPlayer(1), createDefaultAiPlayer(2)];
 }
