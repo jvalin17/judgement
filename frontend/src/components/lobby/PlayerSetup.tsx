@@ -111,30 +111,32 @@ function PlayerRow({
         placeholder={`Player ${index + 1}`}
         readOnly={isAi}
       />
-      <select
-        className={styles.playerTypeSelect}
-        value={player.playerType}
-        onChange={(event) => onTypeChange(event.target.value as PlayerType)}
-      >
-        <option value={PlayerType.HUMAN}>Human</option>
-        <option value={PlayerType.AI}>AI</option>
-      </select>
-      {isAi && (
+      <div className={styles.playerControls}>
         <select
-          className={styles.difficultySelect}
-          value={player.aiDifficulty}
-          onChange={(event) => onDifficultyChange(event.target.value as AIDifficulty)}
+          className={styles.playerTypeSelect}
+          value={player.playerType}
+          onChange={(event) => onTypeChange(event.target.value as PlayerType)}
         >
-          <option value={AIDifficulty.EASY}>Easy</option>
-          <option value={AIDifficulty.MEDIUM}>Medium</option>
-          <option value={AIDifficulty.HARD}>Hard</option>
+          <option value={PlayerType.HUMAN}>Human</option>
+          <option value={PlayerType.AI}>AI</option>
         </select>
-      )}
-      {canRemove && (
-        <button className={styles.removeButton} onClick={onRemove} aria-label="Remove player">
-          ✕
-        </button>
-      )}
+        {isAi && (
+          <select
+            className={styles.difficultySelect}
+            value={player.aiDifficulty}
+            onChange={(event) => onDifficultyChange(event.target.value as AIDifficulty)}
+          >
+            <option value={AIDifficulty.EASY}>Easy</option>
+            <option value={AIDifficulty.MEDIUM}>Medium</option>
+            <option value={AIDifficulty.HARD}>Hard</option>
+          </select>
+        )}
+        {canRemove && (
+          <button className={styles.removeButton} onClick={onRemove} aria-label="Remove player">
+            ✕
+          </button>
+        )}
+      </div>
     </div>
   );
 }
