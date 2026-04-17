@@ -2,23 +2,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
   gap: var(--space-lg);
-  max-width: 500px;
+  max-width: 480px;
   margin: 0 auto;
   width: 100%;
+  position: relative;
+}
+
+/* Decorative suit symbols behind the header */
+.lobby::before {
+  content: "\2660  \2665  \2666  \2663";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  letter-spacing: 0.6em;
+  color: var(--color-accent);
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 .title {
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   text-align: center;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, var(--color-text) 40%, var(--color-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: var(--space-sm);
 }
 
 .subtitle {
   color: var(--color-text-muted);
   text-align: center;
-  margin-top: calc(-1 * var(--space-sm));
+  margin-top: calc(-1 * var(--space-md));
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.02em;
 }
 
 /* Tabs */
@@ -60,21 +83,24 @@
 
 .textInput {
   width: 100%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-surface-light);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  padding: 10px var(--space-md);
   color: var(--color-text);
   font-size: var(--font-size-base);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .textInput:focus {
-  outline: 1px solid var(--color-accent);
+  outline: none;
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.15);
 }
 
 .textInput::placeholder {
   color: var(--color-text-muted);
+  opacity: 0.6;
 }
 
 .section {
@@ -85,11 +111,11 @@
 }
 
 .sectionLabel {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
 }
 
 /* Variant selector */
@@ -180,9 +206,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-sm);
-  background: var(--color-surface);
+  padding: 10px var(--space-sm);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-md);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.playerRow:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .playerIndex {
@@ -245,36 +278,40 @@
 }
 
 .addPlayerButton {
-  background: var(--color-surface);
+  background: transparent;
   color: var(--color-text-muted);
-  padding: var(--space-sm);
+  padding: 10px var(--space-sm);
   border-radius: var(--radius-md);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
   text-align: center;
   font-size: var(--font-size-sm);
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .addPlayerButton:hover:not(:disabled) {
-  background: var(--color-surface-light);
-  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-accent);
+  border-color: rgba(230, 126, 34, 0.3);
 }
 
 /* Variant dropdown (simplified) */
 
 .variantSelect {
   width: 100%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-surface-light);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  padding: 10px var(--space-md);
   color: var(--color-text);
   font-size: var(--font-size-base);
   cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .variantSelect:focus {
-  outline: 1px solid var(--color-accent);
+  outline: none;
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.15);
 }
 
 /* Advanced options */
@@ -321,4 +358,5 @@
   flex-direction: column;
   gap: var(--space-sm);
   width: 100%;
+  margin-top: var(--space-sm);
 }

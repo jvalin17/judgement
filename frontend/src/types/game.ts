@@ -121,10 +121,10 @@ export const INITIAL_GAME_STATE: GameState = {
 };
 
 export const VARIANT_LABELS: Record<DealingVariant, string> = {
-  [DealingVariant.TEN_TO_ONE]: "10 → 1 (10 rounds)",
-  [DealingVariant.EIGHT_DOWN_UP]: "8 → 1 → 8 (16 rounds)",
-  [DealingVariant.TEN_DOWN_UP]: "10 → 1 → 10 (20 rounds)",
-  [DealingVariant.EIGHT_DOWN_UP_SHORT]: "8 → 5 → 8 (8 rounds)",
+  [DealingVariant.TEN_TO_ONE]: "10 down to 1 — 10 rounds",
+  [DealingVariant.EIGHT_DOWN_UP]: "8 down to 1, back to 8 — 16 rounds",
+  [DealingVariant.TEN_DOWN_UP]: "10 down to 1, back to 10 — 20 rounds",
+  [DealingVariant.EIGHT_DOWN_UP_SHORT]: "8 down to 5, back to 8 — 8 rounds",
 };
 
 export const VARIANT_MAX_PLAYERS: Record<DealingVariant, number> = {

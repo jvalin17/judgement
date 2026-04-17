@@ -38,7 +38,13 @@ export function PlayerSetup({ players, maxPlayers, onChange }: PlayerSetupProps)
 
   function handleAddPlayer() {
     if (players.length >= maxPlayers) return;
-    const newPlayer = createDefaultAiPlayer(players.length);
+    const usedNames = new Set(players.map((player) => player.name));
+    const availableName = AI_SWEETS_NAMES.find((name) => !usedNames.has(name));
+    const newPlayer: PlayerConfig = {
+      name: availableName ?? `Bot ${players.length + 1}`,
+      playerType: PlayerType.AI,
+      aiDifficulty: AIDifficulty.HARD,
+    };
     onChange([...players, newPlayer]);
   }
 
