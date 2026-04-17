@@ -79,9 +79,25 @@ class ApiError extends Error {
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const body = await response.text();
-    throw new ApiError(response.status, body);
+    let message = friendlyFallback(response.status);
+    try {
+      const parsed = JSON.parse(body);
+      if (typeof parsed.detail === "string") {
+        message = parsed.detail;
+      }
+    } catch {
+      // not JSON — use fallback
+    }
+    throw new ApiError(response.status, message);
   }
   return response.json();
+}
+
+function friendlyFallback(status: number): string {
+  if (status === 404) return "Room not found — check the code and try again";
+  if (status === 400) return "Something went wrong with that request";
+  if (status >= 500) return "Server error — please try again in a moment";
+  return "Something went wrong";
 }
 
 function postJson(url: string, body: unknown): Promise<Response> {
