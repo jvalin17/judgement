@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from datetime import datetime
 from typing import Dict, List, Optional, Callable
 
@@ -17,6 +18,8 @@ from backend.app.ai.base import AIStrategy, RoundContext
 from backend.app.ai.easy import EasyAI
 from backend.app.ai.medium import MediumAI
 from backend.app.ai.hard import HardAI
+from backend.app.ai.hard_ml import HardMLAI
+from backend.app.ai.ml.collector import DecisionCollector
 
 
 STRATEGY_MAP = {
@@ -28,7 +31,9 @@ STRATEGY_MAP = {
 AI_SWEETS_NAMES = ("Gulab Jamun", "Jalebi", "Rasgulla", "Barfi", "Ladoo", "Kaju Katli")
 
 
-def _make_strategy(difficulty: AIDifficulty) -> AIStrategy:
+def _make_strategy(difficulty: AIDifficulty, use_ml: bool = False) -> AIStrategy:
+    if use_ml and difficulty == AIDifficulty.HARD:
+        return HardMLAI()
     cls = STRATEGY_MAP.get(difficulty, EasyAI)
     return cls()
 
@@ -53,6 +58,7 @@ class ManagedGame:
         self.is_public: bool = False
         self.created_at: datetime = datetime.utcnow()
         self._event_callbacks: List[Callable[[GameEvent], None]] = []
+        self.decision_collector = DecisionCollector()
 
         engine.add_observer(self._on_event)
 
@@ -80,6 +86,7 @@ class ManagedGame:
             self._log_round(event)
         elif event.event_type == EventType.GAME_OVER:
             self._log_game_over(event)
+            self._flush_winner_decisions(event)
 
     def _handle_ai_dispatch(self, event: GameEvent) -> None:
         if event.event_type == EventType.TURN_CHANGED:
@@ -116,14 +123,15 @@ class ManagedGame:
             if self.engine.state.phase == GamePhase.BIDDING:
                 valid_bids = self.engine.get_valid_bids(pid)
                 bid = strategy.choose_bid(hand, valid_bids, ctx)
+                self.decision_collector.record_bid(pid, hand, ctx, bid)
                 self.engine.place_bid(pid, bid)
             elif self.engine.state.phase == GamePhase.PLAYING:
                 valid_cards = self.engine.get_valid_cards(pid)
                 card = strategy.choose_card(hand, valid_cards, ctx)
+                self.decision_collector.record_play(pid, hand, valid_cards, ctx, card)
                 self.engine.play_card(pid, card)
         except Exception:
             # Fallback: pick a random valid move so the game doesn't get stuck
-            import random
             if self.engine.state.phase == GamePhase.BIDDING:
                 valid_bids = self.engine.get_valid_bids(pid)
                 if valid_bids:
@@ -158,6 +166,11 @@ class ManagedGame:
         self.session_log.final_scores = event.data.get("final_scores", {})
         self.session_log.winners = event.data.get("winners", [])
 
+    def _flush_winner_decisions(self, event: GameEvent) -> None:
+        winner_ids = event.data.get("winners", [])
+        if winner_ids:
+            self.decision_collector.flush_winner(winner_ids)
+
 
 class GameManager:
     """Registry of active games. Creates games and wires AI strategies."""
@@ -174,10 +187,18 @@ class GameManager:
         return managed
 
     def _register_players(self, managed: ManagedGame, players: List[Player]) -> None:
+        # Pick one random Hard AI bot to use the ML strategy
+        hard_ai_players = [
+            player for player in players
+            if self._needs_ai_strategy(player) and player.ai_difficulty == AIDifficulty.HARD
+        ]
+        ml_player_id = random.choice(hard_ai_players).id if hard_ai_players else None
+
         for player in players:
             managed.engine.add_player(player)
             if self._needs_ai_strategy(player):
-                managed.ai_strategies[player.id] = _make_strategy(player.ai_difficulty)
+                use_ml = player.id == ml_player_id
+                managed.ai_strategies[player.id] = _make_strategy(player.ai_difficulty, use_ml=use_ml)
 
     def _needs_ai_strategy(self, player: Player) -> bool:
         return player.player_type == PlayerType.AI and player.ai_difficulty is not None

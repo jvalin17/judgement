@@ -10,7 +10,7 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 ## Features
 
-- **Three AI difficulty levels** — Easy (random), Medium (strategic), Hard (card counting, opponent modeling, personality system)
+- **Three AI difficulty levels** — Easy (random), Medium (strategic), Hard (card counting, opponent modeling, personality system), plus an ML-enhanced Hard bot that learns from game winners via k-Nearest Neighbors
 - **Four dealing variants** — 10 down to 1, 8 down & up, 10 down & up, 8 short
 - **Simple lobby** — enter your name, pick a mode from the carousel, and take off
 - **Must-lose mode** — "Turbulence" toggle where all players are bid-restricted, not just the dealer
@@ -31,7 +31,7 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 | Frontend | React 19, TypeScript, Vite, CSS Modules |
 | Backend | Python 3.9, FastAPI, Pydantic |
 | Real-time | WebSockets (uvicorn) |
-| AI | Rule-based strategies with personality system |
+| AI | Rule-based strategies + kNN learning engine |
 | Desktop | PyInstaller, pywebview |
 
 ---
@@ -111,7 +111,8 @@ judgement/
 │   ├── app/
 │   │   ├── models/         # Pydantic data models
 │   │   ├── game/           # Rules engine (pure logic, no I/O)
-│   │   ├── ai/             # AI strategies (Strategy pattern)
+│   │   ├── ai/             # AI strategies + ML learning engine
+│   │   │   └── ml/         # kNN model, feature extraction, data collector
 │   │   ├── api/            # REST + WebSocket transport
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
@@ -142,6 +143,7 @@ See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the full changelog.
 
 ## Roadmap
 
+- **ML cold-start seeding** — pre-populate training data from simulated games so the ML bot works from day one
 - **Auto-updater v2** — download prebuilt binaries instead of rebuilding from source
 - **Online multiplayer** — lobby system with join codes, mixed human/AI games
 - **Developer API** — REST API for bots, tournaments, and integrations
