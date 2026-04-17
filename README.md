@@ -11,9 +11,9 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 ## Features
 
 - **Three AI difficulty levels** — Easy (random), Medium (strategic), Hard (card counting, opponent modeling, personality system)
-- **Four dealing variants** — 10→1, 8→1→8, 10→1→10, 8→5→8
-- **Quick Play** — one click to start, or create a custom lobby with mixed AI difficulties
-- **Must-lose mode** — optional rule where all players are bid-restricted, not just the dealer
+- **Four dealing variants** — 10 down to 1, 8 down & up, 10 down & up, 8 short
+- **Simple lobby** — enter your name, pick a mode from the carousel, and take off
+- **Must-lose mode** — "Turbulence" toggle where all players are bid-restricted, not just the dealer
 - **CSS-rendered cards** — no image assets, fully scalable, with 9 card-back designs and 10 table colors
 - **Smooth animations** — dealing, playing, trick collection, round transitions (speed configurable)
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview (no embedded browser, ~45 MB)
@@ -75,7 +75,7 @@ git clone <repo-url> && cd judgement
 
 ## How to Play
 
-1. **Quick Play** or **Create Game** from the lobby
+1. Enter your name, pick a game mode, and hit **Take Off**
 2. Each round: cards are dealt, players bid how many tricks they'll win, then play tricks
 3. **Must follow lead suit** if able; highest trump wins, else highest of lead suit
 4. **Trump rotates** each round: Spades → Diamonds → Clubs → Hearts
@@ -94,10 +94,10 @@ git clone <repo-url> && cd judgement
 
 | Variant | Rounds | Max Players |
 |---------|--------|-------------|
-| 10 → 1 | 10 | 5 |
-| 8 → 1 → 8 | 16 | 6 |
-| 10 → 1 → 10 | 20 | 5 |
-| 8 → 5 → 8 | 8 | 6 |
+| 10 down to 1 | 10 | 5 |
+| 8 down to 1, back to 8 | 16 | 6 |
+| 10 down to 1, back to 10 | 20 | 5 |
+| 8 down to 5, back to 8 | 8 | 6 |
 
 ---
 

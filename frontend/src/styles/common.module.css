@@ -17,12 +17,10 @@
 .primary {
   background: var(--color-accent);
   color: white;
-  box-shadow: 0 2px 12px rgba(230, 126, 34, 0.3);
 }
 
 .primary:hover:not(:disabled) {
   background: var(--color-accent-hover);
-  box-shadow: 0 4px 20px rgba(230, 126, 34, 0.45);
 }
 
 .secondary {

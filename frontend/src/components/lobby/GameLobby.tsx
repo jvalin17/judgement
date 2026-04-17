@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import type { DealingVariant } from "../../types";
-import { VARIANT_MAX_PLAYERS, VARIANT_LABELS, DealingVariant as DV, PlayerType } from "../../types";
+import { VARIANT_MAX_PLAYERS, DealingVariant as DV, PlayerType } from "../../types";
 import { createGame } from "../../services/api";
 import type { PlayerSetup as PlayerSetupRequest } from "../../services/api";
-import { Button, SettingsModal } from "../common";
+import { SettingsModal } from "../common";
 import { PlayerSetup, createDefaultAiPlayer } from "./PlayerSetup";
 import { JoinGameForm } from "./JoinGameForm";
 import type { PlayerConfig } from "./PlayerSetup";
@@ -17,44 +17,60 @@ const VARIANTS: DealingVariant[] = [
   DV.EIGHT_DOWN_UP_SHORT,
 ];
 
+const VARIANT_DESCRIPTIONS: Record<DealingVariant, { rounds: string; detail: string; maxPlayers: number }> = {
+  [DV.TEN_TO_ONE]: { rounds: "10 rounds", detail: "10 down to 1", maxPlayers: 5 },
+  [DV.EIGHT_DOWN_UP]: { rounds: "16 rounds", detail: "8 down to 1, back to 8", maxPlayers: 6 },
+  [DV.TEN_DOWN_UP]: { rounds: "20 rounds", detail: "10 down to 1, back to 10", maxPlayers: 5 },
+  [DV.EIGHT_DOWN_UP_SHORT]: { rounds: "8 rounds", detail: "8 down to 5, back to 8", maxPlayers: 6 },
+};
+
 interface GameLobbyProps {
   onGameCreated: (gameId: string, playerId: string) => void;
 }
 
 export function GameLobby({ onGameCreated }: GameLobbyProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
 
   const [playerName, setPlayerName] = useState("");
-  const [variant, setVariant] = useState<DealingVariant>("10_to_1");
+  const [variantIndex, setVariantIndex] = useState(0);
   const [mustLoseMode, setMustLoseMode] = useState(false);
   const [opponents, setOpponents] = useState<PlayerConfig[]>(buildDefaultOpponents);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  const maxPlayers = VARIANT_MAX_PLAYERS[variant];
-  const maxOpponents = maxPlayers - 1;
+  const variant = VARIANTS[variantIndex];
+  const variantInfo = VARIANT_DESCRIPTIONS[variant];
+  const maxOpponents = VARIANT_MAX_PLAYERS[variant] - 1;
 
-  const handleVariantChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newVariant = event.target.value as DealingVariant;
-    setVariant(newVariant);
-    const newMax = VARIANT_MAX_PLAYERS[newVariant] - 1;
-    setOpponents((current) => current.slice(0, newMax));
+  const handlePrevVariant = useCallback(() => {
+    setVariantIndex((current) => (current - 1 + VARIANTS.length) % VARIANTS.length);
   }, []);
 
+  const handleNextVariant = useCallback(() => {
+    setVariantIndex((current) => (current + 1) % VARIANTS.length);
+  }, []);
+
+  const handleVariantDot = useCallback((index: number) => {
+    setVariantIndex(index);
+  }, []);
+
+  // Trim opponents when variant changes to a lower max
+  const effectiveOpponents = opponents.slice(0, maxOpponents);
+
   const handleOpponentsChange = useCallback((players: PlayerConfig[]) => {
-    setOpponents(players.slice(0, maxOpponents));
-  }, [maxOpponents]);
+    setOpponents(players);
+  }, []);
 
   const handleStartGame = useCallback(async () => {
     if (!playerName.trim()) {
-      setError("Enter your name to start");
+      setError("Enter your name to take off!");
       return;
     }
 
     const allPlayers: PlayerConfig[] = [
       { name: playerName.trim(), playerType: PlayerType.HUMAN, aiDifficulty: "hard" as PlayerConfig["aiDifficulty"] },
-      ...opponents,
+      ...effectiveOpponents,
     ];
 
     if (allPlayers.length < 2) {
@@ -89,84 +105,124 @@ export function GameLobby({ onGameCreated }: GameLobbyProps) {
     } finally {
       setIsCreating(false);
     }
-  }, [playerName, opponents, variant, mustLoseMode, onGameCreated]);
-
-  const switchClass = [styles.toggleSwitch, mustLoseMode ? styles.active : ""]
-    .filter(Boolean)
-    .join(" ");
+  }, [playerName, effectiveOpponents, variant, mustLoseMode, onGameCreated]);
 
   return (
-    <div className={styles.lobby}>
-      <button
-        className={settingsStyles.gearButton}
-        onClick={() => setShowSettings(true)}
-        aria-label="Settings"
-      >
-        &#9881;
-      </button>
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-
-      <h1 className={styles.title}>Judgement</h1>
-      <p className={styles.subtitle}>Indian trick-taking card game</p>
-
-      <div className={styles.section}>
-        <span className={styles.sectionLabel}>Your Name</span>
-        <input
-          className={styles.textInput}
-          type="text"
-          placeholder="Enter your name"
-          value={playerName}
-          onChange={(event) => setPlayerName(event.target.value)}
-          maxLength={20}
-          autoFocus
-        />
+    <div className={styles.skyPage}>
+      {/* Animated clouds */}
+      <div className={styles.cloudsLayer}>
+        <div className={`${styles.cloud} ${styles.cloud1}`} />
+        <div className={`${styles.cloud} ${styles.cloud2}`} />
+        <div className={`${styles.cloud} ${styles.cloud3}`} />
+        <div className={`${styles.cloud} ${styles.cloud4}`} />
+        <div className={`${styles.cloud} ${styles.cloud5}`} />
       </div>
 
-      <div className={styles.section}>
-        <span className={styles.sectionLabel}>Rounds</span>
-        <select
-          className={styles.variantSelect}
-          value={variant}
-          onChange={handleVariantChange}
+      {/* Floating suit symbols */}
+      <div className={styles.floatingSuits}>
+        <span className={`${styles.suitSymbol} ${styles.suit1}`}>{"\u2660"}</span>
+        <span className={`${styles.suitSymbol} ${styles.suit2}`}>{"\u2665"}</span>
+        <span className={`${styles.suitSymbol} ${styles.suit3}`}>{"\u2666"}</span>
+        <span className={`${styles.suitSymbol} ${styles.suit4}`}>{"\u2663"}</span>
+      </div>
+
+      <div className={styles.lobby}>
+        <button
+          className={settingsStyles.gearButton}
+          onClick={() => setShowSettings(true)}
+          aria-label="Settings"
         >
-          {VARIANTS.map((variantOption) => (
-            <option key={variantOption} value={variantOption}>
-              {VARIANT_LABELS[variantOption]}
-            </option>
-          ))}
-        </select>
-      </div>
+          &#9881;
+        </button>
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      <PlayerSetup players={opponents} maxPlayers={maxOpponents} onChange={handleOpponentsChange} />
+        <h1 className={styles.title}>Judgement</h1>
+        <p className={styles.subtitle}>Indian trick-taking card game</p>
 
-      <button
-        className={styles.advancedToggle}
-        onClick={() => setShowAdvanced(!showAdvanced)}
-      >
-        {showAdvanced ? "\u25BE" : "\u25B8"} Advanced options
-      </button>
-
-      {showAdvanced && (
-        <div className={styles.advancedSection}>
-          <div className={styles.toggle}>
-            <div>
-              <span>Must-Lose Mode</span>
-              <p className={styles.advancedHint}>All players are constrained (not just dealer)</p>
-            </div>
-            <div className={switchClass} onClick={() => setMustLoseMode(!mustLoseMode)} role="switch" aria-checked={mustLoseMode}>
-              <div className={styles.toggleKnob} />
-            </div>
-          </div>
-          <JoinGameForm onJoined={onGameCreated} />
+        {/* Name input */}
+        <div className={styles.section}>
+          <span className={styles.sectionLabel}>Your Name</span>
+          <input
+            className={styles.textInput}
+            type="text"
+            placeholder="Enter your name"
+            value={playerName}
+            onChange={(event) => setPlayerName(event.target.value)}
+            maxLength={20}
+            autoFocus
+          />
         </div>
-      )}
 
-      {error && <p className={styles.error}>{error}</p>}
+        {/* Variant carousel */}
+        <div className={styles.section}>
+          <span className={styles.sectionLabel}>Game Mode</span>
+          <div className={styles.carousel}>
+            <button className={styles.carouselArrow} onClick={handlePrevVariant} aria-label="Previous variant">
+              {"\u2039"}
+            </button>
+            <div className={styles.carouselCard}>
+              <div className={styles.carouselRounds}>{variantInfo.rounds}</div>
+              <div className={styles.carouselDetail}>{variantInfo.detail}</div>
+              <div className={styles.carouselPlayers}>up to {variantInfo.maxPlayers} players</div>
+            </div>
+            <button className={styles.carouselArrow} onClick={handleNextVariant} aria-label="Next variant">
+              {"\u203A"}
+            </button>
+          </div>
+          <div className={styles.carouselDots}>
+            {VARIANTS.map((_, index) => (
+              <button
+                key={index}
+                className={`${styles.dot} ${index === variantIndex ? styles.dotActive : ""}`}
+                onClick={() => handleVariantDot(index)}
+                aria-label={`Variant ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
 
-      <div className={styles.actions}>
-        <Button variant="primary" size="large" fullWidth onClick={handleStartGame} disabled={isCreating}>
-          {isCreating ? "Creating..." : "Start Game"}
-        </Button>
+        {/* Opponents */}
+        <PlayerSetup players={effectiveOpponents} maxPlayers={maxOpponents} onChange={handleOpponentsChange} />
+
+        {/* Turbulence toggle */}
+        <button
+          className={`${styles.turbulenceToggle} ${mustLoseMode ? styles.turbulenceActive : ""}`}
+          onClick={() => setMustLoseMode(!mustLoseMode)}
+        >
+          <span className={styles.turbulenceIcon}>{mustLoseMode ? "\u26A0\uFE0F" : "\u2708\uFE0F"}</span>
+          <span className={styles.turbulenceText}>
+            {mustLoseMode ? "Turbulence!" : "Smooth Skies"}
+          </span>
+          <span className={styles.turbulenceHint}>
+            {mustLoseMode ? "All players constrained" : "Only dealer constrained"}
+          </span>
+        </button>
+
+        {error && <p className={styles.error}>{error}</p>}
+
+        {/* Red airplane start button */}
+        <button
+          className={styles.takeoffButton}
+          onClick={handleStartGame}
+          disabled={isCreating}
+        >
+          <span className={styles.takeoffPlane}>{"\u2708"}</span>
+          <span>{isCreating ? "Boarding..." : "Take Off!"}</span>
+        </button>
+
+        {/* Join game link */}
+        <button
+          className={styles.joinLink}
+          onClick={() => setShowJoin(!showJoin)}
+        >
+          {showJoin ? "Back to create" : "Have a game code? Join here"}
+        </button>
+
+        {showJoin && (
+          <div className={styles.joinSection}>
+            <JoinGameForm onJoined={onGameCreated} />
+          </div>
+        )}
       </div>
     </div>
   );
