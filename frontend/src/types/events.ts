@@ -22,6 +22,7 @@ export const ServerEventType = {
   GAME_STARTING: "game_starting",
   PLAYER_RECONNECTED: "player_reconnected",
   PLAYER_DISCONNECTED: "player_disconnected",
+  MASCOT_PERSONA_AWARDED: "mascot_persona_awarded",
 } as const;
 
 export type ServerEventType = (typeof ServerEventType)[keyof typeof ServerEventType];
@@ -117,6 +118,15 @@ export interface PlayerLeftEventData {
 
 export interface AutoStartCountdownEventData {
   seconds_remaining: number;
+}
+
+export interface MascotPersonaAwardedEventData {
+  persona_id: string;
+  persona_name: string;
+  persona_category: string;
+  persona_tagline: string;
+  traits: Record<string, number>;
+  player_traits: Record<string, number>;
 }
 
 export const ClientAction = {

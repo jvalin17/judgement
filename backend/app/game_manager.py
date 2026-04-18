@@ -11,6 +11,7 @@ from backend.app.models import (
 from backend.app.models.events import (
     GameEvent, EventType,
     player_joined_event, player_left_event, game_starting_event,
+    mascot_persona_awarded_event,
 )
 from backend.app.models.session import SessionLog, RoundLog
 from backend.app.game.engine import GameEngine
@@ -87,6 +88,7 @@ class ManagedGame:
         elif event.event_type == EventType.GAME_OVER:
             self._log_game_over(event)
             self._flush_winner_decisions(event)
+            self._award_personas()
 
     def _handle_ai_dispatch(self, event: GameEvent) -> None:
         if event.event_type == EventType.TURN_CHANGED:
@@ -170,6 +172,30 @@ class ManagedGame:
         winner_ids = event.data.get("winners", [])
         if winner_ids:
             self.decision_collector.flush_winner(winner_ids)
+
+    def _award_personas(self) -> None:
+        """Compute and emit a persona award for each human player."""
+        try:
+            from backend.app.analysis.fingerprint import compute_fingerprint
+            from backend.app.analysis.persona_match import pick_persona
+
+            for player in self.engine.state.players:
+                if player.player_type != PlayerType.HUMAN:
+                    continue
+                player_traits = compute_fingerprint(self.session_log, player.id)
+                persona = pick_persona(player_traits)
+                event = mascot_persona_awarded_event(
+                    player_id=player.id,
+                    persona_id=persona.id,
+                    persona_name=persona.name,
+                    persona_category=persona.category,
+                    persona_tagline=persona.tagline,
+                    traits=persona.traits,
+                    player_traits=player_traits,
+                )
+                self._notify_callbacks(event)
+        except Exception:
+            pass  # Mascot errors must never break the game
 
 
 class GameManager:

@@ -21,6 +21,7 @@ class EventType(str, Enum):
     GAME_STARTING = "game_starting"
     PLAYER_RECONNECTED = "player_reconnected"
     PLAYER_DISCONNECTED = "player_disconnected"
+    MASCOT_PERSONA_AWARDED = "mascot_persona_awarded"
 
 
 class GameEvent(BaseModel):
@@ -213,4 +214,40 @@ def player_disconnected_event(player_id: str, player_name: str) -> GameEvent:
     return GameEvent(
         event_type=EventType.PLAYER_DISCONNECTED,
         data={"player_id": player_id, "player_name": player_name},
+    )
+
+
+# --- Mascot event data models ---
+
+
+class MascotPersonaAwardedData(BaseModel):
+    persona_id: str
+    persona_name: str
+    persona_category: str
+    persona_tagline: str
+    traits: Dict[str, float]
+    player_traits: Dict[str, float]
+
+
+def mascot_persona_awarded_event(
+    player_id: str,
+    persona_id: str,
+    persona_name: str,
+    persona_category: str,
+    persona_tagline: str,
+    traits: Dict[str, float],
+    player_traits: Dict[str, float],
+) -> GameEvent:
+    data = MascotPersonaAwardedData(
+        persona_id=persona_id,
+        persona_name=persona_name,
+        persona_category=persona_category,
+        persona_tagline=persona_tagline,
+        traits=traits,
+        player_traits=player_traits,
+    )
+    return GameEvent(
+        event_type=EventType.MASCOT_PERSONA_AWARDED,
+        data=data.model_dump(),
+        player_id=player_id,
     )
