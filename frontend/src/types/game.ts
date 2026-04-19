@@ -136,7 +136,7 @@ export const VARIANT_CONFIG: Record<DealingVariant, VariantConfig> = {
   [DealingVariant.EIGHT_DOWN_UP]:       { label: "8 down to 1, back to 8 — 16 rounds", rounds: "16 rounds", detail: "8 down to 1, back to 8",   maxPlayers: 6  },
   [DealingVariant.TEN_DOWN_UP]:         { label: "10 down to 1, back to 10 — 20 rounds", rounds: "20 rounds", detail: "10 down to 1, back to 10", maxPlayers: 5  },
   [DealingVariant.EIGHT_DOWN_UP_SHORT]: { label: "8 down to 5, back to 8 — 8 rounds",  rounds: "8 rounds",  detail: "8 down to 5, back to 8",   maxPlayers: 6  },
-  [DealingVariant.EIGHT_TO_THREE]:     { label: "8 down to 3 — 6 rounds",            rounds: "6 rounds",  detail: "8 down to 3",               maxPlayers: 6  },
+  [DealingVariant.EIGHT_TO_THREE]:     { label: "8 down to 4 — 5 rounds",            rounds: "5 rounds",  detail: "8 down to 4",               maxPlayers: 6  },
   [DealingVariant.THREE_QUICK]:         { label: "Quick game — 3 rounds",              rounds: "3 rounds",  detail: "Quick game: 5, 3, 5 cards", maxPlayers: 10 },
 };
 

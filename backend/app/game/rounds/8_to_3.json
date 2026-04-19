@@ -3,6 +3,5 @@
   { "round": 2, "cards": 7, "trump": "diamonds" },
   { "round": 3, "cards": 6, "trump": "clubs" },
   { "round": 4, "cards": 5, "trump": "hearts" },
-  { "round": 5, "cards": 4, "trump": "spades" },
-  { "round": 6, "cards": 3, "trump": "diamonds" }
+  { "round": 5, "cards": 4, "trump": "spades" }
 ]
