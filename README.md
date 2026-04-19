@@ -45,7 +45,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
 - **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
-- **307 automated tests** — game logic, AI, REST API, WebSocket, information isolation, ML analysis
+- **345 automated tests** — game logic, AI, REST API, WebSocket, ML analysis, frontend components
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
 
 ---
@@ -118,6 +118,7 @@ cd frontend && npm run dev
 # Run tests
 source .venv/bin/activate
 python3 -m pytest backend/tests/ -v
+cd frontend && npm test
 ```
 
 | Task | Command |
@@ -127,7 +128,8 @@ python3 -m pytest backend/tests/ -v
 | Dev server | `./judgement dev` |
 | Build standalone app | `./scripts/package.sh` |
 | Frontend dev | `cd frontend && npm run dev` |
-| Run tests | `source .venv/bin/activate && python3 -m pytest backend/tests/ -v` |
+| Backend tests | `source .venv/bin/activate && python3 -m pytest backend/tests/ -v` |
+| Frontend tests | `cd frontend && npm test` |
 
 ---
 
@@ -160,12 +162,13 @@ judgement/
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
-│   └── tests/              # 307 tests
+│   └── tests/              # 307 backend tests
 ├── frontend/src/
 │   ├── components/         # React components
 │   ├── hooks/              # useGame, useWebSocket
 │   ├── context/            # GameContext, SettingsContext
-│   └── services/           # REST + WebSocket clients
+│   ├── services/           # REST + WebSocket clients
+│   └── test/               # 38 frontend tests (Vitest)
 ├── desktop/                # pywebview launcher
 ├── assets/                 # App icons (PNG, ICNS, SVG)
 ├── scripts/                # Build, package, dev tools
