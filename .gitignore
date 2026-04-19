@@ -54,6 +54,7 @@ code_mapping.md
 ARCH_ANALYSIS.md
 TODO.md
 stupidity.md
+CHECKLIST.md
 
 # PyInstaller
 *.spec
