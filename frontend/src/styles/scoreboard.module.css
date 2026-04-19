@@ -137,6 +137,107 @@
   gap: var(--space-sm);
 }
 
+/* Share Prompt */
+
+.sharePrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shareTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.shareDescription {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.shareMessage {
+  font-size: 0.8rem;
+  color: var(--color-success);
+  padding: 4px 0;
+}
+
+.shareDetails {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 6px 0;
+}
+
+.shareFinePrint {
+  font-size: 0.6rem;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.shareActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.shareDetailsToggle {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.65rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+
+.shareButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.shareDismiss {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.shareDismiss:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.shareButton {
+  background: var(--color-accent);
+  border: none;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.shareButton:disabled {
+  opacity: 0.5;
+}
+
+.shareError {
+  font-size: 0.65rem;
+  color: var(--color-danger);
+}
+
 /* Confetti */
 
 .confettiContainer {

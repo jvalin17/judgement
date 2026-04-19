@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from backend.app.api import rest, websocket, update
+from backend.app.api import rest, websocket, update, data_sharing
 from backend.app.game_manager import GameManager
 
 app = FastAPI(title="Judgement Card Game", version="0.1.0")
@@ -36,6 +36,7 @@ app.include_router(rest.router)
 app.include_router(rest.lobby_router)
 app.include_router(websocket.router)
 app.include_router(update.router)
+app.include_router(data_sharing.router)
 
 
 @app.get("/health")

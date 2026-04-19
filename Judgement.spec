@@ -42,6 +42,7 @@ a = Analysis(
         'backend.app.api', 'backend.app.api.rest',
         'backend.app.api.websocket', 'backend.app.api.schemas',
         'backend.app.api.update',
+        'backend.app.api.data_sharing',
         # --- uvicorn ---
         'uvicorn', 'uvicorn.logging', 'uvicorn.loops', 'uvicorn.loops.auto',
         'uvicorn.protocols', 'uvicorn.protocols.http', 'uvicorn.protocols.http.auto',

@@ -15,11 +15,16 @@ import {
   checkForUpdate,
   applyUpdate,
   getUpdateStatus,
+  getSharePreview,
+  shareData,
+  checkCommunityData,
+  downloadCommunityData,
 } from "../../services/api";
 import type {
   VersionInfo,
   UpdateCheckResponse,
   UpdateStatusResponse,
+  SharePreviewResponse,
 } from "../../services/api";
 import styles from "../../styles/settings.module.css";
 import cardStyles from "../../styles/card.module.css";
@@ -68,6 +73,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         <CardBackPicker selected={settings.cardBack} onSelect={updateCardBack} />
         <TableColorPicker selected={settings.tableColor} onSelect={updateTableColor} />
         <AnimationSpeedPicker selected={settings.animationSpeed} onSelect={updateAnimationSpeed} />
+        <CommunityDataSection />
         <UpdateSection />
       </div>
     </Modal>
@@ -177,6 +183,90 @@ function AnimationSpeedPicker({ selected, onSelect }: AnimationSpeedPickerProps)
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// --- Community Data Section ---
+
+function CommunityDataSection() {
+  const [preview, setPreview] = useState<SharePreviewResponse | null>(null);
+  const [shareStatus, setShareStatus] = useState<"idle" | "sharing" | "done" | "error">("idle");
+  const [downloadStatus, setDownloadStatus] = useState<"idle" | "downloading" | "done" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    getSharePreview().then(setPreview).catch(() => {});
+  }, []);
+
+  const handleShare = async () => {
+    setShareStatus("sharing");
+    setMessage("");
+    try {
+      const result = await shareData();
+      setShareStatus(result.success ? "done" : "error");
+      setMessage(result.message);
+    } catch {
+      setShareStatus("error");
+      setMessage("Could not connect to server");
+    }
+  };
+
+  const handleDownload = async () => {
+    setDownloadStatus("downloading");
+    setMessage("");
+    try {
+      const result = await downloadCommunityData();
+      setDownloadStatus(result.success ? "done" : "error");
+      setMessage(result.message);
+      if (result.success) {
+        // Refresh preview counts
+        getSharePreview().then(setPreview).catch(() => {});
+      }
+    } catch {
+      setDownloadStatus("error");
+      setMessage("Could not download community data");
+    }
+  };
+
+  return (
+    <div className={styles.settingsSection} style={{ borderTop: "1px solid var(--color-surface-light)", paddingTop: "var(--space-lg)" }}>
+      <span className={styles.sectionTitle}>Community Data</span>
+      {preview && (
+        <div className={styles.versionInfo} style={{ marginBottom: "var(--space-sm)" }}>
+          Local: {preview.total} examples ({preview.human_bid_decisions + preview.human_play_decisions} from you)
+        </div>
+      )}
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <button
+          className={styles.updateButton}
+          onClick={handleShare}
+          disabled={shareStatus === "sharing" || !preview || preview.total === 0}
+          style={{ flex: 1 }}
+        >
+          {shareStatus === "sharing" ? "Sharing..." : shareStatus === "done" ? "Shared!" : "Share Data"}
+        </button>
+        <button
+          className={styles.updateButton}
+          onClick={handleDownload}
+          disabled={downloadStatus === "downloading"}
+          style={{ flex: 1 }}
+        >
+          {downloadStatus === "downloading" ? "Downloading..." : downloadStatus === "done" ? "Downloaded!" : "Get Community Data"}
+        </button>
+      </div>
+      {message && (
+        <div className={styles.updateStatus} style={{
+          color: (shareStatus === "error" || downloadStatus === "error")
+            ? "var(--color-danger)"
+            : "var(--color-success)",
+        }}>
+          {message}
+        </div>
+      )}
+      <div className={styles.versionInfo}>
+        Shares anonymized numeric features only — no names or personal data
       </div>
     </div>
   );

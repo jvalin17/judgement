@@ -1,5 +1,8 @@
+import { useState, useEffect } from "react";
 import type { Player, PersonaAward } from "../../types";
 import { Button } from "../common";
+import { getSharePreview, shareData } from "../../services/api";
+import type { SharePreviewResponse } from "../../services/api";
 import styles from "../../styles/scoreboard.module.css";
 
 interface FinalResultsProps {
@@ -36,6 +39,8 @@ export function FinalResults({ players, finalScores, awardedPersona, playerId, o
           />
         ))}
       </div>
+
+      <SharePrompt />
 
       <div className={styles.actions}>
         <Button variant="primary" size="large" onClick={onPlayAgain}>
@@ -424,6 +429,102 @@ function Sparkles() {
           {"\u2728"}
         </div>
       ))}
+    </div>
+  );
+}
+
+// --- Share Prompt ---
+
+function SharePrompt() {
+  const [dismissed, setDismissed] = useState(false);
+  const [preview, setPreview] = useState<SharePreviewResponse | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "sharing" | "done" | "error">("idle");
+  const [shareMessage, setShareMessage] = useState("");
+
+  useEffect(() => {
+    const skipShare = localStorage.getItem("judgement_skip_share") === "true";
+    if (skipShare) {
+      setDismissed(true);
+      return;
+    }
+    getSharePreview().then(setPreview).catch(() => {});
+  }, []);
+
+  if (dismissed || !preview || preview.total === 0) return null;
+
+  const handleShare = async () => {
+    setShareState("sharing");
+    try {
+      const result = await shareData();
+      if (result.success) {
+        setShareState("done");
+        setShareMessage("Thanks for sharing!");
+      } else {
+        setShareState("error");
+        setShareMessage(result.message);
+      }
+    } catch {
+      setShareState("error");
+      setShareMessage("Could not connect to server");
+    }
+  };
+
+  const handleDismiss = () => {
+    setDismissed(true);
+  };
+
+  const handleNeverAsk = () => {
+    localStorage.setItem("judgement_skip_share", "true");
+    setDismissed(true);
+  };
+
+  if (shareState === "done") {
+    return (
+      <div className={styles.sharePrompt}>
+        <span className={styles.shareMessage}>{shareMessage}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.sharePrompt}>
+      <span className={styles.shareTitle}>Help improve the AI</span>
+      <span className={styles.shareDescription}>
+        Share anonymized game decisions with the community
+      </span>
+
+      {showDetails && (
+        <div className={styles.shareDetails}>
+          <div>{preview.bid_decisions} bid decisions, {preview.play_decisions} play decisions</div>
+          <div className={styles.shareFinePrint}>{preview.description}</div>
+        </div>
+      )}
+
+      <div className={styles.shareActions}>
+        <button
+          className={styles.shareDetailsToggle}
+          onClick={() => setShowDetails(!showDetails)}
+        >
+          {showDetails ? "Hide details" : "What we share"}
+        </button>
+
+        <div className={styles.shareButtons}>
+          <button className={styles.shareDismiss} onClick={handleDismiss}>Not now</button>
+          <button className={styles.shareDismiss} onClick={handleNeverAsk}>Don't ask again</button>
+          <button
+            className={styles.shareButton}
+            onClick={handleShare}
+            disabled={shareState === "sharing"}
+          >
+            {shareState === "sharing" ? "Sharing..." : "Share"}
+          </button>
+        </div>
+      </div>
+
+      {shareState === "error" && (
+        <span className={styles.shareError}>{shareMessage}</span>
+      )}
     </div>
   );
 }

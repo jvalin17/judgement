@@ -279,3 +279,58 @@ export async function getUpdateStatus(): Promise<UpdateStatusResponse> {
   const response = await fetch("/api/update/status");
   return handleResponse<UpdateStatusResponse>(response);
 }
+
+// --- Data Sharing API ---
+
+export interface SharePreviewResponse {
+  bid_decisions: number;
+  play_decisions: number;
+  human_bid_decisions: number;
+  human_play_decisions: number;
+  total: number;
+  description: string;
+}
+
+export interface ShareStatusResponse {
+  state: "idle" | "uploading" | "success" | "error";
+  message: string;
+}
+
+export interface CommunityCheckResponse {
+  available: boolean;
+  bid_size: number;
+  play_size: number;
+  updated_at: string | null;
+  error: string | null;
+}
+
+export interface CommunityDownloadResponse {
+  success: boolean;
+  message: string;
+  examples_added: number;
+}
+
+export async function getSharePreview(): Promise<SharePreviewResponse> {
+  const response = await fetch("/api/data/share/preview");
+  return handleResponse<SharePreviewResponse>(response);
+}
+
+export async function shareData(): Promise<{ success: boolean; message: string }> {
+  const response = await postJson("/api/data/share", {});
+  return handleResponse<{ success: boolean; message: string }>(response);
+}
+
+export async function getShareStatus(): Promise<ShareStatusResponse> {
+  const response = await fetch("/api/data/share/status");
+  return handleResponse<ShareStatusResponse>(response);
+}
+
+export async function checkCommunityData(): Promise<CommunityCheckResponse> {
+  const response = await fetch("/api/data/community/check");
+  return handleResponse<CommunityCheckResponse>(response);
+}
+
+export async function downloadCommunityData(): Promise<CommunityDownloadResponse> {
+  const response = await postJson("/api/data/community/download", {});
+  return handleResponse<CommunityDownloadResponse>(response);
+}
