@@ -525,40 +525,42 @@
 /* Stat badge — split circle: top=score, bottom=won/bid */
 
 .statBadge {
-  width: 42px;
-  height: 42px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .statBadgeTop {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--color-accent);
   line-height: 1;
-  padding-top: 2px;
+  padding-top: 3px;
 }
 
 .statBadgeDivider {
-  width: 70%;
+  width: 65%;
   height: 1px;
-  background: rgba(255, 255, 255, 0.25);
-  margin: 1px 0;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 3px 0;
 }
 
 .statBadgeBottom {
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ecf0f1;
   line-height: 1;
-  padding-bottom: 2px;
+  padding-bottom: 3px;
+  letter-spacing: 0.02em;
 }
 
 .seatCards {
@@ -653,16 +655,16 @@
   }
 
   .statBadge {
-    width: 48px;
-    height: 48px;
+    width: 60px;
+    height: 60px;
   }
 
   .statBadgeTop {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   .statBadgeBottom {
-    font-size: 0.65rem;
+    font-size: 0.95rem;
   }
 
   .handCards > * {

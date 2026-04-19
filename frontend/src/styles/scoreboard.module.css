@@ -239,8 +239,8 @@
   border: 1px solid rgba(230, 126, 34, 0.4);
   border-radius: var(--radius-lg, 12px);
   padding: var(--space-lg);
-  animation: personaReveal 0.8s ease-out both;
-  animation-delay: 0.5s;
+  animation: personaReveal 0.6s ease-out both;
+  animation-delay: 0.2s;
 }
 
 @keyframes personaReveal {

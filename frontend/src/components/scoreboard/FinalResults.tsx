@@ -23,6 +23,8 @@ export function FinalResults({ players, finalScores, awardedPersona, onPlayAgain
 
       <WinnerDisplay winners={winners} />
 
+      {awardedPersona && <PersonaCard persona={awardedPersona} />}
+
       <div className={styles.finalScoreList}>
         {rankedPlayers.map((player) => (
           <FinalScoreRow
@@ -33,8 +35,6 @@ export function FinalResults({ players, finalScores, awardedPersona, onPlayAgain
           />
         ))}
       </div>
-
-      {awardedPersona && <PersonaCard persona={awardedPersona} />}
 
       <div className={styles.actions}>
         <Button variant="primary" size="large" onClick={onPlayAgain}>

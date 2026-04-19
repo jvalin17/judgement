@@ -432,6 +432,54 @@ class TestTwoHumanBidding:
                 )
 
 
+class TestGameOverPersona:
+    """Verify the GAME_OVER WebSocket message includes persona data for human players."""
+
+    def test_game_over_has_persona_on_wire(self):
+        """Play a full 3-round quick game over WebSocket and verify
+        the game_over message includes persona data."""
+        game_id, player_id = _create_game(variant="3_quick")
+
+        with client.websocket_connect(f"/ws/{game_id}/{player_id}") as ws:
+            connected = ws.receive_json()
+            hand_evt = ws.receive_json()
+
+            assert connected["type"] == "connected"
+            latest_hand = hand_evt["data"]
+
+            game_over_data = None
+            for _ in range(200):  # safety valve
+                valid_bids = latest_hand.get("valid_bids", [])
+                valid_cards = latest_hand.get("valid_cards", [])
+
+                if valid_bids:
+                    ws.send_json({"action": "bid", "amount": valid_bids[0]})
+                elif valid_cards:
+                    ws.send_json({"action": "play", "suit": valid_cards[0]["suit"], "rank": valid_cards[0]["rank"]})
+                else:
+                    break
+
+                hand_data, response_events = _read_until_hand(ws)
+
+                for evt in response_events:
+                    if evt["type"] == "game_over":
+                        game_over_data = evt["data"]
+
+                if hand_data is None:
+                    break
+                latest_hand = hand_data
+
+            assert game_over_data is not None, "Never received game_over event"
+            assert "persona" in game_over_data, f"game_over missing 'persona' key. Keys: {list(game_over_data.keys())}"
+            persona = game_over_data["persona"]
+            assert persona is not None, "persona is None for human player"
+            assert "persona_name" in persona
+            assert "persona_tagline" in persona
+            assert "traits" in persona
+            assert "player_traits" in persona
+            assert len(persona["player_traits"]) == 6
+
+
 class TestEventOrdering:
     """Verify events arrive in correct order."""
 
