@@ -1,4 +1,4 @@
-"""ML-enhanced Hard AI that learns from game winners.
+"""Smart Hard AI that learns from game winners.
 
 Uses k-Nearest Neighbors to predict bids and card plays based on
 accumulated data from past game winners. Falls back to rule-based
@@ -12,12 +12,12 @@ from typing import List, Optional
 from backend.app.models import Card
 from backend.app.ai.base import AIStrategy, RoundContext
 from backend.app.ai.hard import HardAI
-from backend.app.ai.ml.features import extract_bid_features, extract_play_features, index_to_card
-from backend.app.ai.ml.collector import get_bid_data_file, get_play_data_file
-from backend.app.ai.ml import knn
+from backend.app.ai.learning.features import extract_bid_features, extract_play_features, index_to_card
+from backend.app.ai.learning.decision_collector import get_bid_data_file, get_play_data_file
+from backend.app.ai.learning import neighbor_model
 
 
-class HardMLAI(AIStrategy):
+class SmartHardAI(AIStrategy):
     """Hard AI that learns from winners via kNN, with rule-based fallback."""
 
     def __init__(self):
@@ -30,7 +30,7 @@ class HardMLAI(AIStrategy):
         context: RoundContext,
     ) -> int:
         features = extract_bid_features(hand, context)
-        predicted = knn.predict_bid(features, get_bid_data_file())
+        predicted = neighbor_model.predict_bid(features, get_bid_data_file())
 
         if predicted is not None and predicted in valid_bids:
             return predicted
@@ -49,7 +49,7 @@ class HardMLAI(AIStrategy):
         context: RoundContext,
     ) -> Card:
         features = extract_play_features(hand, valid_cards, context)
-        predicted_index = knn.predict_card_index(
+        predicted_index = neighbor_model.predict_card_index(
             features, len(valid_cards), get_play_data_file(),
         )
 

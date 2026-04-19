@@ -1,4 +1,4 @@
-"""Extract numeric feature vectors from game state for ML predictions."""
+"""Extract numeric feature vectors from game state for predictions."""
 
 from __future__ import annotations
 

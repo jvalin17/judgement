@@ -12,8 +12,8 @@ from typing import Dict, List, Optional
 
 from backend.app.models import Card, Suit
 from backend.app.ai.base import RoundContext
-from backend.app.ai.ml.features import extract_bid_features, extract_play_features, card_to_index
-from backend.app.ai.ml import knn
+from backend.app.ai.learning.features import extract_bid_features, extract_play_features, card_to_index
+from backend.app.ai.learning import neighbor_model
 
 # Default data directory — relative to this file
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -74,10 +74,10 @@ class DecisionCollector:
 
         for winner_id in winner_ids:
             for features, label in self._bid_decisions.get(winner_id, []):
-                knn.append_example(bid_file, features, label)
+                neighbor_model.append_example(bid_file, features, label)
                 count += 1
             for features, label in self._play_decisions.get(winner_id, []):
-                knn.append_example(play_file, features, label)
+                neighbor_model.append_example(play_file, features, label)
                 count += 1
 
         self._bid_decisions.clear()

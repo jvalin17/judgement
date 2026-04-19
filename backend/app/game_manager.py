@@ -19,8 +19,8 @@ from backend.app.ai.base import AIStrategy, RoundContext
 from backend.app.ai.easy import EasyAI
 from backend.app.ai.medium import MediumAI
 from backend.app.ai.hard import HardAI
-from backend.app.ai.hard_ml import HardMLAI
-from backend.app.ai.ml.collector import DecisionCollector
+from backend.app.ai.smart_hard import SmartHardAI
+from backend.app.ai.learning.decision_collector import DecisionCollector
 
 
 STRATEGY_MAP = {
@@ -32,9 +32,9 @@ STRATEGY_MAP = {
 AI_SWEETS_NAMES = ("Gulab Jamun", "Jalebi", "Rasgulla", "Barfi", "Ladoo", "Kaju Katli")
 
 
-def _make_strategy(difficulty: AIDifficulty, use_ml: bool = False) -> AIStrategy:
-    if use_ml and difficulty == AIDifficulty.HARD:
-        return HardMLAI()
+def _make_strategy(difficulty: AIDifficulty, use_smart: bool = False) -> AIStrategy:
+    if use_smart and difficulty == AIDifficulty.HARD:
+        return SmartHardAI()
     cls = STRATEGY_MAP.get(difficulty, EasyAI)
     return cls()
 
@@ -228,13 +228,13 @@ class GameManager:
             player for player in players
             if self._needs_ai_strategy(player) and player.ai_difficulty == AIDifficulty.HARD
         ]
-        ml_player_id = random.choice(hard_ai_players).id if hard_ai_players else None
+        smart_player_id = random.choice(hard_ai_players).id if hard_ai_players else None
 
         for player in players:
             managed.engine.add_player(player)
             if self._needs_ai_strategy(player):
-                use_ml = player.id == ml_player_id
-                managed.ai_strategies[player.id] = _make_strategy(player.ai_difficulty, use_ml=use_ml)
+                use_smart = player.id == smart_player_id
+                managed.ai_strategies[player.id] = _make_strategy(player.ai_difficulty, use_smart=use_smart)
 
     def _needs_ai_strategy(self, player: Player) -> bool:
         return player.player_type == PlayerType.AI and player.ai_difficulty is not None

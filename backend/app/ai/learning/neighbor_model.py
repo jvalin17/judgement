@@ -14,7 +14,7 @@ from typing import List, Optional, Tuple
 # Default number of neighbors to consider
 DEFAULT_K = 5
 
-# Minimum examples needed before kNN predictions are used
+# Minimum examples needed before predictions are used
 MIN_EXAMPLES = 10
 
 
