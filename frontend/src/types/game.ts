@@ -123,21 +123,29 @@ export const INITIAL_GAME_STATE: GameState = {
   awardedPersona: null,
 };
 
-export const VARIANT_LABELS: Record<DealingVariant, string> = {
-  [DealingVariant.TEN_TO_ONE]: "10 down to 1 — 10 rounds",
-  [DealingVariant.EIGHT_DOWN_UP]: "8 down to 1, back to 8 — 16 rounds",
-  [DealingVariant.TEN_DOWN_UP]: "10 down to 1, back to 10 — 20 rounds",
-  [DealingVariant.EIGHT_DOWN_UP_SHORT]: "8 down to 5, back to 8 — 8 rounds",
-  [DealingVariant.THREE_QUICK]: "Quick game — 3 rounds",
+export interface VariantConfig {
+  label: string;
+  rounds: string;
+  detail: string;
+  maxPlayers: number;
+}
+
+export const VARIANT_CONFIG: Record<DealingVariant, VariantConfig> = {
+  [DealingVariant.TEN_TO_ONE]:          { label: "10 down to 1 — 10 rounds",          rounds: "10 rounds", detail: "10 down to 1",             maxPlayers: 5  },
+  [DealingVariant.EIGHT_DOWN_UP]:       { label: "8 down to 1, back to 8 — 16 rounds", rounds: "16 rounds", detail: "8 down to 1, back to 8",   maxPlayers: 6  },
+  [DealingVariant.TEN_DOWN_UP]:         { label: "10 down to 1, back to 10 — 20 rounds", rounds: "20 rounds", detail: "10 down to 1, back to 10", maxPlayers: 5  },
+  [DealingVariant.EIGHT_DOWN_UP_SHORT]: { label: "8 down to 5, back to 8 — 8 rounds",  rounds: "8 rounds",  detail: "8 down to 5, back to 8",   maxPlayers: 6  },
+  [DealingVariant.THREE_QUICK]:         { label: "Quick game — 3 rounds",              rounds: "3 rounds",  detail: "Quick game: 5, 3, 5 cards", maxPlayers: 10 },
 };
 
-export const VARIANT_MAX_PLAYERS: Record<DealingVariant, number> = {
-  [DealingVariant.TEN_TO_ONE]: 5,
-  [DealingVariant.EIGHT_DOWN_UP]: 6,
-  [DealingVariant.TEN_DOWN_UP]: 5,
-  [DealingVariant.EIGHT_DOWN_UP_SHORT]: 6,
-  [DealingVariant.THREE_QUICK]: 10,
-};
+export const VARIANT_LIST: DealingVariant[] = Object.keys(VARIANT_CONFIG) as DealingVariant[];
+
+// Convenience accessors for backward compatibility
+export const VARIANT_LABELS: Record<DealingVariant, string> =
+  Object.fromEntries(VARIANT_LIST.map((v) => [v, VARIANT_CONFIG[v].label])) as Record<DealingVariant, string>;
+
+export const VARIANT_MAX_PLAYERS: Record<DealingVariant, number> =
+  Object.fromEntries(VARIANT_LIST.map((v) => [v, VARIANT_CONFIG[v].maxPlayers])) as Record<DealingVariant, number>;
 
 export function isMyTurn(state: GameState): boolean {
   return state.currentPlayerId === state.playerId;

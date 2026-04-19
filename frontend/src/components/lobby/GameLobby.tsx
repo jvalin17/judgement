@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import type { DealingVariant } from "../../types";
-import { VARIANT_MAX_PLAYERS, DealingVariant as DV, PlayerType } from "../../types";
+import { VARIANT_LIST, VARIANT_CONFIG, PlayerType } from "../../types";
 import { createGame, joinGame } from "../../services/api";
 import type { PlayerSetup as PlayerSetupRequest } from "../../services/api";
 import { SettingsModal } from "../common";
@@ -10,21 +10,7 @@ import styles from "../../styles/lobby.module.css";
 
 type LobbyView = "main" | "multiplayer";
 
-const VARIANTS: DealingVariant[] = [
-  DV.TEN_TO_ONE,
-  DV.EIGHT_DOWN_UP,
-  DV.TEN_DOWN_UP,
-  DV.EIGHT_DOWN_UP_SHORT,
-  DV.THREE_QUICK,
-];
-
-const VARIANT_DESCRIPTIONS: Record<DealingVariant, { rounds: string; detail: string; maxPlayers: number }> = {
-  [DV.TEN_TO_ONE]: { rounds: "10 rounds", detail: "10 down to 1", maxPlayers: 5 },
-  [DV.EIGHT_DOWN_UP]: { rounds: "16 rounds", detail: "8 down to 1, back to 8", maxPlayers: 6 },
-  [DV.TEN_DOWN_UP]: { rounds: "20 rounds", detail: "10 down to 1, back to 10", maxPlayers: 5 },
-  [DV.EIGHT_DOWN_UP_SHORT]: { rounds: "8 rounds", detail: "8 down to 5, back to 8", maxPlayers: 6 },
-  [DV.THREE_QUICK]: { rounds: "3 rounds", detail: "Quick game: 5, 3, 5 cards", maxPlayers: 10 },
-};
+const VARIANTS = VARIANT_LIST;
 
 interface GameLobbyProps {
   onGameCreated: (gameId: string, playerId: string) => void;
@@ -90,8 +76,8 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
   const [isCreating, setIsCreating] = useState(false);
 
   const variant = VARIANTS[variantIndex];
-  const variantInfo = VARIANT_DESCRIPTIONS[variant];
-  const maxOpponents = VARIANT_MAX_PLAYERS[variant] - 1;
+  const variantInfo = VARIANT_CONFIG[variant];
+  const maxOpponents = VARIANT_CONFIG[variant].maxPlayers - 1;
   const effectiveOpponents = opponents.slice(0, maxOpponents);
 
   const handlePrevVariant = useCallback(() => {
@@ -249,7 +235,7 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
   const [isJoining, setIsJoining] = useState(false);
 
   const createVariant = VARIANTS[createVariantIndex];
-  const createVariantInfo = VARIANT_DESCRIPTIONS[createVariant];
+  const createVariantInfo = VARIANT_CONFIG[createVariant];
 
   const handleCreateRoom = useCallback(async () => {
     if (!hostName.trim()) {

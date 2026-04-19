@@ -2,7 +2,7 @@
 
 [![Test](https://github.com/jvalin17/judgement/actions/workflows/test.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test.yml)
 
-A trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents or with friends in multiplayer. Available as a standalone desktop app.
+A trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents with adaptive difficulty. Available as a standalone desktop app.
 
 Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
@@ -35,16 +35,18 @@ No Python, Node.js, or terminal needed. Just download and play.
 
 - **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (learns from game winners via kNN)
 - **Five dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 3 quick
-- **Multiplayer** — create or join rooms with join codes, mixed human + AI games
-- **Must-lose mode** — "Turbulence" toggle where all players are bid-restricted
-- **Play style persona** — at game end, get matched to a persona based on your play traits
+- **Turbulence mode** — all players are bid-restricted, not just the dealer
+- **Play style persona** — at game end, get matched to one of 75 personas across 7 categories based on an 11-dimension play fingerprint
+- **Community data sharing** — share anonymized game decisions to help train better AI, download community data from other players
+- **Airport-themed scoreboard** — Passenger, Judgement, Hands Won, Turbulence, Altitude columns
+- **Score visible during bidding** — cumulative score shown in the bid selector
 - **CSS-rendered cards** — no image assets, fully scalable
-- **Smooth animations** — dealing, playing, trick collection, confetti + fireworks on game over
+- **Smooth animations** — dealing, playing, trick collection, celebration effects (confetti, fireworks, rockets, flowers, bubbles, clouds) ranked by final position
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
-- **No telemetry** — zero outbound requests except the manual update check
-- **283 automated tests** — game logic, AI, REST API, WebSocket, information isolation
-- **Local learning** — the Smart Hard AI learns from your games and gets stronger over time. Each player's AI learns independently on their machine
+- **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
+- **307 automated tests** — game logic, AI, REST API, WebSocket, information isolation, ML analysis
+- **Local learning** — Smart Hard AI learns from your games and gets stronger over time
 
 ---
 
@@ -136,6 +138,7 @@ python3 -m pytest backend/tests/ -v
 | Backend | Python 3.9, FastAPI, Pydantic |
 | Real-time | WebSockets (uvicorn) |
 | AI | Rule-based strategies + kNN learning engine |
+| ML | Player fingerprinting, persona matching, community data sharing |
 | Desktop | PyInstaller, pywebview |
 
 ---
@@ -151,21 +154,22 @@ judgement/
 │   ├── app/
 │   │   ├── models/         # Pydantic data models
 │   │   ├── game/           # Rules engine (pure logic, no I/O)
-│   │   ├── ai/             # AI strategies
-│   │   │   └── learning/   # kNN model, feature extraction, data collector
-│   │   ├── analysis/       # Play style fingerprinting + persona matching
-│   │   ├── api/            # REST + WebSocket transport
+│   │   ├── ai/             # AI strategies (Easy, Medium, Hard, SmartHard)
+│   │   ├── ml/             # Machine learning infrastructure
+│   │   │   ├── learning/   # kNN model, feature extraction, data collector
+│   │   │   └── analysis/   # Play style fingerprinting + persona matching
+│   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
-│   └── tests/              # 283 tests
+│   └── tests/              # 307 tests
 ├── frontend/src/
 │   ├── components/         # React components
 │   ├── hooks/              # useGame, useWebSocket
-│   ├── context/            # GameContext provider
+│   ├── context/            # GameContext, SettingsContext
 │   └── services/           # REST + WebSocket clients
 ├── desktop/                # pywebview launcher
-├── scripts/                # build, package, dev tools
-├── Judgement.spec           # PyInstaller config
+├── assets/                 # App icons (PNG, ICNS, SVG)
+├── scripts/                # Build, package, dev tools
 └── requirements.txt        # Python dependencies
 ```
 

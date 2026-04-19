@@ -82,8 +82,5 @@ def get_round_sequence(variant: DealingVariant) -> list[int]:
 
 
 def max_players_for_variant(variant: DealingVariant) -> int:
-    if variant in (DealingVariant.EIGHT_DOWN_UP, DealingVariant.EIGHT_DOWN_UP_SHORT):
-        return 6
-    if variant == DealingVariant.THREE_QUICK:
-        return 10
-    return 5
+    max_cards = max(get_round_sequence(variant))
+    return 52 // max_cards

@@ -1,4 +1,5 @@
-import { DealingVariant, VARIANT_LABELS } from "../../types";
+import { VARIANT_LIST, VARIANT_LABELS } from "../../types";
+import type { DealingVariant } from "../../types";
 import styles from "../../styles/lobby.module.css";
 
 interface VariantSelectorProps {
@@ -6,13 +7,7 @@ interface VariantSelectorProps {
   onChange: (variant: DealingVariant) => void;
 }
 
-const VARIANTS: DealingVariant[] = [
-  DealingVariant.TEN_TO_ONE,
-  DealingVariant.EIGHT_DOWN_UP,
-  DealingVariant.TEN_DOWN_UP,
-  DealingVariant.EIGHT_DOWN_UP_SHORT,
-  DealingVariant.THREE_QUICK,
-];
+const VARIANTS = VARIANT_LIST;
 
 export function VariantSelector({ selected, onChange }: VariantSelectorProps) {
   return (
