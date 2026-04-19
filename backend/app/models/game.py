@@ -20,6 +20,7 @@ class DealingVariant(str, Enum):
     EIGHT_DOWN_UP = "8_down_up"      # 8→1, 1→8 (16 rounds, max 6 players)
     TEN_DOWN_UP = "10_down_up"       # 10→1, 1→10 (20 rounds)
     EIGHT_DOWN_UP_SHORT = "8_down_up_short"  # 8→4, 4→8 (10 rounds, max 6 players)
+    EIGHT_TO_THREE = "8_to_3"            # 8→3 (6 rounds, max 6 players)
     THREE_QUICK = "3_quick"              # 5,3,5 (3 rounds, max 10 players)
 
 

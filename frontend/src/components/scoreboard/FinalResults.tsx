@@ -36,8 +36,6 @@ export function FinalResults({ players, finalScores, awardedPersona, playerId, o
 
       <WinnerDisplay winners={winners} />
 
-      {awardedPersona && <PersonaCard persona={awardedPersona} />}
-
       <div className={styles.finalScoreList}>
         {rankedPlayers.map((player) => (
           <FinalScoreRow
@@ -48,6 +46,8 @@ export function FinalResults({ players, finalScores, awardedPersona, playerId, o
           />
         ))}
       </div>
+
+      {awardedPersona && <PersonaCard persona={awardedPersona} />}
 
       <SharePrompt />
 
@@ -625,6 +625,16 @@ function PersonaCard({ persona }: PersonaCardProps) {
             personaValue={persona.traits[dim] ?? 0}
           />
         ))}
+        <div className={styles.traitLegend}>
+          <span className={styles.traitLegendItem}>
+            <span className={styles.traitLegendBar} />
+            You
+          </span>
+          <span className={styles.traitLegendItem}>
+            <span className={styles.traitLegendMarker} />
+            {persona.persona_name}
+          </span>
+        </div>
       </div>
     </div>
   );

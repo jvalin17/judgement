@@ -75,7 +75,7 @@ describe("FinalResults", () => {
       player_traits: { risk: 0.7, planning: 0.85, patience: 0.4 },
     };
     render(<FinalResults {...props} />);
-    expect(screen.getByText("Iron Man")).toBeInTheDocument();
+    expect(screen.getAllByText("Iron Man").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Your Play Style")).toBeInTheDocument();
     expect(screen.getByText("Superhero")).toBeInTheDocument();
     expect(screen.getByText("Genius, billionaire, philanthropist")).toBeInTheDocument();
