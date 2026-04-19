@@ -175,6 +175,22 @@ judgement/
 
 ---
 
+## Roadmap
+
+Things we're considering for the future:
+
+- **Online multiplayer** — host games on a public server so friends can play from anywhere, not just the same network
+- **Public API** — expose the game engine as a REST API so others can build bots, dashboards, tournaments, or integrate with other apps
+- **More card games** — the engine architecture (state machine + strategy pattern) can support other trick-taking games like Bridge, Spades, or Hearts with new rule modules
+- **Neural network AI** — replace or augment kNN with a trained neural model for stronger, more adaptive play
+- **Game history & stats** — persist game results to disk, show lifetime stats, win rates, and improvement trends
+- **Replay viewer** — step through completed games trick by trick
+- **Mobile app** — React Native or PWA version for phones and tablets
+- **Themes & customization** — more table designs, card faces, sound effects
+- **Tournaments** — bracket-based multi-game competitions with leaderboards
+
+---
+
 ## System Requirements
 
 ~25 MB on disk, ~100 MB RAM. No internet required to play.
