@@ -3,6 +3,7 @@ import type { Player, PersonaAward } from "../../types";
 import { Button } from "../common";
 import { getSharePreview, shareData, getShareStatus } from "../../services/api";
 import type { SharePreviewResponse } from "../../services/api";
+import { playVictorySound, playGoodGameSound } from "../../services/audio";
 import styles from "../../styles/scoreboard.module.css";
 
 interface FinalResultsProps {
@@ -18,6 +19,14 @@ export function FinalResults({ players, finalScores, awardedPersona, playerId, o
   const winningScore = rankedPlayers.length > 0 ? finalScores[rankedPlayers[0].id] : 0;
   const winners = rankedPlayers.filter((player) => finalScores[player.id] === winningScore);
   const playerRank = getPlayerRank(rankedPlayers, finalScores, playerId);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (playerRank === 1) playVictorySound();
+      else if (playerRank <= 3) playGoodGameSound();
+    }, 600); // slight delay so it lands with the visuals
+    return () => clearTimeout(timer);
+  }, [playerRank]);
 
   return (
     <div className={styles.finalResults}>
