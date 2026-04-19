@@ -44,6 +44,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **In-app updater** — check for new versions from Settings
 - **No telemetry** — zero outbound requests except the manual update check
 - **283 automated tests** — game logic, AI, REST API, WebSocket, information isolation
+- **Local learning** — the Smart Hard AI learns from your games and gets stronger over time. Each player's AI learns independently on their machine
 
 ---
 
@@ -177,12 +178,6 @@ judgement/
 - **macOS:** 10.13+ (Intel or Apple Silicon)
 - **Windows:** 10+
 - **Linux:** Python 3.9+ with GTK/WebKit
-
----
-
-## Release Notes
-
-See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the full changelog.
 
 ---
 
