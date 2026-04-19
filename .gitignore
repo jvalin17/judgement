@@ -55,6 +55,8 @@ ARCH_ANALYSIS.md
 TODO.md
 stupidity.md
 CHECKLIST.md
+RELEASE_NOTES.md
+plans/
 
 # PyInstaller
 *.spec
