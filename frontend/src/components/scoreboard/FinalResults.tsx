@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Player, PersonaAward } from "../../types";
 import { Button } from "../common";
-import { getSharePreview, shareData } from "../../services/api";
+import { getSharePreview, shareData, getShareStatus } from "../../services/api";
 import type { SharePreviewResponse } from "../../services/api";
 import styles from "../../styles/scoreboard.module.css";
 
@@ -438,7 +438,7 @@ function Sparkles() {
 function SharePrompt() {
   const [dismissed, setDismissed] = useState(false);
   const [preview, setPreview] = useState<SharePreviewResponse | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const [shareState, setShareState] = useState<"idle" | "sharing" | "done" | "error">("idle");
   const [shareMessage, setShareMessage] = useState("");
 
@@ -457,13 +457,28 @@ function SharePrompt() {
     setShareState("sharing");
     try {
       const result = await shareData();
-      if (result.success) {
-        setShareState("done");
-        setShareMessage("Thanks for sharing!");
-      } else {
+      if (!result.success) {
         setShareState("error");
         setShareMessage(result.message);
+        return;
       }
+      // Poll status until upload finishes (runs in background thread)
+      for (let attempt = 0; attempt < 20; attempt++) {
+        await new Promise((r) => setTimeout(r, 1500));
+        const status = await getShareStatus();
+        if (status.state === "success") {
+          setShareState("done");
+          setShareMessage(status.message || "Thanks for sharing!");
+          return;
+        }
+        if (status.state === "error") {
+          setShareState("error");
+          setShareMessage(status.message);
+          return;
+        }
+      }
+      setShareState("done");
+      setShareMessage("Thanks for sharing!");
     } catch {
       setShareState("error");
       setShareMessage("Could not connect to server");
@@ -471,11 +486,13 @@ function SharePrompt() {
   };
 
   const handleDismiss = () => {
+    setShowPopup(false);
     setDismissed(true);
   };
 
   const handleNeverAsk = () => {
     localStorage.setItem("judgement_skip_share", "true");
+    setShowPopup(false);
     setDismissed(true);
   };
 
@@ -488,44 +505,66 @@ function SharePrompt() {
   }
 
   return (
-    <div className={styles.sharePrompt}>
-      <span className={styles.shareTitle}>Help improve the AI</span>
-      <span className={styles.shareDescription}>
-        Share anonymized game decisions with the community
-      </span>
-
-      {showDetails && (
-        <div className={styles.shareDetails}>
-          <div>{preview.bid_decisions} bid decisions, {preview.play_decisions} play decisions</div>
-          <div className={styles.shareFinePrint}>{preview.description}</div>
-        </div>
-      )}
-
-      <div className={styles.shareActions}>
-        <button
-          className={styles.shareDetailsToggle}
-          onClick={() => setShowDetails(!showDetails)}
-        >
-          {showDetails ? "Hide details" : "What we share"}
+    <>
+      <div className={styles.sharePrompt}>
+        <button className={styles.shareButton} onClick={() => setShowPopup(true)}>
+          Share Game Data
         </button>
-
-        <div className={styles.shareButtons}>
-          <button className={styles.shareDismiss} onClick={handleDismiss}>Not now</button>
-          <button className={styles.shareDismiss} onClick={handleNeverAsk}>Don't ask again</button>
-          <button
-            className={styles.shareButton}
-            onClick={handleShare}
-            disabled={shareState === "sharing"}
-          >
-            {shareState === "sharing" ? "Sharing..." : "Share"}
-          </button>
-        </div>
+        <span className={styles.shareDescription}>Help improve the AI</span>
       </div>
 
-      {shareState === "error" && (
-        <span className={styles.shareError}>{shareMessage}</span>
+      {showPopup && (
+        <div className={styles.shareOverlay} onClick={() => setShowPopup(false)}>
+          <div className={styles.sharePopup} onClick={(e) => e.stopPropagation()}>
+            <span className={styles.shareTitle}>Share Game Data</span>
+
+            <span className={styles.shareDescription}>
+              Help the community train stronger AI by sharing anonymized game decisions.
+            </span>
+
+            <div className={styles.shareDetails}>
+              <div className={styles.shareDetailRow}>
+                <span className={styles.shareDetailLabel}>Bid decisions</span>
+                <span className={styles.shareDetailValue}>{preview.bid_decisions}</span>
+              </div>
+              <div className={styles.shareDetailRow}>
+                <span className={styles.shareDetailLabel}>Play decisions</span>
+                <span className={styles.shareDetailValue}>{preview.play_decisions}</span>
+              </div>
+              <div className={styles.shareDetailRow}>
+                <span className={styles.shareDetailLabel}>Your decisions</span>
+                <span className={styles.shareDetailValue}>{preview.human_bid_decisions + preview.human_play_decisions}</span>
+              </div>
+              <div className={styles.shareDetailRow}>
+                <span className={styles.shareDetailLabel}>Total examples</span>
+                <span className={styles.shareDetailValue}>{preview.total}</span>
+              </div>
+            </div>
+
+            <div className={styles.shareFinePrint}>
+              Only numeric features are shared — no names, no cards, no personal data.
+              Data comes from game winners only.
+            </div>
+
+            {shareState === "error" && (
+              <span className={styles.shareError}>{shareMessage}</span>
+            )}
+
+            <div className={styles.sharePopupActions}>
+              <button className={styles.shareDismiss} onClick={handleDismiss}>Not now</button>
+              <button className={styles.shareDismiss} onClick={handleNeverAsk}>Don't ask again</button>
+              <button
+                className={styles.shareButton}
+                onClick={handleShare}
+                disabled={shareState === "sharing"}
+              >
+                {shareState === "sharing" ? "Sharing..." : "Share"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
