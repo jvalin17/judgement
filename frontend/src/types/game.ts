@@ -1,5 +1,5 @@
 import type { Card } from "./card";
-import type { ServerEvent, MascotPersonaAwardedEventData } from "./events";
+import type { ServerEvent, PersonaAward } from "./events";
 
 export const GamePhase = {
   LOBBY: "lobby",
@@ -81,7 +81,7 @@ export interface GameState {
   lobbyPlayers: Array<{ id: string; name: string; isHost: boolean }>;
   autoStartSeconds: number | null;
   isHost: boolean;
-  awardedPersona: MascotPersonaAwardedEventData | null;
+  awardedPersona: PersonaAward | null;
 }
 
 export interface RoundSummary {

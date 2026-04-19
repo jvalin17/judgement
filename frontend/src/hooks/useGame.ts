@@ -18,7 +18,6 @@ import type {
   PlayerJoinedEventData,
   PlayerLeftEventData,
   AutoStartCountdownEventData,
-  MascotPersonaAwardedEventData,
 } from "../types";
 import {
   GamePhase,
@@ -127,8 +126,6 @@ function handleServerEvent(state: GameState, event: ServerEvent): GameState {
       return handlePlayerLeft(state, event.data as unknown as PlayerLeftEventData);
     case ServerEventType.AUTO_START_COUNTDOWN:
       return handleAutoStartCountdown(state, event.data as unknown as AutoStartCountdownEventData);
-    case ServerEventType.MASCOT_PERSONA_AWARDED:
-      return handleMascotPersonaAwarded(state, event.data as unknown as MascotPersonaAwardedEventData);
     case ServerEventType.GAME_STARTING:
       return state; // Game will transition via GAME_STARTED event
     default:
@@ -253,13 +250,7 @@ function handleGameOver(state: GameState, data: GameOverEventData): GameState {
     ...state,
     phase: GamePhase.GAME_OVER,
     cumulativeScores: data.final_scores,
-  };
-}
-
-function handleMascotPersonaAwarded(state: GameState, data: MascotPersonaAwardedEventData): GameState {
-  return {
-    ...state,
-    awardedPersona: data,
+    awardedPersona: data.persona ?? null,
   };
 }
 

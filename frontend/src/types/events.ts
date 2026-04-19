@@ -84,9 +84,19 @@ export interface RoundCompleteEventData {
   bids: Bid[];
 }
 
+export interface PersonaAward {
+  persona_id: string;
+  persona_name: string;
+  persona_category: string;
+  persona_tagline: string;
+  traits: Record<string, number>;
+  player_traits: Record<string, number>;
+}
+
 export interface GameOverEventData {
   final_scores: Record<string, number>;
   winners: string[];
+  persona: PersonaAward | null;
 }
 
 export interface TurnChangedEventData {

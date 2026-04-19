@@ -75,9 +75,19 @@ class RoundCompleteData(BaseModel):
     bids: List[dict]
 
 
+class PersonaAward(BaseModel):
+    persona_id: str
+    persona_name: str
+    persona_category: str
+    persona_tagline: str
+    traits: Dict[str, float]
+    player_traits: Dict[str, float]
+
+
 class GameOverData(BaseModel):
     final_scores: Dict[str, int]
     winners: List[str]
+    persona: Optional[PersonaAward] = None
 
 
 class TurnChangedData(BaseModel):
@@ -145,8 +155,11 @@ def round_complete_event(
     return GameEvent(event_type=EventType.ROUND_COMPLETE, data=data.model_dump())
 
 
-def game_over_event(final_scores: Dict[str, int], winners: List[str]) -> GameEvent:
-    data = GameOverData(final_scores=final_scores, winners=winners)
+def game_over_event(
+    final_scores: Dict[str, int], winners: List[str],
+    persona: Optional[PersonaAward] = None,
+) -> GameEvent:
+    data = GameOverData(final_scores=final_scores, winners=winners, persona=persona)
     return GameEvent(event_type=EventType.GAME_OVER, data=data.model_dump())
 
 

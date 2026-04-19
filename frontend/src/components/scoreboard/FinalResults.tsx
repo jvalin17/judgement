@@ -1,11 +1,11 @@
-import type { Player, MascotPersonaAwardedEventData } from "../../types";
+import type { Player, PersonaAward } from "../../types";
 import { Button } from "../common";
 import styles from "../../styles/scoreboard.module.css";
 
 interface FinalResultsProps {
   players: Player[];
   finalScores: Record<string, number>;
-  awardedPersona: MascotPersonaAwardedEventData | null;
+  awardedPersona: PersonaAward | null;
   onPlayAgain: () => void;
 }
 
@@ -17,6 +17,7 @@ export function FinalResults({ players, finalScores, awardedPersona, onPlayAgain
   return (
     <div className={styles.finalResults}>
       <Confetti />
+      <Fireworks />
 
       <h1 className={styles.gameOverTitle}>Game Over</h1>
 
@@ -131,6 +132,60 @@ function Confetti() {
   );
 }
 
+// --- Fireworks ---
+
+const FIREWORK_COLORS = ["#e67e22", "#f1c40f", "#e74c3c", "#2ecc71", "#3498db", "#9b59b6", "#ff6b6b", "#ffd93d"];
+const FIREWORK_COUNT = 8;
+const SPARKS_PER_FIREWORK = 12;
+
+const FIREWORKS_DATA = Array.from({ length: FIREWORK_COUNT }, (_, fwIndex) => ({
+  id: fwIndex,
+  left: 10 + seededRandom(fwIndex * 11 + 100) * 80,
+  top: 10 + seededRandom(fwIndex * 11 + 101) * 40,
+  delay: seededRandom(fwIndex * 11 + 102) * 3,
+  color: FIREWORK_COLORS[fwIndex % FIREWORK_COLORS.length],
+  sparks: Array.from({ length: SPARKS_PER_FIREWORK }, (__, sparkIndex) => {
+    const angle = (sparkIndex / SPARKS_PER_FIREWORK) * 360;
+    const distance = 30 + seededRandom(fwIndex * 100 + sparkIndex * 7 + 200) * 50;
+    return {
+      id: sparkIndex,
+      angle,
+      distance,
+    };
+  }),
+}));
+
+function Fireworks() {
+  return (
+    <div className={styles.confettiContainer} aria-hidden="true">
+      {FIREWORKS_DATA.map((fw) => (
+        <div
+          key={fw.id}
+          className={styles.fireworkBurst}
+          style={{
+            left: `${fw.left}%`,
+            top: `${fw.top}%`,
+            animationDelay: `${fw.delay}s`,
+          }}
+        >
+          {fw.sparks.map((spark) => (
+            <div
+              key={spark.id}
+              className={styles.fireworkSpark}
+              style={{
+                backgroundColor: fw.color,
+                ["--spark-x" as string]: `${Math.cos((spark.angle * Math.PI) / 180) * spark.distance}px`,
+                ["--spark-y" as string]: `${Math.sin((spark.angle * Math.PI) / 180) * spark.distance}px`,
+                animationDelay: `${fw.delay}s`,
+              }}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // --- Persona Card ---
 
 const DIMENSION_LABELS: Record<string, string> = {
@@ -151,7 +206,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 interface PersonaCardProps {
-  persona: MascotPersonaAwardedEventData;
+  persona: PersonaAward;
 }
 
 function PersonaCard({ persona }: PersonaCardProps) {
@@ -160,8 +215,9 @@ function PersonaCard({ persona }: PersonaCardProps) {
   return (
     <div className={styles.personaCard}>
       <div className={styles.personaHeader}>
-        <span className={styles.personaCategory}>{categoryLabel}</span>
+        <span className={styles.personaStyleLabel}>Your Play Style</span>
         <h2 className={styles.personaName}>{persona.persona_name}</h2>
+        <span className={styles.personaCategory}>{categoryLabel}</span>
         <p className={styles.personaTagline}>{persona.persona_tagline}</p>
       </div>
       <div className={styles.traitBars}>

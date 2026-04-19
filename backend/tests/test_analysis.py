@@ -238,11 +238,10 @@ class TestFingerprintToMatch:
         conservative_personas = {"turtle", "nit", "elephant", "snorlax", "ant", "owl", "shaktimaan"}
         assert any(pid in conservative_personas for pid in top3_ids)
 
-    def test_mascot_event_data_has_all_fields(self):
-        """Verify the event factory produces valid event data."""
-        from backend.app.models.events import mascot_persona_awarded_event
-        event = mascot_persona_awarded_event(
-            player_id="p1",
+    def test_game_over_event_includes_persona(self):
+        """Verify the game_over event factory can include persona data."""
+        from backend.app.models.events import game_over_event, PersonaAward
+        persona = PersonaAward(
             persona_id="fox",
             persona_name="The Fox",
             persona_category="animal",
@@ -250,8 +249,104 @@ class TestFingerprintToMatch:
             traits={"risk": 0.6},
             player_traits={"risk": 0.5},
         )
-        assert event.event_type.value == "mascot_persona_awarded"
-        assert event.player_id == "p1"
-        assert event.data["persona_id"] == "fox"
-        assert event.data["persona_name"] == "The Fox"
-        assert event.data["player_traits"]["risk"] == 0.5
+        event = game_over_event(
+            final_scores={"p1": 20},
+            winners=["p1"],
+            persona=persona,
+        )
+        assert event.event_type.value == "game_over"
+        assert event.data["persona"]["persona_id"] == "fox"
+        assert event.data["persona"]["persona_name"] == "The Fox"
+        assert event.data["persona"]["player_traits"]["risk"] == 0.5
+
+    def test_game_over_event_without_persona(self):
+        """Verify game_over event works without persona (AI-only game)."""
+        from backend.app.models.events import game_over_event
+        event = game_over_event(final_scores={"p1": 20}, winners=["p1"])
+        assert event.data["persona"] is None
+
+
+class TestMascotIntegration:
+    """Integration test: play a full game and verify persona is in GAME_OVER event."""
+
+    def test_full_game_emits_persona_in_game_over(self):
+        import random as stdlib_random
+        from backend.app.models import Player, PlayerType, AIDifficulty, GameConfig, DealingVariant
+        from backend.app.models.events import EventType
+        from backend.app.game_manager import GameManager
+
+        manager = GameManager()
+        config = GameConfig(variant=DealingVariant.THREE_QUICK)
+        players = [
+            Player(id="human1", name="Alice", player_type=PlayerType.HUMAN),
+            Player(id="ai1", name="Bot", player_type=PlayerType.AI, ai_difficulty=AIDifficulty.EASY),
+        ]
+
+        collected_events = []
+        managed = manager.create_game(config, players)
+        managed.add_event_callback(lambda e: collected_events.append(e))
+        managed.engine.start_game()
+
+        rng = stdlib_random.Random(42)
+        max_iterations = 500
+        iteration = 0
+        while managed.engine.state.phase.value != "game_over" and iteration < max_iterations:
+            iteration += 1
+            phase = managed.engine.state.phase.value
+            pid = managed.engine.state.current_player_id
+            if phase == "round_over":
+                managed.engine.continue_game()
+                continue
+            if not pid or pid.startswith("ai"):
+                continue
+            if phase == "bidding":
+                valid = managed.engine.get_valid_bids(pid)
+                managed.engine.place_bid(pid, rng.choice(valid))
+            elif phase == "playing":
+                valid = managed.engine.get_valid_cards(pid)
+                managed.engine.play_card(pid, rng.choice(valid))
+
+        # Find GAME_OVER events targeted at the human player
+        game_over_events = [
+            e for e in collected_events
+            if e.event_type == EventType.GAME_OVER and e.player_id == "human1"
+        ]
+        assert len(game_over_events) == 1, f"Expected 1 GAME_OVER for human, got {len(game_over_events)}"
+
+        event = game_over_events[0]
+        persona = event.data.get("persona")
+        assert persona is not None, "Persona should be included in GAME_OVER event"
+        assert "persona_name" in persona
+        assert "persona_tagline" in persona
+        assert "traits" in persona
+        assert "player_traits" in persona
+        assert len(persona["player_traits"]) == 6
+
+    def test_ai_only_game_has_no_persona(self):
+        from backend.app.models import Player, PlayerType, AIDifficulty, GameConfig, DealingVariant
+        from backend.app.models.events import EventType
+        from backend.app.game_manager import GameManager
+
+        manager = GameManager()
+        config = GameConfig(variant=DealingVariant.THREE_QUICK)
+        players = [
+            Player(id="ai1", name="Bot1", player_type=PlayerType.AI, ai_difficulty=AIDifficulty.EASY),
+            Player(id="ai2", name="Bot2", player_type=PlayerType.AI, ai_difficulty=AIDifficulty.EASY),
+        ]
+
+        collected_events = []
+        managed = manager.create_game(config, players)
+        managed.add_event_callback(lambda e: collected_events.append(e))
+        managed.engine.start_game()
+
+        max_iterations = 500
+        iteration = 0
+        while managed.engine.state.phase.value != "game_over" and iteration < max_iterations:
+            iteration += 1
+            if managed.engine.state.phase.value == "round_over":
+                managed.engine.continue_game()
+
+        game_over_events = [e for e in collected_events if e.event_type == EventType.GAME_OVER]
+        assert len(game_over_events) == 2  # One per AI player
+        for event in game_over_events:
+            assert event.data.get("persona") is None

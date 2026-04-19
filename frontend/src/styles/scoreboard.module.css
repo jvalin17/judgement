@@ -194,6 +194,43 @@
   }
 }
 
+/* Fireworks */
+
+.fireworkBurst {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  animation: fireworkAppear 0.3s ease-out both;
+}
+
+.fireworkSpark {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  animation: fireworkExplode 1.2s ease-out both;
+  box-shadow: 0 0 6px 2px currentColor;
+}
+
+@keyframes fireworkAppear {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes fireworkExplode {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--spark-x, 0), var(--spark-y, 0)) scale(0);
+    opacity: 0;
+  }
+}
+
 /* Persona Card */
 
 .personaCard {
@@ -220,6 +257,14 @@
 .personaHeader {
   text-align: center;
   margin-bottom: var(--space-md);
+}
+
+.personaStyleLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-text);
 }
 
 .personaCategory {
