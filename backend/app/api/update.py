@@ -170,6 +170,38 @@ async def get_update_status():
     return _read_state()
 
 
+def _ci_passing_for_sha(sha: str) -> bool:
+    """Check if CI tests are passing for the given commit SHA.
+
+    Returns True if the combined status is 'success', False otherwise.
+    If the API call fails or there are no statuses, returns True to
+    avoid blocking updates due to network issues.
+    """
+    import urllib.request
+    import urllib.error
+    try:
+        url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{sha}/check-runs"
+        req = urllib.request.Request(url, headers={
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "Judgement-App",
+        })
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+
+        check_runs = data.get("check_runs", [])
+        if not check_runs:
+            return True  # no CI configured, don't block
+
+        for run in check_runs:
+            if run.get("status") != "completed":
+                return False  # still running, don't offer yet
+            if run.get("conclusion") not in ("success", "skipped"):
+                return False  # at least one check failed
+        return True
+    except Exception:
+        return True  # network error — don't block updates
+
+
 @router.get("/check")
 async def check_for_update():
     info = _load_version_info()
@@ -186,13 +218,18 @@ async def check_for_update():
             data = json.loads(resp.read())
 
         latest_sha = data["sha"][:7]
+        full_sha = data["sha"]
         latest_message = data["commit"]["message"].split("\n")[0]
 
+        has_new_commit = current_sha != latest_sha and current_sha != "dev"
+        ci_ok = _ci_passing_for_sha(full_sha) if has_new_commit else True
+
         return {
-            "update_available": current_sha != latest_sha and current_sha != "dev",
+            "update_available": has_new_commit and ci_ok,
             "current_sha": current_sha,
             "latest_sha": latest_sha,
             "latest_message": latest_message,
+            "ci_status": "passing" if ci_ok else "failing",
             "error": None,
         }
     except Exception as exc:
@@ -201,6 +238,7 @@ async def check_for_update():
             "current_sha": current_sha,
             "latest_sha": None,
             "latest_message": None,
+            "ci_status": None,
             "error": str(exc),
         }
 

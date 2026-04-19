@@ -369,6 +369,9 @@ function UpdateSection() {
         setMessage(result.error);
       } else if (result.update_available) {
         setStatus("update-available");
+      } else if (result.ci_status === "failing") {
+        setStatus("up-to-date");
+        setMessage("A new version is being tested. Check back soon.");
       } else {
         setStatus("up-to-date");
         setMessage("You're on the latest version.");

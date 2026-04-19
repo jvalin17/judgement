@@ -242,6 +242,7 @@ export interface UpdateCheckResponse {
   current_sha: string;
   latest_sha: string | null;
   latest_message: string | null;
+  ci_status: string | null;
   error: string | null;
 }
 
