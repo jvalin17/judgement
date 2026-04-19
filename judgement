@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+# Judgement — unified launcher
+#
+# Usage:
+#   ./judgement              Build + launch the game
+#   ./judgement setup        One-time dependency install
+#   ./judgement dev          Start backend dev server (hot reload)
+#
+set -e
+cd "$(dirname "$0")"
+
+PORT="${JUDGEMENT_PORT:-8000}"
+
+# ─── Helpers ───
+
+detect_python() {
+    if arch -arm64 python3 -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo "arch -arm64 python3"; return
+    fi
+    if arch -x86_64 python3 -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo "arch -x86_64 python3"; return
+    fi
+    if python3 -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo "python3"; return
+    fi
+    echo ""
+}
+
+wait_for_server() {
+    for i in $(seq 1 30); do
+        if curl -s "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then return 0; fi
+        if [ -n "$1" ] && ! kill -0 "$1" 2>/dev/null; then return 1; fi
+        sleep 0.5
+    done
+    return 1
+}
+
+# ─── Setup: install all dependencies ───
+
+cmd_setup() {
+    echo "=== Judgement Setup ==="
+    echo ""
+
+    OS="$(uname -s)"
+    HW_ARCH="$(uname -m)"
+    NATIVE_ARCH="$HW_ARCH"
+    if [ "$OS" = "Darwin" ] && sysctl -n hw.optional.arm64 2>/dev/null | grep -q 1; then
+        NATIVE_ARCH="arm64"
+    fi
+
+    echo "Platform:    $OS $HW_ARCH"
+    echo "Native arch: $NATIVE_ARCH"
+    echo "Python:      $(python3 --version 2>&1)"
+    echo "Node:        $(node --version 2>&1 || echo 'NOT FOUND')"
+    echo ""
+
+    if [ "$OS" = "Darwin" ] && [ "$NATIVE_ARCH" = "arm64" ]; then
+        PIP="arch -arm64 pip3"
+        PYTHON="arch -arm64 python3"
+        echo "Note: Installing packages for arm64 (Apple Silicon native)"
+        echo ""
+    else
+        PIP="pip3"
+        PYTHON="python3"
+    fi
+
+    command -v python3 &>/dev/null || { echo "ERROR: python3 not found. Install Python 3.9+."; exit 1; }
+    command -v node &>/dev/null    || { echo "ERROR: node not found. Install Node.js 18+."; exit 1; }
+    command -v npm &>/dev/null     || { echo "ERROR: npm not found. Install Node.js 18+."; exit 1; }
+
+    echo "Installing Python dependencies..."
+    $PIP install -r requirements.txt
+
+    if ! $PYTHON -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo "Fixing pydantic architecture mismatch..."
+        $PIP install --force-reinstall pydantic pydantic-core
+    fi
+    $PYTHON -c "from pydantic_core import __version__; print('  pydantic_core OK')"
+
+    echo ""
+    echo "Installing desktop app support..."
+    $PIP install pywebview pyinstaller 2>&1 | tail -3
+
+    if $PYTHON -c "import webview" 2>/dev/null; then
+        echo "  pywebview OK — desktop mode enabled"
+    else
+        echo "  pywebview not available — will use browser mode"
+    fi
+
+    if ! $PYTHON -c "from pydantic_core import __version__" 2>/dev/null; then
+        echo ""
+        echo "Fixing pydantic after pywebview install..."
+        $PIP install --force-reinstall pydantic pydantic-core
+        $PYTHON -c "from pydantic_core import __version__; print('  pydantic_core OK')"
+    fi
+
+    echo ""
+    echo "Installing frontend dependencies..."
+    cd frontend && npm install
+    cd ..
+
+    echo ""
+    echo "Building frontend..."
+    cd frontend && npm run build
+    cd ..
+
+    echo ""
+    echo "Verifying setup..."
+    $PYTHON -c "from backend.app.main import app; print('  Backend OK')" 2>/dev/null || {
+        echo "  ERROR: Backend failed to load."; exit 1
+    }
+
+    echo ""
+    echo "=== Setup Complete ==="
+    echo ""
+    echo "To play:  ./judgement"
+    echo ""
+}
+
+# ─── Dev: backend server with hot reload ───
+
+cmd_dev() {
+    if [ ! -d ".venv" ]; then
+        echo "Creating virtual environment..."
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install --upgrade pip --quiet
+        pip install -r requirements.txt --quiet
+        echo "Dependencies installed."
+    else
+        source .venv/bin/activate
+    fi
+
+    lsof -ti:"$PORT" 2>/dev/null | xargs kill -9 2>/dev/null || true
+
+    echo "Starting dev server at http://localhost:$PORT"
+    python3 -m uvicorn backend.app.main:app --reload --ws websockets
+}
+
+# ─── Play: build frontend + launch game ───
+
+cmd_play() {
+    PYTHON=$(detect_python)
+    if [ -z "$PYTHON" ]; then
+        echo "ERROR: Cannot load pydantic_core under any architecture."
+        echo "Fix:   pip3 install --force-reinstall pydantic pydantic-core"
+        exit 1
+    fi
+
+    echo "Building frontend..."
+    cd frontend && npm run build
+    cd ..
+
+    lsof -ti:"$PORT" | xargs kill -9 2>/dev/null || true
+    sleep 0.5
+
+    $PYTHON -m uvicorn backend.app.main:app \
+        --host 127.0.0.1 --port "$PORT" --ws websockets --log-level warning &
+    SERVER_PID=$!
+
+    echo "Starting server..."
+    if ! wait_for_server $SERVER_PID; then
+        echo "Server failed to start."
+        kill $SERVER_PID 2>/dev/null
+        exit 1
+    fi
+
+    cleanup() { kill $SERVER_PID 2>/dev/null; wait $SERVER_PID 2>/dev/null; }
+    trap cleanup EXIT
+
+    SERVER_URL="http://127.0.0.1:$PORT"
+
+    if $PYTHON -c "import webview" 2>/dev/null; then
+        echo "Launching desktop app..."
+        JUDGEMENT_SERVER="$SERVER_URL" $PYTHON desktop/main.py
+    else
+        echo "Game ready at $SERVER_URL"
+        (open "$SERVER_URL" 2>/dev/null || xdg-open "$SERVER_URL" 2>/dev/null) &
+        wait $SERVER_PID
+    fi
+}
+
+# ─── Route subcommand ───
+
+case "${1:-play}" in
+    setup) cmd_setup ;;
+    dev)   cmd_dev ;;
+    play)  cmd_play ;;
+    *)     echo "Usage: ./judgement [setup|dev|play]"; exit 1 ;;
+esac

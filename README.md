@@ -94,8 +94,8 @@ Only needed if you want to develop or build the app yourself.
 ```bash
 git clone https://github.com/jvalin17/judgement.git
 cd judgement
-./setup          # Install all dependencies (one-time)
-./play           # Build frontend + launch the game
+./judgement setup        # Install all dependencies (one-time)
+./judgement              # Build frontend + launch the game
 ```
 
 ### Build standalone app
@@ -109,10 +109,10 @@ open dist/Judgement.app
 ### Development
 
 ```bash
-# Start backend dev server (auto-creates venv if needed)
-./start.sh
+# Start backend dev server (hot reload, auto-creates venv)
+./judgement dev
 
-# Start frontend dev server (hot reload, proxies to backend on :8000)
+# Start frontend dev server (proxies to backend on :8000)
 cd frontend && npm run dev
 
 # Run tests
@@ -122,9 +122,10 @@ python3 -m pytest backend/tests/ -v
 
 | Task | Command |
 |------|---------|
-| Play the game | `./play` |
+| Play the game | `./judgement` |
+| First-time setup | `./judgement setup` |
+| Dev server | `./judgement dev` |
 | Build standalone app | `./scripts/package.sh` |
-| Dev server | `./start.sh` |
 | Frontend dev | `cd frontend && npm run dev` |
 | Run tests | `source .venv/bin/activate && python3 -m pytest backend/tests/ -v` |
 
@@ -147,9 +148,7 @@ python3 -m pytest backend/tests/ -v
 
 ```
 judgement/
-├── play                    # One-command launcher
-├── setup                   # Dependency installer
-├── start.sh                # Dev server (venv-based)
+├── judgement                # Unified launcher (play / setup / dev)
 ├── backend/
 │   ├── app/
 │   │   ├── models/         # Pydantic data models
