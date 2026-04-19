@@ -1,29 +1,40 @@
 .scoreboard {
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
   margin: 0 auto;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .scoreTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-size-sm);
+  font-size: 0.95rem;
 }
 
 .scoreTable th {
   text-align: left;
-  padding: var(--space-xs) var(--space-sm);
-  color: var(--color-text-muted);
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-surface-light);
-  font-size: 0.75rem;
+  padding: 10px 14px;
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 2px solid rgba(230, 126, 34, 0.25);
 }
 
 .scoreTable td {
-  padding: var(--space-xs) var(--space-sm);
-  border-bottom: 1px solid var(--color-surface);
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.9rem;
+}
+
+.scoreTable tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .scoreTable th:not(:first-child),
@@ -33,10 +44,11 @@
 
 .playerNameCell {
   font-weight: 600;
-  max-width: 100px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.95rem;
 }
 
 .highlight {
@@ -45,7 +57,7 @@
 }
 
 .leaderRow td {
-  background: rgba(230, 126, 34, 0.14);
+  background: rgba(230, 126, 34, 0.12);
 }
 
 .leaderRow td:first-child {
@@ -55,8 +67,8 @@
 .leaderBadge {
   color: var(--color-accent);
   margin-right: 6px;
-  font-size: 0.85rem;
-  text-shadow: 0 0 6px rgba(230, 126, 34, 0.6);
+  font-size: 0.9rem;
+  text-shadow: 0 0 8px rgba(230, 126, 34, 0.5);
 }
 
 /* Final results */

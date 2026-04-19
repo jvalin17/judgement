@@ -30,7 +30,7 @@ export function BidSelector({ validBids, numCards, onBid, bids, players, playerI
           </span>
         )}
         <span className={styles.bidLabel}>Choose number of hands</span>
-        <span className={styles.bidScore}>{myScore}</span>
+        <span className={styles.bidScore}>Score: {myScore}</span>
         <span className={styles.bidTotal}>{totalBidSoFar}/{numCards}</span>
       </div>
 

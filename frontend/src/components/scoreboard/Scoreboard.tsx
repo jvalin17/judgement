@@ -24,11 +24,11 @@ export function Scoreboard({
       <table className={styles.scoreTable}>
         <thead>
           <tr>
-            <th>Passenger</th>
-            <th>Judgement</th>
-            <th>Hands Won</th>
-            {roundScores && <th>Turbulence</th>}
-            <th>Altitude</th>
+            <th>Pilot</th>
+            <th>Flights</th>
+            <th>Landings</th>
+            {roundScores && <th>Current</th>}
+            <th>Score</th>
           </tr>
         </thead>
         <tbody>
