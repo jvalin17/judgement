@@ -8,7 +8,7 @@ a = Analysis(
     datas=[
         ('frontend/dist', 'frontend/dist'),
         ('backend/app/game/rounds', 'backend/app/game/rounds'),
-        ('backend/app/analysis/personas.json', 'backend/app/analysis'),
+        ('backend/app/ml/analysis/personas.json', 'backend/app/ml/analysis'),
         ('backend/app/version_info.json', 'backend/app'),
     ],
     hiddenimports=[
@@ -31,12 +31,13 @@ a = Analysis(
         'backend.app.ai.hard', 'backend.app.ai.smart_hard',
         'backend.app.ai.card_play', 'backend.app.ai.hand_evaluator',
         'backend.app.ai.personality', 'backend.app.ai.opponent_model',
-        # --- ai learning ---
-        'backend.app.ai.learning', 'backend.app.ai.learning.neighbor_model',
-        'backend.app.ai.learning.features', 'backend.app.ai.learning.decision_collector',
-        # --- analysis ---
-        'backend.app.analysis', 'backend.app.analysis.fingerprint',
-        'backend.app.analysis.persona_loader', 'backend.app.analysis.persona_match',
+        # --- ml ---
+        'backend.app.ml', 'backend.app.ml.constants', 'backend.app.ml.utils',
+        'backend.app.ml.data_store',
+        'backend.app.ml.learning', 'backend.app.ml.learning.neighbor_model',
+        'backend.app.ml.learning.features', 'backend.app.ml.learning.decision_collector',
+        'backend.app.ml.analysis', 'backend.app.ml.analysis.fingerprint',
+        'backend.app.ml.analysis.persona_loader', 'backend.app.ml.analysis.persona_match',
         # --- api ---
         'backend.app.api', 'backend.app.api.rest',
         'backend.app.api.websocket', 'backend.app.api.schemas',

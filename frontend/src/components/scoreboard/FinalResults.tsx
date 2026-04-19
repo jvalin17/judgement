@@ -6,18 +6,19 @@ interface FinalResultsProps {
   players: Player[];
   finalScores: Record<string, number>;
   awardedPersona: PersonaAward | null;
+  playerId: string | null;
   onPlayAgain: () => void;
 }
 
-export function FinalResults({ players, finalScores, awardedPersona, onPlayAgain }: FinalResultsProps) {
+export function FinalResults({ players, finalScores, awardedPersona, playerId, onPlayAgain }: FinalResultsProps) {
   const rankedPlayers = rankPlayersByScore(players, finalScores);
   const winningScore = rankedPlayers.length > 0 ? finalScores[rankedPlayers[0].id] : 0;
   const winners = rankedPlayers.filter((player) => finalScores[player.id] === winningScore);
+  const playerRank = getPlayerRank(rankedPlayers, finalScores, playerId);
 
   return (
     <div className={styles.finalResults}>
-      <Confetti />
-      <Fireworks />
+      <CelebrationEffect rank={playerRank} />
 
       <h1 className={styles.gameOverTitle}>Game Over</h1>
 
@@ -29,7 +30,7 @@ export function FinalResults({ players, finalScores, awardedPersona, onPlayAgain
         {rankedPlayers.map((player) => (
           <FinalScoreRow
             key={player.id}
-            playerName={player.name}
+            playerName={player.id === playerId ? "Your score" : player.name}
             score={finalScores[player.id] ?? 0}
             isWinner={finalScores[player.id] === winningScore}
           />
@@ -43,6 +44,27 @@ export function FinalResults({ players, finalScores, awardedPersona, onPlayAgain
       </div>
     </div>
   );
+}
+
+// --- Helpers ---
+
+function getPlayerRank(
+  rankedPlayers: Player[],
+  scores: Record<string, number>,
+  playerId: string | null,
+): number {
+  if (!playerId) return rankedPlayers.length;
+  let rank = 1;
+  let prevScore: number | null = null;
+  for (const player of rankedPlayers) {
+    const score = scores[player.id] ?? 0;
+    if (prevScore !== null && score < prevScore) {
+      rank = rankedPlayers.indexOf(player) + 1;
+    }
+    if (player.id === playerId) return rank;
+    prevScore = score;
+  }
+  return rankedPlayers.length;
 }
 
 interface WinnerDisplayProps {
@@ -81,38 +103,198 @@ function rankPlayersByScore(players: Player[], scores: Record<string, number>): 
   return [...players].sort((playerA, playerB) => (scores[playerB.id] ?? 0) - (scores[playerA.id] ?? 0));
 }
 
-// --- Confetti ---
+// --- Celebration effects based on player rank ---
+
+function CelebrationEffect({ rank }: { rank: number }) {
+  switch (rank) {
+    case 1:
+      return <ChampionCelebration />;
+    case 2:
+      return <SilverCelebration />;
+    case 3:
+      return <FlowersCelebration />;
+    case 4:
+      return <BubblesCelebration />;
+    default:
+      return <CloudsCelebration />;
+  }
+}
+
+// --- 1st Place: Grand fireworks + rockets + sparkles + confetti ---
+
+function ChampionCelebration() {
+  return (
+    <>
+      <Confetti count={200} />
+      <Fireworks count={14} />
+      <Rockets />
+      <Sparkles />
+    </>
+  );
+}
+
+// --- 2nd Place: Standard confetti + fireworks (original) ---
+
+function SilverCelebration() {
+  return (
+    <>
+      <Confetti count={120} />
+      <Fireworks count={6} />
+    </>
+  );
+}
+
+// --- 3rd Place: Falling flowers ---
+
+function FlowersCelebration() {
+  return (
+    <div className={styles.confettiContainer} aria-hidden="true">
+      {FLOWERS_DATA.map((flower) => (
+        <div
+          key={flower.id}
+          className={styles.flowerPiece}
+          style={{
+            left: `${flower.left}%`,
+            animationDelay: `${flower.delay}s`,
+            animationDuration: `${flower.duration}s`,
+            fontSize: `${flower.size}px`,
+            ["--sway" as string]: `${flower.swayAmount}px`,
+          }}
+        >
+          {flower.emoji}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const FLOWER_EMOJIS = ["\u{1F338}", "\u{1F33A}", "\u{1F33B}", "\u{1F33C}", "\u{1F33E}", "\u{1F340}", "\u{1F337}", "\u{2728}"];
+const FLOWERS_DATA = Array.from({ length: 60 }, (_, index) => ({
+  id: index,
+  left: seededRandom(index * 7 + 500) * 100,
+  delay: Math.floor(index / 20) * 1.2 + seededRandom(index * 7 + 501) * 2,
+  duration: 3 + seededRandom(index * 7 + 502) * 4,
+  size: 16 + seededRandom(index * 7 + 503) * 16,
+  swayAmount: 30 + seededRandom(index * 7 + 504) * 50,
+  emoji: FLOWER_EMOJIS[index % FLOWER_EMOJIS.length],
+}));
+
+// --- 4th Place: Rising bubbles ---
+
+function BubblesCelebration() {
+  return (
+    <div className={styles.confettiContainer} aria-hidden="true">
+      {BUBBLES_DATA.map((bubble) => (
+        <div
+          key={bubble.id}
+          className={styles.bubble}
+          style={{
+            left: `${bubble.left}%`,
+            animationDelay: `${bubble.delay}s`,
+            animationDuration: `${bubble.duration}s`,
+            width: `${bubble.size}px`,
+            height: `${bubble.size}px`,
+            ["--sway" as string]: `${bubble.swayAmount}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+const BUBBLES_DATA = Array.from({ length: 40 }, (_, index) => ({
+  id: index,
+  left: seededRandom(index * 7 + 600) * 100,
+  delay: seededRandom(index * 7 + 601) * 4,
+  duration: 4 + seededRandom(index * 7 + 602) * 5,
+  size: 10 + seededRandom(index * 7 + 603) * 30,
+  swayAmount: 20 + seededRandom(index * 7 + 604) * 40,
+}));
+
+// --- 5th Place: Drifting clouds ---
+
+function CloudsCelebration() {
+  return (
+    <div className={styles.confettiContainer} aria-hidden="true">
+      {CLOUDS_DATA.map((cloud) => (
+        <div
+          key={cloud.id}
+          className={styles.cloud}
+          style={{
+            top: `${cloud.top}%`,
+            animationDelay: `${cloud.delay}s`,
+            animationDuration: `${cloud.duration}s`,
+            opacity: cloud.opacity,
+            fontSize: `${cloud.size}px`,
+          }}
+        >
+          {"\u2601\uFE0F"}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const CLOUDS_DATA = Array.from({ length: 12 }, (_, index) => ({
+  id: index,
+  top: 10 + seededRandom(index * 7 + 700) * 60,
+  delay: seededRandom(index * 7 + 701) * 5,
+  duration: 8 + seededRandom(index * 7 + 702) * 8,
+  size: 30 + seededRandom(index * 7 + 703) * 30,
+  opacity: 0.3 + seededRandom(index * 7 + 704) * 0.4,
+}));
+
+// --- Confetti (shared, parameterized) ---
 
 const CONFETTI_COLORS = [
   "#e67e22", "#f1c40f", "#e74c3c", "#2ecc71", "#3498db", "#9b59b6",
   "#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff", "#ff922b", "#cc5de8",
 ];
-const CONFETTI_COUNT = 150;
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 9301 + 49297) * 49297;
   return x - Math.floor(x);
 }
 
-const CONFETTI_PIECES = Array.from({ length: CONFETTI_COUNT }, (_, index) => {
-  const wave = Math.floor(index / 50); // 3 waves of 50
-  return {
-    id: index,
-    left: seededRandom(index * 7 + 1) * 100,
-    delay: wave * 0.8 + seededRandom(index * 7 + 2) * 1.5,
-    duration: 2 + seededRandom(index * 7 + 3) * 4,
-    color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
-    size: 6 + seededRandom(index * 7 + 4) * 12,
-    rotation: seededRandom(index * 7 + 5) * 360,
-    shape: index % 3, // 0=rect, 1=circle, 2=triangle
-    swayAmount: 20 + seededRandom(index * 7 + 6) * 60,
-  };
-});
+function generateConfetti(count: number): ConfettiPiece[] {
+  return Array.from({ length: count }, (_, index) => {
+    const wave = Math.floor(index / 50);
+    return {
+      id: index,
+      left: seededRandom(index * 7 + 1) * 100,
+      delay: wave * 0.8 + seededRandom(index * 7 + 2) * 1.5,
+      duration: 2 + seededRandom(index * 7 + 3) * 4,
+      color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+      size: 6 + seededRandom(index * 7 + 4) * 12,
+      rotation: seededRandom(index * 7 + 5) * 360,
+      shape: index % 3,
+      swayAmount: 20 + seededRandom(index * 7 + 6) * 60,
+    };
+  });
+}
 
-function Confetti() {
+interface ConfettiPiece {
+  id: number;
+  left: number;
+  delay: number;
+  duration: number;
+  color: string;
+  size: number;
+  rotation: number;
+  shape: number;
+  swayAmount: number;
+}
+
+// Pre-compute for each level
+const CONFETTI_200 = generateConfetti(200);
+const CONFETTI_120 = generateConfetti(120);
+
+function Confetti({ count }: { count: number }) {
+  const pieces = count >= 200 ? CONFETTI_200 : CONFETTI_120;
+
   return (
     <div className={styles.confettiContainer} aria-hidden="true">
-      {CONFETTI_PIECES.map((piece) => (
+      {pieces.map((piece) => (
         <div
           key={piece.id}
           className={`${styles.confettiPiece} ${piece.shape === 1 ? styles.confettiCircle : piece.shape === 2 ? styles.confettiTriangle : ""}`}
@@ -132,33 +314,35 @@ function Confetti() {
   );
 }
 
-// --- Fireworks ---
+// --- Fireworks (shared, parameterized) ---
 
 const FIREWORK_COLORS = ["#e67e22", "#f1c40f", "#e74c3c", "#2ecc71", "#3498db", "#9b59b6", "#ff6b6b", "#ffd93d"];
-const FIREWORK_COUNT = 8;
 const SPARKS_PER_FIREWORK = 12;
 
-const FIREWORKS_DATA = Array.from({ length: FIREWORK_COUNT }, (_, fwIndex) => ({
-  id: fwIndex,
-  left: 10 + seededRandom(fwIndex * 11 + 100) * 80,
-  top: 10 + seededRandom(fwIndex * 11 + 101) * 40,
-  delay: seededRandom(fwIndex * 11 + 102) * 3,
-  color: FIREWORK_COLORS[fwIndex % FIREWORK_COLORS.length],
-  sparks: Array.from({ length: SPARKS_PER_FIREWORK }, (__, sparkIndex) => {
-    const angle = (sparkIndex / SPARKS_PER_FIREWORK) * 360;
-    const distance = 30 + seededRandom(fwIndex * 100 + sparkIndex * 7 + 200) * 50;
-    return {
-      id: sparkIndex,
-      angle,
-      distance,
-    };
-  }),
-}));
+function generateFireworks(count: number) {
+  return Array.from({ length: count }, (_, fwIndex) => ({
+    id: fwIndex,
+    left: 10 + seededRandom(fwIndex * 11 + 100) * 80,
+    top: 10 + seededRandom(fwIndex * 11 + 101) * 40,
+    delay: seededRandom(fwIndex * 11 + 102) * 3,
+    color: FIREWORK_COLORS[fwIndex % FIREWORK_COLORS.length],
+    sparks: Array.from({ length: SPARKS_PER_FIREWORK }, (__, sparkIndex) => {
+      const angle = (sparkIndex / SPARKS_PER_FIREWORK) * 360;
+      const distance = 30 + seededRandom(fwIndex * 100 + sparkIndex * 7 + 200) * 50;
+      return { id: sparkIndex, angle, distance };
+    }),
+  }));
+}
 
-function Fireworks() {
+const FIREWORKS_14 = generateFireworks(14);
+const FIREWORKS_6 = generateFireworks(6);
+
+function Fireworks({ count }: { count: number }) {
+  const data = count >= 14 ? FIREWORKS_14 : FIREWORKS_6;
+
   return (
     <div className={styles.confettiContainer} aria-hidden="true">
-      {FIREWORKS_DATA.map((fw) => (
+      {data.map((fw) => (
         <div
           key={fw.id}
           className={styles.fireworkBurst}
@@ -186,6 +370,64 @@ function Fireworks() {
   );
 }
 
+// --- Rockets (1st place only) ---
+
+const ROCKETS_DATA = Array.from({ length: 6 }, (_, index) => ({
+  id: index,
+  left: 10 + seededRandom(index * 11 + 300) * 80,
+  delay: 0.5 + seededRandom(index * 11 + 301) * 3,
+}));
+
+function Rockets() {
+  return (
+    <div className={styles.confettiContainer} aria-hidden="true">
+      {ROCKETS_DATA.map((rocket) => (
+        <div
+          key={rocket.id}
+          className={styles.rocket}
+          style={{
+            left: `${rocket.left}%`,
+            animationDelay: `${rocket.delay}s`,
+          }}
+        >
+          {"\u{1F680}"}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// --- Sparkles (1st place only) ---
+
+const SPARKLES_DATA = Array.from({ length: 20 }, (_, index) => ({
+  id: index,
+  left: seededRandom(index * 7 + 400) * 100,
+  top: seededRandom(index * 7 + 401) * 70,
+  delay: seededRandom(index * 7 + 402) * 4,
+  size: 12 + seededRandom(index * 7 + 403) * 20,
+}));
+
+function Sparkles() {
+  return (
+    <div className={styles.confettiContainer} aria-hidden="true">
+      {SPARKLES_DATA.map((sparkle) => (
+        <div
+          key={sparkle.id}
+          className={styles.sparkle}
+          style={{
+            left: `${sparkle.left}%`,
+            top: `${sparkle.top}%`,
+            animationDelay: `${sparkle.delay}s`,
+            fontSize: `${sparkle.size}px`,
+          }}
+        >
+          {"\u2728"}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // --- Persona Card ---
 
 const DIMENSION_LABELS: Record<string, string> = {
@@ -195,6 +437,11 @@ const DIMENSION_LABELS: Record<string, string> = {
   aggression: "Aggression",
   adaptability: "Adaptability",
   consistency: "Consistency",
+  boldness: "Boldness",
+  precision: "Precision",
+  resilience: "Resilience",
+  clutch: "Clutch",
+  trajectory: "Trajectory",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

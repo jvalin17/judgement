@@ -39,6 +39,8 @@ class RoundContext:
 
 class AIStrategy(ABC):
 
+    strategy_type: str = "unknown"
+
     @abstractmethod
     def choose_bid(
         self,

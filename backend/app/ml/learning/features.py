@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 from backend.app.models import Card, Suit, Rank
 from backend.app.ai.base import RoundContext
-from backend.app.ai.hand_evaluator import evaluate_hand
+from backend.app.ml.utils import evaluate_hand
 from backend.app.ai.card_play import would_win
+
+logger = logging.getLogger(__name__)
 
 
 def extract_bid_features(
@@ -94,11 +97,7 @@ def extract_play_features(
 
 
 def card_to_index(card: Card, valid_cards: List[Card]) -> int:
-    """Convert a card choice to an index in the sorted valid cards list.
-
-    Cards are sorted by (suit value, rank value) so the index is stable
-    regardless of hand order.
-    """
+    """Convert a card choice to an index in the sorted valid cards list."""
     sorted_cards = sorted(valid_cards, key=lambda c: (c.suit, c.rank))
     for index, candidate in enumerate(sorted_cards):
         if candidate.suit == card.suit and candidate.rank == card.rank:

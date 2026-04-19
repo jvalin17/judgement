@@ -11,13 +11,15 @@ interface BidSelectorProps {
   players: Player[];
   playerId: string | null;
   trumpSuit: string | null;
+  cumulativeScores: Record<string, number>;
 }
 
-export function BidSelector({ validBids, numCards, onBid, bids, players, playerId, trumpSuit }: BidSelectorProps) {
+export function BidSelector({ validBids, numCards, onBid, bids, players, playerId, trumpSuit, cumulativeScores }: BidSelectorProps) {
   const maxBid = numCards ?? 0;
   const totalBidSoFar = bids.reduce((sum, bid) => sum + bid.amount, 0);
   const trumpSymbol = trumpSuit ? SUIT_SYMBOLS[trumpSuit as keyof typeof SUIT_SYMBOLS] : null;
   const trumpColor = trumpSuit ? SUIT_COLORS[trumpSuit as keyof typeof SUIT_COLORS] : undefined;
+  const myScore = cumulativeScores[playerId ?? ""] ?? 0;
 
   return (
     <div className={styles.bidBar}>
@@ -28,6 +30,7 @@ export function BidSelector({ validBids, numCards, onBid, bids, players, playerI
           </span>
         )}
         <span className={styles.bidLabel}>Choose number of hands</span>
+        <span className={styles.bidScore}>{myScore}</span>
         <span className={styles.bidTotal}>{totalBidSoFar}/{numCards}</span>
       </div>
 

@@ -6,16 +6,22 @@ neighbors, weighted by inverse distance.
 
 from __future__ import annotations
 
-import json
+import logging
 import math
-import os
 from typing import List, Optional, Tuple
+
+from backend.app.ml.data_store import get_default_store
+
+logger = logging.getLogger(__name__)
 
 # Default number of neighbors to consider
 DEFAULT_K = 5
 
 # Minimum examples needed before predictions are used
 MIN_EXAMPLES = 10
+
+# Small constant to avoid division by zero in weighted voting
+_DISTANCE_EPSILON = 1e-6
 
 
 def _euclidean_distance(point_a: List[float], point_b: List[float]) -> float:
@@ -27,10 +33,7 @@ def _find_neighbors(
     examples: List[dict],
     k: int,
 ) -> List[Tuple[dict, float]]:
-    """Find k nearest neighbors by Euclidean distance.
-
-    Returns list of (example, distance) tuples, sorted by distance.
-    """
+    """Find k nearest neighbors by Euclidean distance."""
     distances = []
     for example in examples:
         dist = _euclidean_distance(query, example["features"])
@@ -48,8 +51,9 @@ def predict_bid(
 
     Returns None if not enough data for a confident prediction.
     """
-    examples = _load_examples(data_file)
+    examples = get_default_store().load_examples(data_file)
     if len(examples) < MIN_EXAMPLES:
+        logger.debug("Insufficient bid data (%d < %d), skipping prediction", len(examples), MIN_EXAMPLES)
         return None
 
     neighbors = _find_neighbors(query_features, examples, k)
@@ -69,8 +73,9 @@ def predict_card_index(
 
     Returns None if not enough data for a confident prediction.
     """
-    examples = _load_examples(data_file)
+    examples = get_default_store().load_examples(data_file)
     if len(examples) < MIN_EXAMPLES:
+        logger.debug("Insufficient play data (%d < %d), skipping prediction", len(examples), MIN_EXAMPLES)
         return None
 
     neighbors = _find_neighbors(query_features, examples, k)
@@ -78,21 +83,16 @@ def predict_card_index(
         return None
 
     predicted_index = _weighted_vote_numeric(neighbors)
-    # Clamp to valid range (different games may have different valid card counts)
     return max(0, min(predicted_index, num_valid_cards - 1))
 
 
 def _weighted_vote_numeric(neighbors: List[Tuple[dict, float]]) -> int:
-    """Weighted average of neighbor labels, rounded to nearest int.
-
-    Weight = 1 / (distance + epsilon) to avoid division by zero.
-    """
-    epsilon = 1e-6
+    """Weighted average of neighbor labels, rounded to nearest int."""
     weighted_sum = 0.0
     weight_total = 0.0
 
     for example, distance in neighbors:
-        weight = 1.0 / (distance + epsilon)
+        weight = 1.0 / (distance + _DISTANCE_EPSILON)
         weighted_sum += weight * example["label"]
         weight_total += weight
 
@@ -108,46 +108,10 @@ def append_example(
     label: float,
     metadata: Optional[dict] = None,
 ) -> None:
-    """Append a single labeled example to the data file (JSONL format).
-
-    Optional metadata (e.g. strategy_type) is stored alongside but
-    not used for predictions — only features and label are used by kNN.
-    """
-    directory = os.path.dirname(data_file)
-    if directory:
-        os.makedirs(directory, exist_ok=True)
-
-    entry = {"features": features, "label": label}
-    if metadata:
-        entry.update(metadata)
-    with open(data_file, "a") as file_handle:
-        file_handle.write(json.dumps(entry) + "\n")
-
-
-def _load_examples(data_file: str) -> List[dict]:
-    """Load all examples from a JSONL file."""
-    if not os.path.exists(data_file):
-        return []
-
-    examples = []
-    with open(data_file, "r") as file_handle:
-        for line in file_handle:
-            line = line.strip()
-            if line:
-                try:
-                    examples.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
-    return examples
+    """Append a single labeled example to the data file (JSONL format)."""
+    get_default_store().append_example(data_file, features, label, metadata)
 
 
 def example_count(data_file: str) -> int:
     """Count examples in a data file without loading all into memory."""
-    if not os.path.exists(data_file):
-        return 0
-    count = 0
-    with open(data_file, "r") as file_handle:
-        for line in file_handle:
-            if line.strip():
-                count += 1
-    return count
+    return get_default_store().example_count(data_file)

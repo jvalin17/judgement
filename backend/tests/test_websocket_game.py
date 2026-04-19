@@ -477,7 +477,7 @@ class TestGameOverPersona:
             assert "persona_tagline" in persona
             assert "traits" in persona
             assert "player_traits" in persona
-            assert len(persona["player_traits"]) == 6
+            assert len(persona["player_traits"]) == 11
 
 
 class TestEventOrdering:

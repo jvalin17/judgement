@@ -12,6 +12,8 @@ from backend.app.ai.opponent_model import OpponentModel
 
 class HardAI(AIStrategy):
 
+    strategy_type = "hard"
+
     def __init__(self, personality: Optional[AIPersonality] = None):
         self._cards_played: Set[Card] = set()
         self._personality = personality or random_personality()

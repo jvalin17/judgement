@@ -9,6 +9,8 @@ from backend.app.ai.base import AIStrategy, RoundContext
 
 class EasyAI(AIStrategy):
 
+    strategy_type = "easy"
+
     def choose_bid(
         self,
         hand: List[Card],

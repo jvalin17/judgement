@@ -65,4 +65,4 @@ plans/
 backend/app/version_info.json
 
 # Learning data (generated at runtime)
-backend/app/ai/learning/data/*.jsonl
+backend/app/ml/learning/data/*.jsonl

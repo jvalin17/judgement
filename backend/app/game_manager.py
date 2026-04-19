@@ -23,7 +23,7 @@ from backend.app.ai.easy import EasyAI
 from backend.app.ai.medium import MediumAI
 from backend.app.ai.hard import HardAI
 from backend.app.ai.smart_hard import SmartHardAI
-from backend.app.ai.learning.decision_collector import DecisionCollector
+from backend.app.ml.learning.decision_collector import DecisionCollector
 
 
 STRATEGY_MAP = {
@@ -33,14 +33,6 @@ STRATEGY_MAP = {
 }
 
 AI_SWEETS_NAMES = ("Gulab Jamun", "Jalebi", "Rasgulla", "Barfi", "Ladoo", "Kaju Katli")
-
-# Map strategy classes to readable names for data collection
-STRATEGY_TYPE_NAMES = {
-    "EasyAI": "easy",
-    "MediumAI": "medium",
-    "HardAI": "hard",
-    "SmartHardAI": "smart_hard",
-}
 
 
 def _make_strategy(difficulty: AIDifficulty, use_smart: bool = False) -> AIStrategy:
@@ -123,8 +115,8 @@ class ManagedGame:
     def _compute_persona(self, player_id: str) -> Optional[PersonaAward]:
         """Compute a persona award for a player. Returns None on failure."""
         try:
-            from backend.app.analysis.fingerprint import compute_fingerprint
-            from backend.app.analysis.persona_match import pick_persona
+            from backend.app.ml.analysis.fingerprint import compute_fingerprint
+            from backend.app.ml.analysis.persona_match import pick_persona
 
             player_traits = compute_fingerprint(self.session_log, player_id)
             logger.info("Fingerprint for %s: %s", player_id, player_traits)
@@ -178,8 +170,7 @@ class ManagedGame:
         strategy = self.ai_strategies.get(player_id)
         if strategy is None:
             return "human"
-        class_name = type(strategy).__name__
-        return STRATEGY_TYPE_NAMES.get(class_name, class_name)
+        return strategy.strategy_type
 
     def _execute_ai_action(self, pid: str, strategy: AIStrategy) -> None:
         ctx = self._build_context(pid)

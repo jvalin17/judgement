@@ -14,13 +14,16 @@ Information isolation guarantees:
 
 from __future__ import annotations
 
+import logging
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-from backend.app.models import Card, Suit
+from backend.app.models import Card
 from backend.app.ai.base import RoundContext
-from backend.app.ai.learning.features import extract_bid_features, extract_play_features, card_to_index
-from backend.app.ai.learning import neighbor_model
+from backend.app.ml.learning.features import extract_bid_features, extract_play_features, card_to_index
+from backend.app.ml.learning import neighbor_model
+
+logger = logging.getLogger(__name__)
 
 # Default data directory — relative to this file
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -50,11 +53,7 @@ class DecisionCollector:
         bid_amount: int,
         strategy_type: str = "unknown",
     ) -> None:
-        """Record a bid decision with its feature vector and strategy type.
-
-        The feature vector is extracted from the player's own hand and
-        public game state only — no other player's cards are included.
-        """
+        """Record a bid decision with its feature vector and strategy type."""
         features = extract_bid_features(hand, context)
         if player_id not in self._bid_decisions:
             self._bid_decisions[player_id] = []
@@ -69,12 +68,7 @@ class DecisionCollector:
         card_played: Card,
         strategy_type: str = "unknown",
     ) -> None:
-        """Record a card-play decision with its feature vector and strategy type.
-
-        The feature vector is extracted from the player's own hand and
-        public game state only — no other player's cards are included.
-        The card choice is stored as an index (not the raw card).
-        """
+        """Record a card-play decision with its feature vector and strategy type."""
         features = extract_play_features(hand, valid_cards, context)
         card_index = card_to_index(card_played, valid_cards)
         if player_id not in self._play_decisions:
@@ -82,15 +76,15 @@ class DecisionCollector:
         self._play_decisions[player_id].append((features, float(card_index), strategy_type))
 
     def flush_winner(self, winner_ids: List[str]) -> int:
-        """Write the winner's decisions to data files.
-
-        Returns the number of examples written.
-        """
+        """Write the winner's decisions to data files. Returns examples written."""
         count = 0
         bid_file = get_bid_data_file()
         play_file = get_play_data_file()
 
         for winner_id in winner_ids:
+            bid_count = len(self._bid_decisions.get(winner_id, []))
+            play_count = len(self._play_decisions.get(winner_id, []))
+
             for features, label, strategy_type in self._bid_decisions.get(winner_id, []):
                 neighbor_model.append_example(
                     bid_file, features, label,
@@ -103,6 +97,12 @@ class DecisionCollector:
                     metadata={"strategy_type": strategy_type},
                 )
                 count += 1
+
+            if bid_count or play_count:
+                logger.info(
+                    "Flushed %d bid + %d play decisions for winner %s",
+                    bid_count, play_count, winner_id,
+                )
 
         self._bid_decisions.clear()
         self._play_decisions.clear()

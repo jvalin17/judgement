@@ -9,14 +9,15 @@ from backend.app.models import Card, Suit, Rank, Bid
 from backend.app.models.player import Player, PlayerType, AIDifficulty
 from backend.app.models.game import GameConfig, DealingVariant
 from backend.app.ai.base import RoundContext
-from backend.app.ai.learning import neighbor_model
-from backend.app.ai.learning.features import (
+from backend.app.ml.learning import neighbor_model
+from backend.app.ml.data_store import get_default_store
+from backend.app.ml.learning.features import (
     extract_bid_features,
     extract_play_features,
     card_to_index,
     index_to_card,
 )
-from backend.app.ai.learning.decision_collector import DecisionCollector
+from backend.app.ml.learning.decision_collector import DecisionCollector
 from backend.app.ai.smart_hard import SmartHardAI
 from backend.app.game_manager import GameManager, _make_strategy
 
@@ -128,7 +129,7 @@ class TestNeighborModel:
             neighbor_model.append_example(tmp_path, [1.0, 2.0, 3.0], 5.0)
             neighbor_model.append_example(tmp_path, [4.0, 5.0, 6.0], 3.0)
 
-            examples = neighbor_model._load_examples(tmp_path)
+            examples = get_default_store().load_examples(tmp_path)
             assert len(examples) == 2
             assert examples[0]["label"] == 5.0
             assert examples[1]["features"] == [4.0, 5.0, 6.0]
@@ -239,7 +240,7 @@ class TestDecisionCollector:
             collector.record_play("loser", hand, valid_cards, play_context, hand[1])
 
             # Monkey-patch data file paths for this test
-            import backend.app.ai.learning.decision_collector as collector_module
+            import backend.app.ml.learning.decision_collector as collector_module
             original_bid_fn = collector_module.get_bid_data_file
             original_play_fn = collector_module.get_play_data_file
             collector_module.get_bid_data_file = lambda: bid_file
@@ -265,7 +266,7 @@ class TestDecisionCollector:
         with tempfile.TemporaryDirectory() as tmp_dir:
             bid_file = os.path.join(tmp_dir, "bids.jsonl")
 
-            import backend.app.ai.learning.decision_collector as collector_module
+            import backend.app.ml.learning.decision_collector as collector_module
             original_fn = collector_module.get_bid_data_file
             collector_module.get_bid_data_file = lambda: bid_file
 

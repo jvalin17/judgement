@@ -93,6 +93,7 @@ function GameOverScreen({ onPlayAgain }: { onPlayAgain: () => void }) {
       players={state.players}
       finalScores={state.cumulativeScores}
       awardedPersona={state.awardedPersona}
+      playerId={state.playerId}
       onPlayAgain={onPlayAgain}
     />
   );

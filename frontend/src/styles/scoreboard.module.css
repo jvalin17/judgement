@@ -231,6 +231,148 @@
   }
 }
 
+/* Rockets (1st place) */
+
+.rocket {
+  position: absolute;
+  bottom: -40px;
+  font-size: 28px;
+  animation: rocketLaunch 2.5s ease-out forwards;
+}
+
+@keyframes rocketLaunch {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(-80vh) rotate(-5deg);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-95vh) rotate(5deg);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-110vh) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* Sparkles (1st place) */
+
+.sparkle {
+  position: absolute;
+  animation: sparkleGlow 1.8s ease-in-out infinite;
+}
+
+@keyframes sparkleGlow {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Flowers (3rd place) */
+
+.flowerPiece {
+  position: absolute;
+  top: -30px;
+  animation: flowerFall 4s ease-in forwards;
+  line-height: 1;
+}
+
+@keyframes flowerFall {
+  0% {
+    transform: translateY(0) rotate(0deg) translateX(0);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(25vh) rotate(90deg) translateX(var(--sway, 30px));
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(50vh) rotate(180deg) translateX(calc(-1 * var(--sway, 30px)));
+    opacity: 0.9;
+  }
+  75% {
+    transform: translateY(75vh) rotate(270deg) translateX(var(--sway, 30px));
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(105vh) rotate(360deg) translateX(0);
+    opacity: 0;
+  }
+}
+
+/* Bubbles (4th place) */
+
+.bubble {
+  position: absolute;
+  bottom: -40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.4),
+    rgba(100, 180, 255, 0.15) 40%,
+    rgba(100, 180, 255, 0.05)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  animation: bubbleRise 5s ease-out forwards;
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.6);
+    opacity: 0.8;
+  }
+  25% {
+    transform: translateY(-25vh) translateX(var(--sway, 20px)) scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-50vh) translateX(calc(-1 * var(--sway, 20px))) scale(1);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-75vh) translateX(var(--sway, 20px)) scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(0) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* Clouds (5th place) */
+
+.cloud {
+  position: absolute;
+  left: -60px;
+  animation: cloudDrift linear forwards;
+}
+
+@keyframes cloudDrift {
+  0% {
+    transform: translateX(-60px);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--cloud-opacity, 0.4);
+  }
+  90% {
+    opacity: var(--cloud-opacity, 0.4);
+  }
+  100% {
+    transform: translateX(calc(100vw + 60px));
+    opacity: 0;
+  }
+}
+
 /* Persona Card */
 
 .personaCard {

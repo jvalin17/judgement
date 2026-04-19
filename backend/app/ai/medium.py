@@ -10,6 +10,8 @@ from backend.app.ai.card_play import best_winning_card, dump_lowest
 
 class MediumAI(AIStrategy):
 
+    strategy_type = "medium"
+
     def choose_bid(
         self,
         hand: List[Card],

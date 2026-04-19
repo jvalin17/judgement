@@ -3,10 +3,10 @@ import random
 
 import pytest
 
-from backend.app.analysis.persona_loader import load_personas, get_persona_by_id, DIMENSIONS
-from backend.app.analysis.fingerprint import compute_fingerprint, project_round
-from backend.app.analysis.persona_match import (
-    cosine_similarity, best_personas, pick_persona,
+from backend.app.ml.analysis.persona_loader import load_personas, get_persona_by_id, DIMENSIONS
+from backend.app.ml.analysis.fingerprint import compute_fingerprint, project_round
+from backend.app.ml.analysis.persona_match import (
+    score_persona, best_personas, pick_persona, _evaluate_trigger,
 )
 from backend.app.models.session import SessionLog, RoundLog
 from backend.app.models.game import Bid
@@ -19,26 +19,38 @@ class TestPersonaLoader:
         personas = load_personas()
         assert len(personas) > 0
 
-    def test_exactly_43_personas(self):
-        assert len(load_personas()) == 43
+    def test_persona_count(self):
+        assert len(load_personas()) == 75
 
-    def test_all_personas_have_6_traits(self):
+    def test_all_personas_have_11_traits(self):
         for persona in load_personas():
-            assert len(persona.traits) == 6
+            assert len(persona.traits) == 11, f"{persona.id} has {len(persona.traits)} traits"
             for dim in DIMENSIONS:
-                assert dim in persona.traits
+                assert dim in persona.traits, f"{persona.id} missing {dim}"
+
+    def test_all_personas_have_11_weights(self):
+        for persona in load_personas():
+            assert len(persona.weights) == 11, f"{persona.id} has {len(persona.weights)} weights"
+            for dim in DIMENSIONS:
+                assert dim in persona.weights, f"{persona.id} missing weight {dim}"
 
     def test_all_trait_values_in_unit_range(self):
         for persona in load_personas():
             for dim, value in persona.traits.items():
                 assert 0.0 <= value <= 1.0, f"{persona.id}.{dim} = {value}"
 
+    def test_all_weight_values_positive(self):
+        for persona in load_personas():
+            for dim, value in persona.weights.items():
+                assert value >= 0.0, f"{persona.id}.weights.{dim} = {value}"
+
     def test_all_personas_have_required_fields(self):
+        valid_categories = {"superhero", "animal", "poker", "cartoon", "pokemon", "mythology", "achievement"}
         for persona in load_personas():
             assert persona.id
             assert persona.name
             assert persona.tagline
-            assert persona.category in ("superhero", "animal", "poker", "cartoon", "pokemon")
+            assert persona.category in valid_categories, f"{persona.id} has unknown category {persona.category}"
 
     def test_get_persona_by_id_found(self):
         persona = get_persona_by_id("batman")
@@ -50,7 +62,21 @@ class TestPersonaLoader:
 
     def test_categories_all_represented(self):
         categories = {persona.category for persona in load_personas()}
-        assert categories == {"superhero", "animal", "poker", "cartoon", "pokemon"}
+        assert categories == {"superhero", "animal", "poker", "cartoon", "pokemon", "mythology", "achievement"}
+
+    def test_key_dims_returns_top_3(self):
+        persona = get_persona_by_id("batman")
+        key = persona.key_dims
+        assert len(key) == 3
+        # Batman's top weights are planning (2.0), precision (1.8), consistency (1.5)
+        assert "planning" in key
+        assert "precision" in key
+
+    def test_achievement_personas_have_triggers(self):
+        achievement = [p for p in load_personas() if p.category == "achievement"]
+        assert len(achievement) == 10
+        for persona in achievement:
+            assert len(persona.triggers) > 0, f"{persona.id} has no triggers"
 
 
 # ---- Fingerprint tests ----
@@ -120,8 +146,16 @@ class TestFingerprint:
         for dim in DIMENSIONS:
             assert vec[dim] == 0.5
 
+    def test_fingerprint_returns_all_11_dimensions(self):
+        session = _make_session_with_rounds([
+            (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert len(vec) == 11
+        for dim in DIMENSIONS:
+            assert dim in vec
+
     def test_multi_round_consistency(self):
-        # Player hits bid every time → high consistency
         session = _make_session_with_rounds([
             (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),
             (4, {"p1": 1, "p2": 3}, {"p1": 1, "p2": 3}),
@@ -131,8 +165,6 @@ class TestFingerprint:
         assert vec["consistency"] > 0.8
 
     def test_inconsistent_player_lower_consistency(self):
-        # Player with wildly varying bid accuracy has lower consistency
-        # than a player who always hits exact
         consistent_session = _make_session_with_rounds([
             (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),
             (5, {"p1": 3, "p2": 2}, {"p1": 3, "p2": 2}),
@@ -148,54 +180,257 @@ class TestFingerprint:
         assert consistent_vec["consistency"] > inconsistent_vec["consistency"]
 
 
-# ---- Cosine similarity tests ----
+# ---- New dimension tests ----
 
-class TestCosineSimilarity:
-    def test_identical_vectors_is_1(self):
-        vec = {"risk": 0.5, "planning": 0.7, "patience": 0.3, "aggression": 0.8, "adaptability": 0.6, "consistency": 0.9}
-        assert abs(cosine_similarity(vec, vec) - 1.0) < 1e-9
+class TestBoldness:
+    def test_bold_bidder_high_boldness(self):
+        # Bid 5 out of 7 and make all 5 → bold
+        session = _make_session_with_rounds([
+            (7, {"p1": 5, "p2": 2}, {"p1": 5, "p2": 2}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["boldness"] > 0.65
 
-    def test_zero_vector_is_0(self):
-        zero = {dim: 0.0 for dim in DIMENSIONS}
-        other = {dim: 0.5 for dim in DIMENSIONS}
-        assert cosine_similarity(zero, other) == 0.0
+    def test_reckless_bidder_low_boldness(self):
+        # Bid 5 out of 7 but only make 1 → reckless, low boldness
+        session = _make_session_with_rounds([
+            (7, {"p1": 5, "p2": 2}, {"p1": 1, "p2": 6}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["boldness"] < 0.25
+
+    def test_commendable_effort_mid_boldness(self):
+        # Bid 5 out of 7 and make 4 → commendable effort
+        session = _make_session_with_rounds([
+            (7, {"p1": 5, "p2": 2}, {"p1": 4, "p2": 3}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert 0.35 < vec["boldness"] < 0.65
+
+    def test_zero_bid_zero_boldness(self):
+        session = _make_session_with_rounds([
+            (5, {"p1": 0, "p2": 3}, {"p1": 0, "p2": 5}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["boldness"] == 0.0
+
+
+class TestPrecision:
+    def test_exact_hits_high_precision(self):
+        session = _make_session_with_rounds([
+            (8, {"p1": 3, "p2": 5}, {"p1": 3, "p2": 5}),
+            (6, {"p1": 2, "p2": 4}, {"p1": 2, "p2": 4}),
+            (4, {"p1": 1, "p2": 3}, {"p1": 1, "p2": 3}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["precision"] > 0.8
+
+    def test_all_misses_low_precision(self):
+        session = _make_session_with_rounds([
+            (8, {"p1": 3, "p2": 5}, {"p1": 1, "p2": 7}),
+            (6, {"p1": 4, "p2": 2}, {"p1": 1, "p2": 5}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["precision"] < 0.2
+
+
+class TestResilience:
+    def test_recovery_high_resilience(self):
+        # miss, hit, miss, hit → 100% recovery rate
+        session = _make_session_with_rounds([
+            (5, {"p1": 3, "p2": 2}, {"p1": 1, "p2": 4}),  # miss
+            (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),  # hit (recovery)
+            (5, {"p1": 4, "p2": 1}, {"p1": 2, "p2": 3}),  # miss
+            (5, {"p1": 1, "p2": 4}, {"p1": 1, "p2": 4}),  # hit (recovery)
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["resilience"] >= 0.9
+
+    def test_no_recovery_low_resilience(self):
+        # miss, miss, miss, hit → only 1/3 recovery
+        session = _make_session_with_rounds([
+            (5, {"p1": 3, "p2": 2}, {"p1": 1, "p2": 4}),  # miss
+            (5, {"p1": 3, "p2": 2}, {"p1": 0, "p2": 5}),  # miss
+            (5, {"p1": 4, "p2": 1}, {"p1": 2, "p2": 3}),  # miss
+            (5, {"p1": 1, "p2": 4}, {"p1": 1, "p2": 4}),  # hit
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["resilience"] < 0.5
+
+    def test_never_missed_neutral_resilience(self):
+        session = _make_session_with_rounds([
+            (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),
+            (5, {"p1": 3, "p2": 2}, {"p1": 3, "p2": 2}),
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["resilience"] == 0.5
+
+
+class TestClutch:
+    def test_late_game_dominance_high_clutch(self):
+        # Miss early rounds, nail late rounds
+        session = _make_session_with_rounds([
+            (5, {"p1": 3, "p2": 2}, {"p1": 0, "p2": 5}),  # miss
+            (5, {"p1": 3, "p2": 2}, {"p1": 0, "p2": 5}),  # miss
+            (5, {"p1": 3, "p2": 2}, {"p1": 0, "p2": 5}),  # miss
+            (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),  # hit (late)
+            (5, {"p1": 1, "p2": 4}, {"p1": 1, "p2": 4}),  # hit (late)
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["clutch"] > 0.7
+
+    def test_early_strong_late_weak_low_clutch(self):
+        session = _make_session_with_rounds([
+            (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),  # hit
+            (5, {"p1": 3, "p2": 2}, {"p1": 3, "p2": 2}),  # hit
+            (5, {"p1": 1, "p2": 4}, {"p1": 1, "p2": 4}),  # hit
+            (5, {"p1": 3, "p2": 2}, {"p1": 0, "p2": 5}),  # miss (late)
+            (5, {"p1": 4, "p2": 1}, {"p1": 1, "p2": 4}),  # miss (late)
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["clutch"] < 0.4
+
+
+class TestTrajectory:
+    def test_improving_player_high_trajectory(self):
+        # Bad first half, good second half
+        session = _make_session_with_rounds([
+            (5, {"p1": 4, "p2": 1}, {"p1": 1, "p2": 4}),  # big miss
+            (5, {"p1": 3, "p2": 2}, {"p1": 0, "p2": 5}),  # big miss
+            (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),  # exact hit
+            (5, {"p1": 3, "p2": 2}, {"p1": 3, "p2": 2}),  # exact hit
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["trajectory"] > 0.7
+
+    def test_declining_player_low_trajectory(self):
+        session = _make_session_with_rounds([
+            (5, {"p1": 2, "p2": 3}, {"p1": 2, "p2": 3}),  # exact
+            (5, {"p1": 3, "p2": 2}, {"p1": 3, "p2": 2}),  # exact
+            (5, {"p1": 4, "p2": 1}, {"p1": 1, "p2": 4}),  # big miss
+            (5, {"p1": 3, "p2": 2}, {"p1": 0, "p2": 5}),  # big miss
+        ])
+        vec = compute_fingerprint(session, "p1")
+        assert vec["trajectory"] < 0.3
+
+
+# ---- Score persona tests ----
+
+class TestScorePersona:
+    def test_exact_match_high_score(self):
+        persona = get_persona_by_id("batman")
+        # Player with traits very close to Batman's
+        player_vec = dict(persona.traits)
+        score = score_persona(player_vec, persona)
+        assert score > 0.95
+
+    def test_opposite_traits_low_score(self):
+        persona = get_persona_by_id("batman")
+        # Batman: low risk, high planning. Opposite: high risk, low planning
+        player_vec = {dim: 1.0 - persona.traits.get(dim, 0.5) for dim in DIMENSIONS}
+        score = score_persona(player_vec, persona)
+        assert score < 0.6
+
+    def test_weights_affect_scoring(self):
+        # Batman has planning weight=2.0, risk weight=0.5
+        persona = get_persona_by_id("batman")
+        # Player A: matches planning, misses risk
+        player_a = dict(persona.traits)
+        player_a["risk"] = 1.0 - persona.traits["risk"]  # mismatch risk
+        # Player B: matches risk, misses planning
+        player_b = dict(persona.traits)
+        player_b["planning"] = 1.0 - persona.traits["planning"]  # mismatch planning
+        score_a = score_persona(player_a, persona)
+        score_b = score_persona(player_b, persona)
+        # Player A should score higher (risk has low weight for Batman)
+        assert score_a > score_b
+
+    def test_trigger_fires_bonus(self):
+        persona = get_persona_by_id("sniper")
+        # Player with precision >= 0.85 should trigger the bonus
+        player_vec = {dim: 0.5 for dim in DIMENSIONS}
+        player_vec["precision"] = 0.9
+        score_with_trigger = score_persona(player_vec, persona)
+
+        player_vec_low = dict(player_vec)
+        player_vec_low["precision"] = 0.5
+        score_without_trigger = score_persona(player_vec_low, persona)
+
+        assert score_with_trigger > score_without_trigger
+
+    def test_combo_trigger_requires_all_conditions(self):
+        # wildcard: consistency <= 0.35 AND planning >= 0.55
+        player_both = {dim: 0.5 for dim in DIMENSIONS}
+        player_both["consistency"] = 0.2
+        player_both["planning"] = 0.7
+        assert _evaluate_trigger(
+            {"type": "combo", "conditions": [
+                {"type": "max", "dim": "consistency", "threshold": 0.35},
+                {"type": "min", "dim": "planning", "threshold": 0.55},
+            ]},
+            player_both,
+        ) is True
+
+        # Only one condition met
+        player_partial = dict(player_both)
+        player_partial["planning"] = 0.3  # below threshold
+        assert _evaluate_trigger(
+            {"type": "combo", "conditions": [
+                {"type": "max", "dim": "consistency", "threshold": 0.35},
+                {"type": "min", "dim": "planning", "threshold": 0.55},
+            ]},
+            player_partial,
+        ) is False
+
+    def test_affinity_bonus_for_extreme_match(self):
+        persona = get_persona_by_id("thor")
+        # Thor has high aggression (0.95) with high weight
+        # Player with high aggression should get affinity bonus
+        player_exact = dict(persona.traits)
+        score_exact = score_persona(player_exact, persona)
+
+        # Player with moderate aggression (still close by distance but no affinity)
+        player_mid = dict(persona.traits)
+        player_mid["aggression"] = 0.65  # close by distance but not extreme
+        score_mid = score_persona(player_mid, persona)
+
+        assert score_exact > score_mid
 
 
 # ---- Persona matching tests ----
 
 class TestPersonaMatch:
     def test_batman_vector_matches_batman(self):
-        batman_vec = {"risk": 0.4, "planning": 0.95, "patience": 0.8, "aggression": 0.6, "adaptability": 0.7, "consistency": 0.85}
-        top3 = best_personas(batman_vec)
-        top3_ids = [pair[0] for pair in top3]
-        assert "batman" in top3_ids
+        batman = get_persona_by_id("batman")
+        top = best_personas(dict(batman.traits))
+        top_ids = [pair[0] for pair in top]
+        assert "batman" in top_ids
 
     def test_turtle_vector_matches_turtle_or_nit(self):
-        turtle_vec = {"risk": 0.15, "planning": 0.8, "patience": 0.95, "aggression": 0.2, "adaptability": 0.3, "consistency": 0.95}
-        top3 = best_personas(turtle_vec)
-        top3_ids = [pair[0] for pair in top3]
-        assert "turtle" in top3_ids or "nit" in top3_ids or "snorlax" in top3_ids
+        turtle = get_persona_by_id("turtle")
+        top = best_personas(dict(turtle.traits))
+        top_ids = [pair[0] for pair in top]
+        conservative = {"turtle", "nit", "snorlax", "ant", "elephant"}
+        assert any(pid in conservative for pid in top_ids)
 
     def test_novelty_penalises_recent(self):
-        vec = {"risk": 0.6, "planning": 0.7, "patience": 0.7, "aggression": 0.5, "adaptability": 0.9, "consistency": 0.6}
+        vec = {dim: 0.5 for dim in DIMENSIONS}
         without_recent = best_personas(vec, recent_ids=[])
         with_recent = best_personas(vec, recent_ids=[without_recent[0][0]])
-        # The top persona should change or its score should decrease
         assert with_recent[0][1] <= without_recent[0][1]
 
     def test_pick_persona_deterministic_with_seed(self):
-        vec = {"risk": 0.5, "planning": 0.5, "patience": 0.5, "aggression": 0.5, "adaptability": 0.5, "consistency": 0.5}
+        vec = {dim: 0.5 for dim in DIMENSIONS}
         result1 = pick_persona(vec, rng=random.Random(123))
         result2 = pick_persona(vec, rng=random.Random(123))
         assert result1.id == result2.id
 
     def test_variety_over_multiple_seeds(self):
-        vec = {"risk": 0.5, "planning": 0.5, "patience": 0.5, "aggression": 0.5, "adaptability": 0.5, "consistency": 0.5}
+        vec = {dim: 0.5 for dim in DIMENSIONS}
         results = set()
         for seed in range(50):
             persona = pick_persona(vec, rng=random.Random(seed))
             results.add(persona.id)
-        # With 50 different seeds over a top-3, we should see at least 2 distinct personas
         assert len(results) >= 2
 
     def test_pick_never_returns_unknown_id(self):
@@ -206,12 +441,26 @@ class TestPersonaMatch:
             persona = pick_persona(vec, rng=rng)
             assert persona.id in known_ids
 
+    def test_top_k_is_5(self):
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        top = best_personas(vec)
+        assert len(top) == 5
+
+    def test_achievement_persona_wins_with_trigger(self):
+        # A player with precision = 0.95 should get Sniper in top results
+        player_vec = {dim: 0.5 for dim in DIMENSIONS}
+        player_vec["precision"] = 0.95
+        player_vec["planning"] = 0.9
+        player_vec["consistency"] = 0.85
+        top = best_personas(player_vec)
+        top_ids = [pair[0] for pair in top]
+        assert "sniper" in top_ids
+
 
 # ---- Integration: fingerprint → match ----
 
 class TestFingerprintToMatch:
     def test_aggressive_player_gets_high_risk_persona(self):
-        # High bid, misses often → high risk profile
         session = _make_session_with_rounds([
             (7, {"p1": 6, "p2": 2}, {"p1": 3, "p2": 4}),
             (5, {"p1": 5, "p2": 1}, {"p1": 2, "p2": 3}),
@@ -220,11 +469,10 @@ class TestFingerprintToMatch:
         vec = compute_fingerprint(session, "p1")
         assert vec["risk"] > 0.7
         assert vec["aggression"] > 0.5
-        # Verify persona match produces a result (any valid persona)
-        top3 = best_personas(vec)
-        assert len(top3) == 3
+        top = best_personas(vec)
+        assert len(top) == 5
         known_ids = {p.id for p in load_personas()}
-        assert all(pid in known_ids for pid, _ in top3)
+        assert all(pid in known_ids for pid, _ in top)
 
     def test_conservative_player_gets_conservative_persona(self):
         session = _make_session_with_rounds([
@@ -233,13 +481,15 @@ class TestFingerprintToMatch:
             (8, {"p1": 1, "p2": 5}, {"p1": 1, "p2": 3}),
         ])
         vec = compute_fingerprint(session, "p1")
-        top3 = best_personas(vec)
-        top3_ids = [pair[0] for pair in top3]
-        conservative_personas = {"turtle", "nit", "elephant", "snorlax", "ant", "owl", "shaktimaan"}
-        assert any(pid in conservative_personas for pid in top3_ids)
+        top = best_personas(vec)
+        top_ids = [pair[0] for pair in top]
+        conservative_personas = {
+            "turtle", "nit", "elephant", "snorlax", "ant", "owl",
+            "shaktimaan", "rock", "zen_master",
+        }
+        assert any(pid in conservative_personas for pid in top_ids)
 
     def test_game_over_event_includes_persona(self):
-        """Verify the game_over event factory can include persona data."""
         from backend.app.models.events import game_over_event, PersonaAward
         persona = PersonaAward(
             persona_id="fox",
@@ -260,7 +510,6 @@ class TestFingerprintToMatch:
         assert event.data["persona"]["player_traits"]["risk"] == 0.5
 
     def test_game_over_event_without_persona(self):
-        """Verify game_over event works without persona (AI-only game)."""
         from backend.app.models.events import game_over_event
         event = game_over_event(final_scores={"p1": 20}, winners=["p1"])
         assert event.data["persona"] is None
@@ -306,7 +555,6 @@ class TestMascotIntegration:
                 valid = managed.engine.get_valid_cards(pid)
                 managed.engine.play_card(pid, rng.choice(valid))
 
-        # Find GAME_OVER events targeted at the human player
         game_over_events = [
             e for e in collected_events
             if e.event_type == EventType.GAME_OVER and e.player_id == "human1"
@@ -320,7 +568,7 @@ class TestMascotIntegration:
         assert "persona_tagline" in persona
         assert "traits" in persona
         assert "player_traits" in persona
-        assert len(persona["player_traits"]) == 6
+        assert len(persona["player_traits"]) == 11
 
     def test_ai_only_game_has_no_persona(self):
         from backend.app.models import Player, PlayerType, AIDifficulty, GameConfig, DealingVariant
@@ -347,6 +595,6 @@ class TestMascotIntegration:
                 managed.engine.continue_game()
 
         game_over_events = [e for e in collected_events if e.event_type == EventType.GAME_OVER]
-        assert len(game_over_events) == 2  # One per AI player
+        assert len(game_over_events) == 2
         for event in game_over_events:
             assert event.data.get("persona") is None

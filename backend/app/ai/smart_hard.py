@@ -12,13 +12,15 @@ from typing import List, Optional
 from backend.app.models import Card
 from backend.app.ai.base import AIStrategy, RoundContext
 from backend.app.ai.hard import HardAI
-from backend.app.ai.learning.features import extract_bid_features, extract_play_features, index_to_card
-from backend.app.ai.learning.decision_collector import get_bid_data_file, get_play_data_file
-from backend.app.ai.learning import neighbor_model
+from backend.app.ml.learning.features import extract_bid_features, extract_play_features, index_to_card
+from backend.app.ml.learning.decision_collector import get_bid_data_file, get_play_data_file
+from backend.app.ml.learning import neighbor_model
 
 
 class SmartHardAI(AIStrategy):
     """Hard AI that learns from winners via kNN, with rule-based fallback."""
+
+    strategy_type = "smart_hard"
 
     def __init__(self):
         self._fallback = HardAI()

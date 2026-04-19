@@ -17,9 +17,10 @@ from backend.app.models import Card, Suit, Rank, Bid
 from backend.app.models.player import Player, PlayerType, AIDifficulty
 from backend.app.models.game import GameConfig, GamePhase, DealingVariant
 from backend.app.ai.base import RoundContext
-from backend.app.ai.learning.features import extract_bid_features, extract_play_features
-from backend.app.ai.learning.decision_collector import DecisionCollector
-from backend.app.ai.learning import neighbor_model
+from backend.app.ml.learning.features import extract_bid_features, extract_play_features
+from backend.app.ml.learning.decision_collector import DecisionCollector
+from backend.app.ml.learning import neighbor_model
+from backend.app.ml.data_store import get_default_store
 from backend.app.game.engine import GameEngine
 from backend.app.game_manager import GameManager
 
@@ -202,7 +203,7 @@ class TestDecisionCollectorIsolation:
             )
             collector.record_play("winner", hand, hand, play_context, hand[0], "hard")
 
-            import backend.app.ai.learning.decision_collector as collector_module
+            import backend.app.ml.learning.decision_collector as collector_module
             original_bid_fn = collector_module.get_bid_data_file
             original_play_fn = collector_module.get_play_data_file
             collector_module.get_bid_data_file = lambda: bid_file
@@ -215,8 +216,8 @@ class TestDecisionCollectorIsolation:
                 collector_module.get_play_data_file = original_play_fn
 
             # Verify stored data
-            bid_examples = neighbor_model._load_examples(bid_file)
-            play_examples = neighbor_model._load_examples(play_file)
+            bid_examples = get_default_store().load_examples(bid_file)
+            play_examples = get_default_store().load_examples(play_file)
 
             for example in bid_examples + play_examples:
                 assert "features" in example
@@ -246,7 +247,7 @@ class TestDecisionCollectorIsolation:
             )
             collector.record_play("winner", hand, hand, play_context, hand[0], "smart_hard")
 
-            import backend.app.ai.learning.decision_collector as collector_module
+            import backend.app.ml.learning.decision_collector as collector_module
             original_bid_fn = collector_module.get_bid_data_file
             original_play_fn = collector_module.get_play_data_file
             collector_module.get_bid_data_file = lambda: bid_file
@@ -258,8 +259,8 @@ class TestDecisionCollectorIsolation:
                 collector_module.get_bid_data_file = original_bid_fn
                 collector_module.get_play_data_file = original_play_fn
 
-            bid_examples = neighbor_model._load_examples(bid_file)
-            play_examples = neighbor_model._load_examples(play_file)
+            bid_examples = get_default_store().load_examples(bid_file)
+            play_examples = get_default_store().load_examples(play_file)
 
             assert bid_examples[0]["strategy_type"] == "human"
             assert play_examples[0]["strategy_type"] == "smart_hard"
@@ -276,7 +277,7 @@ class TestDecisionCollectorIsolation:
             context = _make_context(num_cards=5)
             collector.record_bid("winner", hand, context, 3, "medium")
 
-            import backend.app.ai.learning.decision_collector as collector_module
+            import backend.app.ml.learning.decision_collector as collector_module
             original_bid_fn = collector_module.get_bid_data_file
             collector_module.get_bid_data_file = lambda: bid_file
 

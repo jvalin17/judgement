@@ -96,6 +96,13 @@ export function GameBoard() {
     };
   }, [state.trickWinner, actions]);
 
+  // --- Auto-dismiss error bar after 3 seconds ---
+  useEffect(() => {
+    if (!state.error) return;
+    const timer = setTimeout(() => actions.clearError(), 3000);
+    return () => clearTimeout(timer);
+  }, [state.error, actions]);
+
   useEffect(() => {
     if (myTurn) {
       actions.sendGetHand();
@@ -103,12 +110,14 @@ export function GameBoard() {
   }, [myTurn, state.currentPlayerId, actions]);
 
   const handleBid = useCallback((amount: number) => {
+    if (state.error) actions.clearError();
     actions.sendBid(amount);
-  }, [actions]);
+  }, [actions, state.error]);
 
   const handlePlayCard = useCallback((card: CardType) => {
+    if (state.error) actions.clearError();
     actions.sendPlayCard(card);
-  }, [actions]);
+  }, [actions, state.error]);
 
   const showBidSelector = state.phase === GamePhase.BIDDING && myTurn && state.validBids.length > 0;
   const showPlayArea = state.phase === GamePhase.PLAYING;
@@ -193,6 +202,7 @@ export function GameBoard() {
           players={state.players}
           playerId={state.playerId}
           trumpSuit={state.trumpSuit}
+          cumulativeScores={state.cumulativeScores}
         />
       ) : (
         <PlayerInfo
