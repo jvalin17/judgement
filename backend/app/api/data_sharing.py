@@ -14,6 +14,7 @@ import logging
 import os
 import tempfile
 import threading
+import urllib.error
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -134,6 +135,10 @@ async def check_community_data():
             "updated_at": data.get("published_at"),
             "error": None,
         }
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return {"available": False, "bid_size": 0, "play_size": 0, "updated_at": None, "error": None}
+        return {"available": False, "error": str(exc)}
     except Exception as exc:
         return {"available": False, "error": str(exc)}
 
@@ -202,6 +207,11 @@ async def download_community_data():
             "message": f"Downloaded {downloaded} new examples from community data.",
             "examples_added": downloaded,
         }
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return {"success": False, "message": "No community data available yet. Be the first to share!", "examples_added": 0}
+        logger.error("Community data download failed: %s", exc)
+        return {"success": False, "message": str(exc), "examples_added": 0}
     except Exception as exc:
         logger.error("Community data download failed: %s", exc)
         return {"success": False, "message": str(exc), "examples_added": 0}
