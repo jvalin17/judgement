@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import type { DealingVariant } from "../../types";
 import { VARIANT_LIST, VARIANT_CONFIG, PlayerType } from "../../types";
 import { createGame, joinGame } from "../../services/api";
 import type { PlayerSetup as PlayerSetupRequest } from "../../services/api";

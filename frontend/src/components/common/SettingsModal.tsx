@@ -17,7 +17,6 @@ import {
   getUpdateStatus,
   getSharePreview,
   shareData,
-  checkCommunityData,
   downloadCommunityData,
 } from "../../services/api";
 import type {
