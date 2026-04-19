@@ -61,6 +61,14 @@ plans/
 # PyInstaller
 *.spec
 
+# Dev-only scripts (not needed by users)
+scripts/build.sh
+scripts/build_icons.sh
+scripts/dev.sh
+scripts/play.sh
+scripts/serve.sh
+scripts/security_scan.py
+
 # Build artifacts
 backend/app/version_info.json
 
