@@ -46,8 +46,15 @@ def _read_state() -> Dict[str, Any]:
 
 
 def _get_github_token() -> Optional[str]:
-    """Get GitHub PAT from environment. Returns None if not configured."""
-    return os.environ.get("JUDGEMENT_GITHUB_TOKEN")
+    """Get GitHub PAT from environment or bundled token file."""
+    token = os.environ.get("JUDGEMENT_GITHUB_TOKEN")
+    if token:
+        return token
+    # Fallback: read from bundled token file
+    token_file = Path(__file__).resolve().parent.parent / "github_token.txt"
+    if token_file.is_file():
+        return token_file.read_text().strip() or None
+    return None
 
 
 def _get_community_data_dir() -> Path:

@@ -71,6 +71,7 @@ scripts/security_scan.py
 
 # Build artifacts
 backend/app/version_info.json
+backend/app/github_token.txt
 
 # Learning data (generated at runtime)
 backend/app/ml/learning/data/*.jsonl
