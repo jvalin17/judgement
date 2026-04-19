@@ -1,8 +1,15 @@
 """Collects decision data during gameplay and persists winner decisions.
 
-The collector observes game events, records every player's bid and card-play
-decisions with feature vectors, then at game end writes only the winner's
-decisions to the data files.
+The collector records every player's bid and card-play decisions with
+feature vectors and strategy type, then at game end writes only the
+winner's decisions to the data files.
+
+Information isolation guarantees:
+- Features are extracted from the player's OWN hand and public game state only.
+- No other player's hand data is ever included in the features.
+- Raw card values are never stored — only numeric counts and ratios.
+- The strategy_type field tracks which strategy made the decision
+  (e.g. "easy", "medium", "hard", "smart_hard", "human").
 """
 
 from __future__ import annotations
@@ -31,7 +38,7 @@ class DecisionCollector:
     """Buffers decisions during a game, flushes winner's data at game end."""
 
     def __init__(self):
-        # player_id -> list of (features, label) tuples
+        # player_id -> list of (features, label, strategy_type) tuples
         self._bid_decisions: Dict[str, List[tuple]] = {}
         self._play_decisions: Dict[str, List[tuple]] = {}
 
@@ -41,12 +48,17 @@ class DecisionCollector:
         hand: List[Card],
         context: RoundContext,
         bid_amount: int,
+        strategy_type: str = "unknown",
     ) -> None:
-        """Record a bid decision with its feature vector."""
+        """Record a bid decision with its feature vector and strategy type.
+
+        The feature vector is extracted from the player's own hand and
+        public game state only — no other player's cards are included.
+        """
         features = extract_bid_features(hand, context)
         if player_id not in self._bid_decisions:
             self._bid_decisions[player_id] = []
-        self._bid_decisions[player_id].append((features, float(bid_amount)))
+        self._bid_decisions[player_id].append((features, float(bid_amount), strategy_type))
 
     def record_play(
         self,
@@ -55,13 +67,19 @@ class DecisionCollector:
         valid_cards: List[Card],
         context: RoundContext,
         card_played: Card,
+        strategy_type: str = "unknown",
     ) -> None:
-        """Record a card-play decision with its feature vector."""
+        """Record a card-play decision with its feature vector and strategy type.
+
+        The feature vector is extracted from the player's own hand and
+        public game state only — no other player's cards are included.
+        The card choice is stored as an index (not the raw card).
+        """
         features = extract_play_features(hand, valid_cards, context)
         card_index = card_to_index(card_played, valid_cards)
         if player_id not in self._play_decisions:
             self._play_decisions[player_id] = []
-        self._play_decisions[player_id].append((features, float(card_index)))
+        self._play_decisions[player_id].append((features, float(card_index), strategy_type))
 
     def flush_winner(self, winner_ids: List[str]) -> int:
         """Write the winner's decisions to data files.
@@ -73,11 +91,17 @@ class DecisionCollector:
         play_file = get_play_data_file()
 
         for winner_id in winner_ids:
-            for features, label in self._bid_decisions.get(winner_id, []):
-                neighbor_model.append_example(bid_file, features, label)
+            for features, label, strategy_type in self._bid_decisions.get(winner_id, []):
+                neighbor_model.append_example(
+                    bid_file, features, label,
+                    metadata={"strategy_type": strategy_type},
+                )
                 count += 1
-            for features, label in self._play_decisions.get(winner_id, []):
-                neighbor_model.append_example(play_file, features, label)
+            for features, label, strategy_type in self._play_decisions.get(winner_id, []):
+                neighbor_model.append_example(
+                    play_file, features, label,
+                    metadata={"strategy_type": strategy_type},
+                )
                 count += 1
 
         self._bid_decisions.clear()

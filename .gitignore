@@ -53,6 +53,7 @@ SUMMARY.md
 code_mapping.md
 ARCH_ANALYSIS.md
 TODO.md
+stupidity.md
 
 # PyInstaller
 *.spec
@@ -60,5 +61,5 @@ TODO.md
 # Build artifacts
 backend/app/version_info.json
 
-# ML training data (generated at runtime)
-backend/app/ai/ml/data/*.jsonl
+# Learning data (generated at runtime)
+backend/app/ai/learning/data/*.jsonl

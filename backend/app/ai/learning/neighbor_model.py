@@ -102,13 +102,24 @@ def _weighted_vote_numeric(neighbors: List[Tuple[dict, float]]) -> int:
     return round(weighted_sum / weight_total)
 
 
-def append_example(data_file: str, features: List[float], label: float) -> None:
-    """Append a single labeled example to the data file (JSONL format)."""
+def append_example(
+    data_file: str,
+    features: List[float],
+    label: float,
+    metadata: Optional[dict] = None,
+) -> None:
+    """Append a single labeled example to the data file (JSONL format).
+
+    Optional metadata (e.g. strategy_type) is stored alongside but
+    not used for predictions — only features and label are used by kNN.
+    """
     directory = os.path.dirname(data_file)
     if directory:
         os.makedirs(directory, exist_ok=True)
 
     entry = {"features": features, "label": label}
+    if metadata:
+        entry.update(metadata)
     with open(data_file, "a") as file_handle:
         file_handle.write(json.dumps(entry) + "\n")
 

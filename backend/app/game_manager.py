@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 import random
 from datetime import datetime
 from typing import Dict, List, Optional, Callable
+
+logger = logging.getLogger(__name__)
 
 from backend.app.models import (
     Player, PlayerType, AIDifficulty, GameConfig, GamePhase,
@@ -30,6 +33,14 @@ STRATEGY_MAP = {
 }
 
 AI_SWEETS_NAMES = ("Gulab Jamun", "Jalebi", "Rasgulla", "Barfi", "Ladoo", "Kaju Katli")
+
+# Map strategy classes to readable names for data collection
+STRATEGY_TYPE_NAMES = {
+    "EasyAI": "easy",
+    "MediumAI": "medium",
+    "HardAI": "hard",
+    "SmartHardAI": "smart_hard",
+}
 
 
 def _make_strategy(difficulty: AIDifficulty, use_smart: bool = False) -> AIStrategy:
@@ -90,9 +101,17 @@ class ManagedGame:
         self._log_game_over(event)
         self._flush_winner_decisions(event)
 
+        logger.info("GAME_OVER: winners=%s, computing personas for humans", event.data.get("winners"))
+        logger.info("Session log has %d rounds", len(self.session_log.rounds))
+
         # Compute persona for each human player and send enriched per-player events
         for player in self.engine.state.players:
             persona_award = self._compute_persona(player.id) if player.player_type == PlayerType.HUMAN else None
+            logger.info(
+                "Player %s (%s): persona=%s",
+                player.id, player.player_type.value,
+                persona_award.persona_name if persona_award else "None",
+            )
             enriched = game_over_event(
                 final_scores=event.data.get("final_scores", {}),
                 winners=event.data.get("winners", []),
@@ -108,7 +127,9 @@ class ManagedGame:
             from backend.app.analysis.persona_match import pick_persona
 
             player_traits = compute_fingerprint(self.session_log, player_id)
+            logger.info("Fingerprint for %s: %s", player_id, player_traits)
             persona = pick_persona(player_traits)
+            logger.info("Matched persona: %s (%s)", persona.name, persona.category)
             return PersonaAward(
                 persona_id=persona.id,
                 persona_name=persona.name,
@@ -117,7 +138,8 @@ class ManagedGame:
                 traits=persona.traits,
                 player_traits=player_traits,
             )
-        except Exception:
+        except Exception as exc:
+            logger.error("Persona computation failed for %s: %s", player_id, exc, exc_info=True)
             return None
 
     def _handle_logging(self, event: GameEvent) -> None:
@@ -151,20 +173,29 @@ class ManagedGame:
             None,
         )
 
+    def _get_strategy_type(self, player_id: str) -> str:
+        """Get a readable strategy type name for a player."""
+        strategy = self.ai_strategies.get(player_id)
+        if strategy is None:
+            return "human"
+        class_name = type(strategy).__name__
+        return STRATEGY_TYPE_NAMES.get(class_name, class_name)
+
     def _execute_ai_action(self, pid: str, strategy: AIStrategy) -> None:
         ctx = self._build_context(pid)
         hand = self.engine.get_player_hand(pid)
+        strategy_type = self._get_strategy_type(pid)
 
         try:
             if self.engine.state.phase == GamePhase.BIDDING:
                 valid_bids = self.engine.get_valid_bids(pid)
                 bid = strategy.choose_bid(hand, valid_bids, ctx)
-                self.decision_collector.record_bid(pid, hand, ctx, bid)
+                self.decision_collector.record_bid(pid, hand, ctx, bid, strategy_type)
                 self.engine.place_bid(pid, bid)
             elif self.engine.state.phase == GamePhase.PLAYING:
                 valid_cards = self.engine.get_valid_cards(pid)
                 card = strategy.choose_card(hand, valid_cards, ctx)
-                self.decision_collector.record_play(pid, hand, valid_cards, ctx, card)
+                self.decision_collector.record_play(pid, hand, valid_cards, ctx, card, strategy_type)
                 self.engine.play_card(pid, card)
         except Exception:
             # Fallback: pick a random valid move so the game doesn't get stuck
@@ -176,6 +207,31 @@ class ManagedGame:
                 valid_cards = self.engine.get_valid_cards(pid)
                 if valid_cards:
                     self.engine.play_card(pid, random.choice(valid_cards))
+
+    # --- Human decision recording ---
+
+    def record_human_bid(self, player_id: str, bid_amount: int) -> None:
+        """Record a human player's bid decision for learning.
+
+        Must be called BEFORE engine.place_bid() so the hand state
+        is still pre-action. Only uses the player's own hand and
+        public game state — never accesses other players' cards.
+        """
+        hand = self.engine.get_player_hand(player_id)
+        ctx = self._build_context(player_id)
+        self.decision_collector.record_bid(player_id, hand, ctx, bid_amount, "human")
+
+    def record_human_play(self, player_id: str, card: 'Card') -> None:
+        """Record a human player's card-play decision for learning.
+
+        Must be called BEFORE engine.play_card() so the hand state
+        is still pre-action. Only uses the player's own hand and
+        public game state — never accesses other players' cards.
+        """
+        hand = self.engine.get_player_hand(player_id)
+        valid_cards = self.engine.get_valid_cards(player_id)
+        ctx = self._build_context(player_id)
+        self.decision_collector.record_play(player_id, hand, valid_cards, ctx, card, "human")
 
     # --- Context building ---
 

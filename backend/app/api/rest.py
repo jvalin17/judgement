@@ -149,6 +149,8 @@ async def get_player_hand(game_id: str, player_id: str):
 @router.post("/{game_id}/bid", response_model=ActionResponse)
 async def place_bid(game_id: str, request: BidRequest):
     managed = _require_game(game_id)
+    # Record human decision BEFORE the engine processes it (hand changes after)
+    managed.record_human_bid(request.player_id, request.amount)
     success = managed.engine.place_bid(request.player_id, request.amount)
     return ActionResponse(success=success, message="" if success else "Invalid bid")
 
@@ -157,6 +159,8 @@ async def place_bid(game_id: str, request: BidRequest):
 async def play_card(game_id: str, request: PlayCardRequest):
     managed = _require_game(game_id)
     card = _parse_card(request.suit, request.rank)
+    # Record human decision BEFORE the engine processes it (hand changes after)
+    managed.record_human_play(request.player_id, card)
     success = managed.engine.play_card(request.player_id, card)
     return ActionResponse(success=success, message="" if success else "Invalid card play")
 

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 from typing import Dict, Optional, Set
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+
+logger = logging.getLogger(__name__)
 
 from backend.app.models import Card, Suit, Rank
 from backend.app.models.events import EventType, GameEvent
@@ -72,6 +75,8 @@ def _get_event_delay(event_type: EventType, managed: ManagedGame) -> float:
 
 async def _handle_bid(managed: ManagedGame, player_id: str, message: dict) -> None:
     bid_amount = message.get("amount", 0)
+    # Record human decision BEFORE the engine processes it (hand changes after)
+    managed.record_human_bid(player_id, bid_amount)
     managed.engine.place_bid(player_id, bid_amount)
 
 
@@ -80,6 +85,8 @@ async def _handle_play_card(
 ) -> None:
     try:
         card = Card(suit=Suit(message["suit"]), rank=Rank(message["rank"]))
+        # Record human decision BEFORE the engine processes it (hand changes after)
+        managed.record_human_play(player_id, card)
         managed.engine.play_card(player_id, card)
     except (ValueError, KeyError):
         await _send_error(websocket, "Invalid card")
@@ -158,6 +165,12 @@ async def _writer_task(
             continue
 
         message = {"type": event.event_type.value, "data": event.data}
+        if event.event_type.value == "game_over":
+            logger.info(
+                "Sending game_over to %s: persona=%s",
+                player_id,
+                "present" if event.data.get("persona") else "None",
+            )
         await websocket.send_json(message)
 
         delay = _get_event_delay(event.event_type, managed)
