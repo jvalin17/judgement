@@ -183,8 +183,3 @@ judgement/
 - **Windows:** 10+
 - **Linux:** Python 3.9+ with GTK/WebKit
 
----
-
-## License
-
-MIT
