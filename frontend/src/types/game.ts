@@ -18,6 +18,7 @@ export const DealingVariant = {
   EIGHT_DOWN_UP: "8_down_up",
   TEN_DOWN_UP: "10_down_up",
   EIGHT_DOWN_UP_SHORT: "8_down_up_short",
+  THREE_QUICK: "3_quick",
 } as const;
 
 export type DealingVariant = (typeof DealingVariant)[keyof typeof DealingVariant];
@@ -127,6 +128,7 @@ export const VARIANT_LABELS: Record<DealingVariant, string> = {
   [DealingVariant.EIGHT_DOWN_UP]: "8 down to 1, back to 8 — 16 rounds",
   [DealingVariant.TEN_DOWN_UP]: "10 down to 1, back to 10 — 20 rounds",
   [DealingVariant.EIGHT_DOWN_UP_SHORT]: "8 down to 5, back to 8 — 8 rounds",
+  [DealingVariant.THREE_QUICK]: "Quick game — 3 rounds",
 };
 
 export const VARIANT_MAX_PLAYERS: Record<DealingVariant, number> = {
@@ -134,6 +136,7 @@ export const VARIANT_MAX_PLAYERS: Record<DealingVariant, number> = {
   [DealingVariant.EIGHT_DOWN_UP]: 6,
   [DealingVariant.TEN_DOWN_UP]: 5,
   [DealingVariant.EIGHT_DOWN_UP_SHORT]: 6,
+  [DealingVariant.THREE_QUICK]: 10,
 };
 
 export function isMyTurn(state: GameState): boolean {

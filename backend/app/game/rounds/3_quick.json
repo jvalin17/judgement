@@ -1,0 +1,5 @@
+[
+  { "round": 1, "cards": 5, "trump": "spades" },
+  { "round": 2, "cards": 3, "trump": "diamonds" },
+  { "round": 3, "cards": 5, "trump": "clubs" }
+]

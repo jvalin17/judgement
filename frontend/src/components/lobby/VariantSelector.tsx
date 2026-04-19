@@ -11,6 +11,7 @@ const VARIANTS: DealingVariant[] = [
   DealingVariant.EIGHT_DOWN_UP,
   DealingVariant.TEN_DOWN_UP,
   DealingVariant.EIGHT_DOWN_UP_SHORT,
+  DealingVariant.THREE_QUICK,
 ];
 
 export function VariantSelector({ selected, onChange }: VariantSelectorProps) {

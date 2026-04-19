@@ -82,40 +82,48 @@ function rankPlayersByScore(players: Player[], scores: Record<string, number>): 
 
 // --- Confetti ---
 
-const CONFETTI_COLORS = ["#e67e22", "#f1c40f", "#e74c3c", "#2ecc71", "#3498db", "#9b59b6"];
-const CONFETTI_COUNT = 60;
+const CONFETTI_COLORS = [
+  "#e67e22", "#f1c40f", "#e74c3c", "#2ecc71", "#3498db", "#9b59b6",
+  "#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff", "#ff922b", "#cc5de8",
+];
+const CONFETTI_COUNT = 150;
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 9301 + 49297) * 49297;
   return x - Math.floor(x);
 }
 
-const CONFETTI_PIECES = Array.from({ length: CONFETTI_COUNT }, (_, index) => ({
-  id: index,
-  left: seededRandom(index * 7 + 1) * 100,
-  delay: seededRandom(index * 7 + 2) * 2,
-  duration: 2 + seededRandom(index * 7 + 3) * 3,
-  color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
-  size: 4 + seededRandom(index * 7 + 4) * 8,
-  rotation: seededRandom(index * 7 + 5) * 360,
-}));
+const CONFETTI_PIECES = Array.from({ length: CONFETTI_COUNT }, (_, index) => {
+  const wave = Math.floor(index / 50); // 3 waves of 50
+  return {
+    id: index,
+    left: seededRandom(index * 7 + 1) * 100,
+    delay: wave * 0.8 + seededRandom(index * 7 + 2) * 1.5,
+    duration: 2 + seededRandom(index * 7 + 3) * 4,
+    color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+    size: 6 + seededRandom(index * 7 + 4) * 12,
+    rotation: seededRandom(index * 7 + 5) * 360,
+    shape: index % 3, // 0=rect, 1=circle, 2=triangle
+    swayAmount: 20 + seededRandom(index * 7 + 6) * 60,
+  };
+});
 
 function Confetti() {
-
   return (
     <div className={styles.confettiContainer} aria-hidden="true">
       {CONFETTI_PIECES.map((piece) => (
         <div
           key={piece.id}
-          className={styles.confettiPiece}
+          className={`${styles.confettiPiece} ${piece.shape === 1 ? styles.confettiCircle : piece.shape === 2 ? styles.confettiTriangle : ""}`}
           style={{
             left: `${piece.left}%`,
             animationDelay: `${piece.delay}s`,
             animationDuration: `${piece.duration}s`,
-            backgroundColor: piece.color,
+            backgroundColor: piece.shape === 2 ? "transparent" : piece.color,
+            borderBottomColor: piece.shape === 2 ? piece.color : undefined,
             width: `${piece.size}px`,
-            height: `${piece.size * 0.6}px`,
-            transform: `rotate(${piece.rotation}deg)`,
+            height: piece.shape === 1 ? `${piece.size}px` : `${piece.size * 0.6}px`,
+            ["--sway" as string]: `${piece.swayAmount}px`,
           }}
         />
       ))}

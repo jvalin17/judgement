@@ -15,6 +15,7 @@ const VARIANTS: DealingVariant[] = [
   DV.EIGHT_DOWN_UP,
   DV.TEN_DOWN_UP,
   DV.EIGHT_DOWN_UP_SHORT,
+  DV.THREE_QUICK,
 ];
 
 const VARIANT_DESCRIPTIONS: Record<DealingVariant, { rounds: string; detail: string; maxPlayers: number }> = {
@@ -22,6 +23,7 @@ const VARIANT_DESCRIPTIONS: Record<DealingVariant, { rounds: string; detail: str
   [DV.EIGHT_DOWN_UP]: { rounds: "16 rounds", detail: "8 down to 1, back to 8", maxPlayers: 6 },
   [DV.TEN_DOWN_UP]: { rounds: "20 rounds", detail: "10 down to 1, back to 10", maxPlayers: 5 },
   [DV.EIGHT_DOWN_UP_SHORT]: { rounds: "8 rounds", detail: "8 down to 5, back to 8", maxPlayers: 6 },
+  [DV.THREE_QUICK]: { rounds: "3 rounds", detail: "Quick game: 5, 3, 5 cards", maxPlayers: 10 },
 };
 
 interface GameLobbyProps {

@@ -20,6 +20,7 @@ class DealingVariant(str, Enum):
     EIGHT_DOWN_UP = "8_down_up"      # 8→1, 1→8 (16 rounds, max 6 players)
     TEN_DOWN_UP = "10_down_up"       # 10→1, 1→10 (20 rounds)
     EIGHT_DOWN_UP_SHORT = "8_down_up_short"  # 8→4, 4→8 (10 rounds, max 6 players)
+    THREE_QUICK = "3_quick"              # 5,3,5 (3 rounds, max 10 players)
 
 
 class GameConfig(BaseModel):
@@ -75,10 +76,14 @@ def get_round_sequence(variant: DealingVariant) -> list[int]:
         return list(range(10, 0, -1)) + list(range(1, 11))
     elif variant == DealingVariant.EIGHT_DOWN_UP_SHORT:
         return list(range(8, 4, -1)) + list(range(5, 9))
+    elif variant == DealingVariant.THREE_QUICK:
+        return [5, 3, 5]
     raise ValueError(f"Unknown variant: {variant}")
 
 
 def max_players_for_variant(variant: DealingVariant) -> int:
     if variant in (DealingVariant.EIGHT_DOWN_UP, DealingVariant.EIGHT_DOWN_UP_SHORT):
         return 6
+    if variant == DealingVariant.THREE_QUICK:
+        return 10
     return 5

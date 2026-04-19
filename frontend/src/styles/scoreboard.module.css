@@ -152,19 +152,44 @@
 
 .confettiPiece {
   position: absolute;
-  top: -10px;
+  top: -20px;
   border-radius: 2px;
-  opacity: 0.9;
+  opacity: 0.95;
   animation: confettiFall 3s ease-in forwards;
+}
+
+.confettiCircle {
+  border-radius: 50%;
+}
+
+.confettiTriangle {
+  width: 0 !important;
+  height: 0 !important;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 12px solid;
+  background: transparent !important;
 }
 
 @keyframes confettiFall {
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0) rotate(0deg) translateX(0);
     opacity: 1;
   }
+  25% {
+    transform: translateY(25vh) rotate(270deg) translateX(var(--sway, 40px));
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(50vh) rotate(540deg) translateX(calc(-1 * var(--sway, 40px)));
+    opacity: 0.9;
+  }
+  75% {
+    transform: translateY(75vh) rotate(810deg) translateX(var(--sway, 40px));
+    opacity: 0.6;
+  }
   100% {
-    transform: translateY(100vh) rotate(720deg);
+    transform: translateY(105vh) rotate(1080deg) translateX(0);
     opacity: 0;
   }
 }
