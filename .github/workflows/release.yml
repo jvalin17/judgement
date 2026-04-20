@@ -15,7 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          # Use macos-13 (Intel) — the binary runs on Apple Silicon via Rosetta,
+          # giving us a single universal download that works on both Intel and M-series Macs.
+          # Also supports older macOS versions (back to ~10.15 Catalina).
+          - os: macos-13
             python: '3.11'
             artifact_name: Judgement-macOS
             archive_file: Judgement-macOS.tar.gz
