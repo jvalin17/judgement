@@ -19,6 +19,18 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 No Python, Node.js, or terminal needed. Just download and play.
 
+### What's in the bundle
+
+The download is a self-contained app — everything is bundled:
+
+- **Game engine** — rules, scoring, trick resolution
+- **4 AI opponents** — Easy, Medium, Hard, and Smart Hard (learns from your games)
+- **75 player personas** — personality matching based on play style
+- **Web frontend** — pre-built React app served locally
+- **Local server** — FastAPI + WebSockets, runs on your machine only
+
+No data leaves your computer unless you opt into community data sharing or check for updates.
+
 **macOS first launch:** macOS may block the app since it's not from the App Store. Right-click the app → **Open** → click **Open** in the dialog. You only need to do this once.
 
 ---
@@ -70,6 +82,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 | 8 down & up | 16 | 6 |
 | 10 down & up | 20 | 5 |
 | 8 short | 10 | 6 |
+| 8 down to 4 | 5 | 6 |
 | 3 quick | 3 | 10 |
 
 ---
@@ -157,13 +170,13 @@ judgement/
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
-│   └── tests/              # 307 backend tests
+│   └── tests/              # 310 backend tests
 ├── frontend/src/
 │   ├── components/         # React components
 │   ├── hooks/              # useGame, useWebSocket
 │   ├── context/            # GameContext, SettingsContext
 │   ├── services/           # REST + WebSocket clients
-│   └── test/               # 38 frontend tests (Vitest)
+│   └── test/               # 47 frontend tests (Vitest)
 ├── desktop/                # pywebview launcher
 ├── assets/                 # App icons (PNG, ICNS, SVG)
 ├── scripts/                # Build, package, dev tools
@@ -183,9 +196,13 @@ judgement/
 
 ## System Requirements
 
-~15 MB download, ~25 MB on disk, ~100 MB RAM. No internet required to play (internet needed only for multiplayer, community data sharing, and update checks).
-
-- **macOS:** 10.13+ (Intel or Apple Silicon)
-- **Windows:** 10+
-- **Linux:** Python 3.9+ with GTK/WebKit
+| | Requirement |
+|---|---|
+| **Download size** | ~15 MB |
+| **Disk space** | ~25 MB installed |
+| **Memory** | ~100 MB RAM |
+| **Internet** | Not required for solo play. Needed for multiplayer, community data sharing, and update checks. |
+| **macOS** | 10.13 High Sierra or later (Intel and Apple Silicon) |
+| **Windows** | Windows 10 or later |
+| **Linux** | Build from source — Python 3.9+ with GTK/WebKit |
 
