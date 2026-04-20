@@ -495,52 +495,6 @@
   z-index: 4;
 }
 
-.avatarRing {
-  width: 52px;
-  height: 52px;
-  position: relative;
-  z-index: 2;
-}
-
-.ringOverlay {
-  width: 100%;
-  height: 100%;
-  display: block;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
-}
-
-.ringArc {
-  transition: stroke-dashoffset 0.4s ease;
-}
-
-.avatarBidStatus {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.scoreBadge {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1.5px solid var(--color-accent);
-  border-radius: 8px;
-  padding: 0 4px;
-  line-height: 1.4;
-  z-index: 3;
-}
-
 .seatName {
   font-size: 0.7rem;
   font-weight: 600;
@@ -558,7 +512,7 @@
 }
 
 
-/* Stat badge — split circle: top=score, bottom=won/bid */
+/* Stat badge — split circle: top=won/bid, bottom=score */
 
 .statBadge {
   width: 54px;
@@ -572,15 +526,21 @@
   justify-content: center;
   overflow: hidden;
   position: relative;
+  z-index: 2;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
+.statBadgeActive {
+  border-color: #ffd54a;
+}
+
 .statBadgeTop {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--color-accent);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ecf0f1;
   line-height: 1;
   padding-top: 3px;
+  letter-spacing: 0.02em;
 }
 
 .statBadgeDivider {
@@ -591,12 +551,11 @@
 }
 
 .statBadgeBottom {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  color: #ecf0f1;
+  color: var(--color-accent);
   line-height: 1;
   padding-bottom: 3px;
-  letter-spacing: 0.02em;
 }
 
 .seatCards {
@@ -680,12 +639,12 @@
 }
 
 @media (min-width: 768px) {
-  .avatarRing {
-    width: 58px;
-    height: 58px;
+  .statBadge {
+    width: 60px;
+    height: 60px;
   }
 
-  .avatarBidStatus {
+  .statBadgeTop {
     font-size: 1.05rem;
   }
 
