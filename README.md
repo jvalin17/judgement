@@ -40,7 +40,6 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **In-app updater** — check for new versions from Settings
 - **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
 - **Victory sound effects** — celebratory fanfare when you win, synthesized via Web Audio API
-- **357 automated tests** — game logic, AI, REST API, WebSocket, ML analysis, frontend components
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
 
 ---
