@@ -26,6 +26,8 @@ No Python, Node.js, or terminal needed. Just download and play.
 ## Features
 
 - **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (learns from game winners via kNN)
+- **Multiplayer** — create or join rooms with a code, lobby browser, quick-join
+- **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
 - **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
 - **Turbulence mode** — all players are bid-restricted, not just the dealer
 - **Play style persona** — at game end, get matched to one of 75 personas across 7 categories based on an 11-dimension play fingerprint
@@ -38,7 +40,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **In-app updater** — check for new versions from Settings
 - **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
 - **Victory sound effects** — celebratory fanfare when you win, synthesized via Web Audio API
-- **348 automated tests** — game logic, AI, REST API, WebSocket, ML analysis, frontend components
+- **357 automated tests** — game logic, AI, REST API, WebSocket, ML analysis, frontend components
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
 
 ---
@@ -181,7 +183,7 @@ judgement/
 
 ## System Requirements
 
-~25 MB on disk, ~100 MB RAM. No internet required to play.
+~15 MB download, ~25 MB on disk, ~100 MB RAM. No internet required to play (internet needed only for multiplayer, community data sharing, and update checks).
 
 - **macOS:** 10.13+ (Intel or Apple Silicon)
 - **Windows:** 10+
