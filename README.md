@@ -41,6 +41,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
 - **Victory sound effects** — celebratory fanfare when you win, synthesized via Web Audio API
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
+- **357 automated tests** — backend, frontend, AI, WebSocket, ML analysis
 
 ---
 
