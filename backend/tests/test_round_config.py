@@ -5,7 +5,7 @@ sequence as the current runtime computation (get_round_sequence + TRUMP_ORDER).
 """
 
 from backend.app.models.card import Suit, TRUMP_ORDER
-from backend.app.models.game import DealingVariant, get_round_sequence
+from backend.app.models.game import DealingVariant, get_round_sequence, max_players_for_variant
 from backend.app.models.round_config import RoundConfig
 from backend.app.game.round_config_loader import load_round_configs
 
@@ -96,3 +96,28 @@ def test_round_numbers_are_sequential():
         configs = load_round_configs(variant)
         for index, config in enumerate(configs):
             assert config.round == index + 1, f"{variant}: round {config.round} at index {index}"
+
+
+# --- Every variant must be handled by get_round_sequence and max_players ---
+
+
+def test_every_variant_has_round_sequence():
+    for variant in DealingVariant:
+        sequence = get_round_sequence(variant)
+        assert len(sequence) > 0, f"{variant}: empty round sequence"
+        assert all(cards > 0 for cards in sequence), f"{variant}: non-positive card count"
+
+
+def test_every_variant_has_max_players():
+    for variant in DealingVariant:
+        max_p = max_players_for_variant(variant)
+        assert 2 <= max_p <= 52, f"{variant}: unreasonable max_players={max_p}"
+
+
+def test_round_sequence_matches_json_configs():
+    """Every variant's get_round_sequence must produce the same card counts as its JSON."""
+    for variant in DealingVariant:
+        sequence = get_round_sequence(variant)
+        configs = load_round_configs(variant)
+        json_cards = [config.cards for config in configs]
+        assert sequence == json_cards, f"{variant}: sequence {sequence} != JSON {json_cards}"
