@@ -77,6 +77,8 @@ def get_round_sequence(variant: DealingVariant) -> list[int]:
         return list(range(10, 0, -1)) + list(range(1, 11))
     elif variant == DealingVariant.EIGHT_DOWN_UP_SHORT:
         return list(range(8, 4, -1)) + list(range(5, 9))
+    elif variant == DealingVariant.EIGHT_TO_THREE:
+        return list(range(8, 3, -1))
     elif variant == DealingVariant.THREE_QUICK:
         return [5, 3, 5]
     raise ValueError(f"Unknown variant: {variant}")
