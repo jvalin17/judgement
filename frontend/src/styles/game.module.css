@@ -495,26 +495,50 @@
   z-index: 4;
 }
 
-.avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.75rem;
-  color: white;
-  text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+.avatarRing {
+  width: 52px;
+  height: 52px;
   position: relative;
   z-index: 2;
 }
 
-/* Active avatar: quiet border change only — the "NOW" pill does the talking */
-.avatarActive {
-  border-color: #ffd54a;
+.ringOverlay {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+.ringArc {
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.avatarBidStatus {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.scoreBadge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1.5px solid var(--color-accent);
+  border-radius: 8px;
+  padding: 0 4px;
+  line-height: 1.4;
+  z-index: 3;
 }
 
 .seatName {
@@ -532,6 +556,7 @@
   padding: 1px 6px;
   border-radius: var(--radius-sm);
 }
+
 
 /* Stat badge — split circle: top=score, bottom=won/bid */
 
@@ -655,10 +680,13 @@
 }
 
 @media (min-width: 768px) {
-  .avatar {
-    width: 52px;
-    height: 52px;
-    font-size: 0.85rem;
+  .avatarRing {
+    width: 58px;
+    height: 58px;
+  }
+
+  .avatarBidStatus {
+    font-size: 1.05rem;
   }
 
   .seatName {

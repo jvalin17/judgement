@@ -19,8 +19,9 @@ interface PlayerSeatProps {
 
 export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, score, cardsRemaining }: PlayerSeatProps) {
   const avatarColor = getAvatarColor(player.name);
-  const initials = getInitials(player.name);
-  const avatarClass = [styles.avatar, isCurrentTurn ? styles.avatarActive : ""].filter(Boolean).join(" ");
+  const bidDisplay = bid !== null ? `${tricksWon}/${bid}` : "\u2014";
+  const ringProgress = getRingProgress(bid, tricksWon);
+  const ringColor = getRingColor(bid, tricksWon);
   const cardCount = Math.min(cardsRemaining, 5);
   const fanAngles = getFanAngles(cardCount);
 
@@ -38,12 +39,85 @@ export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, sc
         ))}
         {isCurrentTurn && <span className={styles.turnPill}>NOW</span>}
       </div>
-      <div className={avatarClass} style={{ backgroundColor: avatarColor }}>
-        {initials}
+      <div className={styles.avatarRing}>
+        <ProgressRing
+          progress={ringProgress}
+          color={ringColor}
+          isActive={isCurrentTurn}
+          bgColor={avatarColor}
+        />
+        <span className={styles.avatarBidStatus}>{bidDisplay}</span>
+        <span className={styles.scoreBadge}>{score}</span>
       </div>
       <span className={styles.seatName}>{player.name}</span>
-      <StatBadge score={score} bid={bid} tricksWon={tricksWon} />
     </div>
+  );
+}
+
+// --- Progress ring SVG ---
+
+const RING_SIZE = 52;
+const RING_STROKE = 3.5;
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+interface ProgressRingProps {
+  progress: number;
+  color: string;
+  isActive: boolean;
+  bgColor: string;
+}
+
+function ProgressRing({ progress, color, isActive, bgColor }: ProgressRingProps) {
+  const offset = RING_CIRCUMFERENCE * (1 - progress);
+
+  return (
+    <svg className={styles.ringOverlay} viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}>
+      {/* Filled circle background */}
+      <circle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={RING_RADIUS - RING_STROKE / 2}
+        fill={bgColor}
+      />
+      {/* Track */}
+      <circle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={RING_RADIUS}
+        fill="none"
+        stroke="rgba(255,255,255,0.15)"
+        strokeWidth={RING_STROKE}
+      />
+      {/* Progress arc */}
+      {progress > 0 && (
+        <circle
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={RING_RADIUS}
+          fill="none"
+          stroke={color}
+          strokeWidth={RING_STROKE}
+          strokeDasharray={RING_CIRCUMFERENCE}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})`}
+          className={styles.ringArc}
+        />
+      )}
+      {/* Active glow ring */}
+      {isActive && (
+        <circle
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={RING_RADIUS + 1}
+          fill="none"
+          stroke="#ffd54a"
+          strokeWidth={1.5}
+          opacity={0.7}
+        />
+      )}
+    </svg>
   );
 }
 
@@ -65,6 +139,20 @@ export function StatBadge({ score, bid, tricksWon }: StatBadgeProps) {
       <div className={styles.statBadgeBottom}>{bottomText}</div>
     </div>
   );
+}
+
+// --- Ring progress helpers ---
+
+function getRingProgress(bid: number | null, tricksWon: number): number {
+  if (bid === null || bid === 0) return tricksWon > 0 ? 1 : 0;
+  return Math.min(tricksWon / bid, 1);
+}
+
+function getRingColor(bid: number | null, tricksWon: number): string {
+  if (bid === null) return "rgba(255,255,255,0.3)";
+  if (tricksWon > bid) return "#e74c3c"; // over-bid: red
+  if (tricksWon === bid) return "#2ecc71"; // exact: green
+  return "#3498db"; // in progress: blue
 }
 
 // --- Avatar helpers ---

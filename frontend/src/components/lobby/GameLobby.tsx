@@ -70,6 +70,7 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
   const [playerName, setPlayerName] = useState("");
   const [variantIndex, setVariantIndex] = useState(0);
   const [mustLoseMode, setMustLoseMode] = useState(false);
+  const [challengeMode, setChallengeMode] = useState(false);
   const [opponents, setOpponents] = useState<PlayerConfig[]>(buildDefaultOpponents);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -116,6 +117,7 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
       const request = {
         variant,
         must_lose_mode: mustLoseMode,
+        challenge_mode: challengeMode,
         players: allPlayers.map((player): PlayerSetupRequest => ({
           name: player.name.trim(),
           is_ai: player.playerType === PlayerType.AI,
@@ -130,7 +132,7 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
     } finally {
       setIsCreating(false);
     }
-  }, [playerName, effectiveOpponents, variant, mustLoseMode, onGameCreated]);
+  }, [playerName, effectiveOpponents, variant, mustLoseMode, challengeMode, onGameCreated]);
 
   return (
     <div className={styles.lobby}>
@@ -193,6 +195,20 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
         </span>
         <span className={styles.turbulenceHint}>
           {mustLoseMode ? "Harder \u2014 someone must lose every round" : "Normal rules"}
+        </span>
+      </button>
+
+      {/* Challenge mode toggle */}
+      <button
+        className={`${styles.turbulenceToggle} ${challengeMode ? styles.challengeActive : ""}`}
+        onClick={() => setChallengeMode(!challengeMode)}
+      >
+        <span className={styles.turbulenceIcon}>{challengeMode ? "\uD83D\uDD25" : "\uD83C\uDFAF"}</span>
+        <span className={styles.turbulenceText}>
+          {challengeMode ? "Challenge Mode" : "Casual"}
+        </span>
+        <span className={styles.turbulenceHint}>
+          {challengeMode ? "AI plays at full strength" : "AI adapts to your level"}
         </span>
       </button>
 

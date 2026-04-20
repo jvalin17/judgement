@@ -23,6 +23,7 @@ class GameSpeed(BaseModel):
 class CreateGameRequest(BaseModel):
     variant: DealingVariant = DealingVariant.TEN_TO_ONE
     must_lose_mode: bool = False
+    challenge_mode: bool = False
     players: List[PlayerSetup]
     speed: Optional[GameSpeed] = None
     auto_start: bool = True

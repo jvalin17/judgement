@@ -83,7 +83,7 @@ async def create_game(request: CreateGameRequest):
     if len(request.players) > 6:
         raise HTTPException(400, "Maximum 6 players")
 
-    config = GameConfig(variant=request.variant, must_lose_mode=request.must_lose_mode)
+    config = GameConfig(variant=request.variant, must_lose_mode=request.must_lose_mode, challenge_mode=request.challenge_mode)
     players = []
     player_ids = {}
 

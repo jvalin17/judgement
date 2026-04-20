@@ -27,6 +27,7 @@ class DealingVariant(str, Enum):
 class GameConfig(BaseModel):
     variant: DealingVariant = DealingVariant.TEN_TO_ONE
     must_lose_mode: bool = False
+    challenge_mode: bool = False
 
 
 class Bid(BaseModel):

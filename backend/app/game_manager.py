@@ -305,6 +305,8 @@ class GameManager:
         return managed
 
     def _register_players(self, managed: ManagedGame, players: List[Player]) -> None:
+        challenge = managed.engine.state.config.challenge_mode
+
         # Pick one random Hard AI bot to use the ML strategy
         hard_ai_players = [
             player for player in players
@@ -312,8 +314,8 @@ class GameManager:
         ]
         smart_player_id = random.choice(hard_ai_players).id if hard_ai_players else None
 
-        # Occasionally nerf AI difficulty so the player can win
-        nerf = _should_nerf_ai()
+        # Occasionally nerf AI difficulty so the player can win (disabled in challenge mode)
+        nerf = (not challenge) and _should_nerf_ai()
         if nerf:
             logger.info("Difficulty nerf active this game — AI playing softer")
 

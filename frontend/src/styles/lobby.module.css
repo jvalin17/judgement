@@ -446,6 +446,16 @@
   background: rgba(231, 76, 60, 0.22);
 }
 
+.challengeActive {
+  background: rgba(255, 152, 0, 0.15);
+  border-color: rgba(255, 152, 0, 0.4);
+  box-shadow: 0 0 16px rgba(255, 152, 0, 0.12);
+}
+
+.challengeActive:hover {
+  background: rgba(255, 152, 0, 0.22);
+}
+
 .turbulenceIcon {
   font-size: 1.4rem;
   line-height: 1;

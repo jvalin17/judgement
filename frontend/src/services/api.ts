@@ -18,6 +18,7 @@ export interface PlayerSetup {
 export interface CreateGameRequest {
   variant: DealingVariant;
   must_lose_mode: boolean;
+  challenge_mode?: boolean;
   players: PlayerSetup[];
   auto_start?: boolean;
 }
