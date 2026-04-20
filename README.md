@@ -10,42 +10,35 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 ## Download & Play
 
-### macOS
+**[Download latest release](https://github.com/jvalin17/judgement/releases/latest)**
 
-1. Go to the [Releases](../../releases) page
-2. Download `Judgement-macOS.zip`
-3. Extract the zip
-4. Move `Judgement.app` to your Applications folder
-5. Double-click to play
-
-**First launch:** macOS may block the app since it's not from the App Store. Right-click the app, select **Open**, then click **Open** in the dialog. You only need to do this once.
-
-### Windows
-
-1. Go to the [Releases](../../releases) page
-2. Download `Judgement-Windows.zip`
-3. Extract the zip
-4. Run `Judgement.exe`
+| Platform | Download | Install |
+|----------|----------|---------|
+| **macOS** | [Judgement-macOS.zip](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-macOS.zip) | Extract → move to Applications → double-click |
+| **Windows** | [Judgement-Windows.zip](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-Windows.zip) | Extract → run `Judgement.exe` |
 
 No Python, Node.js, or terminal needed. Just download and play.
+
+**macOS first launch:** macOS may block the app since it's not from the App Store. Right-click the app → **Open** → click **Open** in the dialog. You only need to do this once.
 
 ---
 
 ## Features
 
 - **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (learns from game winners via kNN)
-- **Five dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 3 quick
+- **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
 - **Turbulence mode** — all players are bid-restricted, not just the dealer
 - **Play style persona** — at game end, get matched to one of 75 personas across 7 categories based on an 11-dimension play fingerprint
 - **Community data sharing** — share anonymized game decisions to help train better AI, download community data from other players
-- **Airport-themed scoreboard** — Passenger, Judgement, Hands Won, Turbulence, Altitude columns
+- **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Score visible during bidding** — cumulative score shown in the bid selector
 - **CSS-rendered cards** — no image assets, fully scalable
 - **Smooth animations** — dealing, playing, trick collection, celebration effects (confetti, fireworks, rockets, flowers, bubbles, clouds) ranked by final position
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
 - **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
-- **345 automated tests** — game logic, AI, REST API, WebSocket, ML analysis, frontend components
+- **Victory sound effects** — celebratory fanfare when you win, synthesized via Web Audio API
+- **348 automated tests** — game logic, AI, REST API, WebSocket, ML analysis, frontend components
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
 
 ---
