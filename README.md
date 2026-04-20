@@ -202,7 +202,7 @@ judgement/
 | **Disk space** | ~25 MB installed |
 | **Memory** | ~100 MB RAM |
 | **Internet** | Not required for solo play. Needed for multiplayer, community data sharing, and update checks. |
-| **macOS** | 10.15 Catalina or later (Intel and Apple Silicon) |
+| **macOS** | 11 Big Sur or later (Apple Silicon). Intel Macs: [build from source](#build-from-source). |
 | **Windows** | Windows 10 or later |
 | **Linux** | Build from source — Python 3.9+ with GTK/WebKit |
 

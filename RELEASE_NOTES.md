@@ -17,8 +17,7 @@ For the security model behind the update process, see the [Security Guidelines](
 ## v3.0.1
 
 ### Fixed
-- **macOS Intel support.** Build now runs on Intel runner — the binary works on both Intel and Apple Silicon Macs (via Rosetta).
-- **macOS minimum version.** Lowered from Monterey (12) to Catalina (10.15).
+- **macOS compatibility.** Binary now targets macOS 11 Big Sur and later (Apple Silicon). Intel Mac users can build from source.
 
 ---
 
