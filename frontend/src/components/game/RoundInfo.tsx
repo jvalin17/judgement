@@ -48,7 +48,7 @@ function TrumpCard({ suit }: TrumpCardProps) {
         }}
       >
         <span className={styles.trumpSymbol} style={{ color: symbolColor }}>
-          <SuitSvg suit={suit} size={28} />
+          <SuitSvg suit={suit} size={20} />
         </span>
       </div>
       <span className={styles.trumpLabel}>TRUMP</span>

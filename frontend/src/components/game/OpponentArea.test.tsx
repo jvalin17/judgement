@@ -71,12 +71,9 @@ describe("PlayerSeat", () => {
 });
 
 describe("Seat layout positions", () => {
-  it("no seat overlaps the top bar region (top < 15%)", async () => {
-    // Import the seat layouts from GameBoard
-    const module = await import("./GameBoard");
-    // We can't directly access SEAT_LAYOUTS, but we can verify via the
-    // exported getSeatPositions if it exists, or test via rendering.
-    // Instead, directly verify the constant values that matter:
+  it("no seat overlaps the top-left round info corner", async () => {
+    // Round info is positioned at top-left (top: 8px, left: 8px).
+    // Seats near the top-left corner (left < 20% AND top < 15%) would overlap.
     const layouts: Record<number, Array<{ left: string; top: string }>> = {
       3: [
         { left: "50%", top: "82%" },
@@ -86,31 +83,33 @@ describe("Seat layout positions", () => {
       4: [
         { left: "50%", top: "82%" },
         { left: "10%", top: "45%" },
-        { left: "30%", top: "25%" },
-        { left: "70%", top: "25%" },
+        { left: "50%", top: "10%" },
+        { left: "90%", top: "45%" },
       ],
       5: [
         { left: "50%", top: "82%" },
-        { left: "8%", top: "42%" },
-        { left: "22%", top: "28%" },
-        { left: "78%", top: "28%" },
-        { left: "92%", top: "42%" },
+        { left: "8%", top: "45%" },
+        { left: "25%", top: "12%" },
+        { left: "75%", top: "12%" },
+        { left: "92%", top: "45%" },
       ],
       6: [
         { left: "50%", top: "82%" },
-        { left: "8%", top: "44%" },
-        { left: "20%", top: "25%" },
-        { left: "50%", top: "32%" },
-        { left: "80%", top: "25%" },
-        { left: "92%", top: "44%" },
+        { left: "8%", top: "45%" },
+        { left: "25%", top: "12%" },
+        { left: "50%", top: "8%" },
+        { left: "75%", top: "12%" },
+        { left: "92%", top: "45%" },
       ],
     };
 
-    // Top bar + trump card takes ~20% of viewport; opponent seats must clear it
-    for (const [playerCount, seats] of Object.entries(layouts)) {
+    for (const [, seats] of Object.entries(layouts)) {
       for (let seatIndex = 1; seatIndex < seats.length; seatIndex++) {
         const topPercent = parseFloat(seats[seatIndex].top);
-        expect(topPercent).toBeGreaterThanOrEqual(25);
+        const leftPercent = parseFloat(seats[seatIndex].left);
+        // No seat should be in the top-left corner where round info lives
+        const overlapsRoundInfo = leftPercent < 20 && topPercent < 15;
+        expect(overlapsRoundInfo).toBe(false);
       }
     }
   });
