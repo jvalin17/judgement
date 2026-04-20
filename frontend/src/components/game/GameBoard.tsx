@@ -23,29 +23,29 @@ interface SeatPosition {
 const SEAT_LAYOUTS: Record<number, SeatPosition[]> = {
   3: [
     { left: "50%", top: "82%" },
-    { left: "18%", top: "18%" },
-    { left: "82%", top: "18%" },
+    { left: "15%", top: "30%" },
+    { left: "85%", top: "30%" },
   ],
   4: [
     { left: "50%", top: "82%" },
-    { left: "8%", top: "45%" },
-    { left: "50%", top: "18%" },
-    { left: "92%", top: "45%" },
+    { left: "10%", top: "45%" },
+    { left: "30%", top: "25%" },
+    { left: "70%", top: "25%" },
   ],
   5: [
     { left: "50%", top: "82%" },
-    { left: "10%", top: "38%" },
-    { left: "24%", top: "18%" },
-    { left: "76%", top: "18%" },
-    { left: "90%", top: "38%" },
+    { left: "8%", top: "42%" },
+    { left: "22%", top: "28%" },
+    { left: "78%", top: "28%" },
+    { left: "92%", top: "42%" },
   ],
   6: [
     { left: "50%", top: "82%" },
-    { left: "9%", top: "40%" },
-    { left: "18%", top: "18%" },
-    { left: "50%", top: "18%" },
-    { left: "82%", top: "18%" },
-    { left: "91%", top: "40%" },
+    { left: "8%", top: "44%" },
+    { left: "20%", top: "25%" },
+    { left: "50%", top: "32%" },
+    { left: "80%", top: "25%" },
+    { left: "92%", top: "44%" },
   ],
 };
 
