@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import json
 import logging
+import os
 import random
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Callable
 
 logger = logging.getLogger(__name__)
+
+_STATS_FILE = os.path.join(os.path.dirname(__file__), "ml", "learning", "data", "player_stats.json")
 
 from backend.app.models import (
     Player, PlayerType, AIDifficulty, GameConfig, GamePhase,
@@ -40,6 +45,36 @@ def _make_strategy(difficulty: AIDifficulty, use_smart: bool = False) -> AIStrat
         return SmartHardAI()
     cls = STRATEGY_MAP.get(difficulty, EasyAI)
     return cls()
+
+
+_NERF_MAP: Dict[AIDifficulty, AIDifficulty] = {
+    AIDifficulty.HARD: AIDifficulty.MEDIUM,
+    AIDifficulty.MEDIUM: AIDifficulty.EASY,
+}
+
+
+def _load_game_count() -> int:
+    try:
+        with open(_STATS_FILE) as fh:
+            return json.load(fh).get("game_count", 0)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return 0
+
+
+def _increment_game_count() -> int:
+    count = _load_game_count() + 1
+    os.makedirs(os.path.dirname(_STATS_FILE), exist_ok=True)
+    with open(_STATS_FILE, "w") as fh:
+        json.dump({"game_count": count}, fh)
+    return count
+
+
+def _should_nerf_ai() -> bool:
+    """~25% chance, but never on the first 2 games (let the player learn)."""
+    count = _increment_game_count()
+    if count <= 2:
+        return False
+    return random.random() < 0.25
 
 
 class GameSpeed:
@@ -277,11 +312,19 @@ class GameManager:
         ]
         smart_player_id = random.choice(hard_ai_players).id if hard_ai_players else None
 
+        # Occasionally nerf AI difficulty so the player can win
+        nerf = _should_nerf_ai()
+        if nerf:
+            logger.info("Difficulty nerf active this game — AI playing softer")
+
         for player in players:
             managed.engine.add_player(player)
             if self._needs_ai_strategy(player):
-                use_smart = player.id == smart_player_id
-                managed.ai_strategies[player.id] = _make_strategy(player.ai_difficulty, use_smart=use_smart)
+                effective_difficulty = player.ai_difficulty
+                if nerf and effective_difficulty in _NERF_MAP:
+                    effective_difficulty = _NERF_MAP[effective_difficulty]
+                use_smart = (not nerf) and player.id == smart_player_id
+                managed.ai_strategies[player.id] = _make_strategy(effective_difficulty, use_smart=use_smart)
 
     def _needs_ai_strategy(self, player: Player) -> bool:
         return player.player_type == PlayerType.AI and player.ai_difficulty is not None
