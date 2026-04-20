@@ -14,7 +14,7 @@ Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 | Platform | Download | Install |
 |----------|----------|---------|
-| **macOS** | [Judgement-macOS.zip](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-macOS.zip) | Extract → move to Applications → double-click |
+| **macOS** | [Judgement-macOS.tar.gz](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-macOS.tar.gz) | Extract → move to Applications → double-click |
 | **Windows** | [Judgement-Windows.zip](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-Windows.zip) | Extract → run `Judgement.exe` |
 
 No Python, Node.js, or terminal needed. Just download and play.
