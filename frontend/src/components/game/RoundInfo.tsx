@@ -26,11 +26,11 @@ export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount }: Rou
     <div className={`${styles.roundIsland} ${positionClass}`}>
       {suit && (
         <span className={styles.roundIslandSuit} style={{ color: symbolColor }}>
-          <SuitSvg suit={suit} size={18} />
+          <SuitSvg suit={suit} size={22} />
         </span>
       )}
       <span className={styles.roundIslandText}>
-        R{roundNumber}
+        Round {roundNumber}
       </span>
       <span className={styles.roundIslandDivider} />
       <span className={styles.roundIslandText}>

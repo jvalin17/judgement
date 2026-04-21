@@ -34,14 +34,14 @@ interface SettingsModalProps {
 
 const CARD_BACK_OPTIONS: CardBackDesign[] = [
   CardBackDesign.CLASSIC_BLUE,
-  CardBackDesign.RED_DAMASK,
-  CardBackDesign.GREEN_CELTIC,
-  CardBackDesign.ROYAL_PURPLE,
-  CardBackDesign.GOLD_ORNATE,
-  CardBackDesign.BLACK_CARBON,
-  CardBackDesign.ROSE_FLORAL,
-  CardBackDesign.TEAL_DIAMONDS,
-  CardBackDesign.INDIGO_STARS,
+  CardBackDesign.COCKPIT_NAVY,
+  CardBackDesign.RUNWAY_GRAY,
+  CardBackDesign.FIRST_CLASS,
+  CardBackDesign.RED_EYE,
+  CardBackDesign.ALTITUDE_WHITE,
+  CardBackDesign.SUNSET_HORIZON,
+  CardBackDesign.RADAR_GREEN,
+  CardBackDesign.BLACKBOX,
 ];
 
 const TABLE_COLOR_OPTIONS: TableColor[] = [
@@ -467,12 +467,12 @@ function UpdateSection() {
 
 export const CARD_BACK_DESIGN_CLASS: Record<CardBackDesign, string> = {
   [CardBackDesign.CLASSIC_BLUE]: cardStyles.backClassicBlue ?? "",
-  [CardBackDesign.RED_DAMASK]: cardStyles.backRedDamask ?? "",
-  [CardBackDesign.GREEN_CELTIC]: cardStyles.backGreenCeltic ?? "",
-  [CardBackDesign.ROYAL_PURPLE]: cardStyles.backRoyalPurple ?? "",
-  [CardBackDesign.GOLD_ORNATE]: cardStyles.backGoldOrnate ?? "",
-  [CardBackDesign.BLACK_CARBON]: cardStyles.backBlackCarbon ?? "",
-  [CardBackDesign.ROSE_FLORAL]: cardStyles.backRoseFloral ?? "",
-  [CardBackDesign.TEAL_DIAMONDS]: cardStyles.backTealDiamonds ?? "",
-  [CardBackDesign.INDIGO_STARS]: cardStyles.backIndigoStars ?? "",
+  [CardBackDesign.COCKPIT_NAVY]: cardStyles.backCockpitNavy ?? "",
+  [CardBackDesign.RUNWAY_GRAY]: cardStyles.backRunwayGray ?? "",
+  [CardBackDesign.FIRST_CLASS]: cardStyles.backFirstClass ?? "",
+  [CardBackDesign.RED_EYE]: cardStyles.backRedEye ?? "",
+  [CardBackDesign.ALTITUDE_WHITE]: cardStyles.backAltitudeWhite ?? "",
+  [CardBackDesign.SUNSET_HORIZON]: cardStyles.backSunsetHorizon ?? "",
+  [CardBackDesign.RADAR_GREEN]: cardStyles.backRadarGreen ?? "",
+  [CardBackDesign.BLACKBOX]: cardStyles.backBlackbox ?? "",
 };

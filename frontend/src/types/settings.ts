@@ -1,13 +1,13 @@
 export const CardBackDesign = {
   CLASSIC_BLUE: "classic_blue",
-  RED_DAMASK: "red_damask",
-  GREEN_CELTIC: "green_celtic",
-  ROYAL_PURPLE: "royal_purple",
-  GOLD_ORNATE: "gold_ornate",
-  BLACK_CARBON: "black_carbon",
-  ROSE_FLORAL: "rose_floral",
-  TEAL_DIAMONDS: "teal_diamonds",
-  INDIGO_STARS: "indigo_stars",
+  COCKPIT_NAVY: "cockpit_navy",
+  RUNWAY_GRAY: "runway_gray",
+  FIRST_CLASS: "first_class",
+  RED_EYE: "red_eye",
+  ALTITUDE_WHITE: "altitude_white",
+  SUNSET_HORIZON: "sunset_horizon",
+  RADAR_GREEN: "radar_green",
+  BLACKBOX: "blackbox",
 } as const;
 export type CardBackDesign = (typeof CardBackDesign)[keyof typeof CardBackDesign];
 
@@ -72,14 +72,14 @@ export const TABLE_COLOR_LABELS: Record<TableColor, string> = {
 
 export const CARD_BACK_LABELS: Record<CardBackDesign, string> = {
   [CardBackDesign.CLASSIC_BLUE]: "Classic Blue",
-  [CardBackDesign.RED_DAMASK]: "Red Damask",
-  [CardBackDesign.GREEN_CELTIC]: "Green Celtic",
-  [CardBackDesign.ROYAL_PURPLE]: "Royal Purple",
-  [CardBackDesign.GOLD_ORNATE]: "Gold Ornate",
-  [CardBackDesign.BLACK_CARBON]: "Black Carbon",
-  [CardBackDesign.ROSE_FLORAL]: "Rose Floral",
-  [CardBackDesign.TEAL_DIAMONDS]: "Teal Diamonds",
-  [CardBackDesign.INDIGO_STARS]: "Indigo Stars",
+  [CardBackDesign.COCKPIT_NAVY]: "Cockpit Navy",
+  [CardBackDesign.RUNWAY_GRAY]: "Runway",
+  [CardBackDesign.FIRST_CLASS]: "First Class",
+  [CardBackDesign.RED_EYE]: "Red Eye",
+  [CardBackDesign.ALTITUDE_WHITE]: "Altitude",
+  [CardBackDesign.SUNSET_HORIZON]: "Horizon",
+  [CardBackDesign.RADAR_GREEN]: "Radar",
+  [CardBackDesign.BLACKBOX]: "Black Box",
 };
 
 export const ANIMATION_SPEED_MAP: Record<AnimationSpeed, { fast: number; base: number; slow: number }> = {
