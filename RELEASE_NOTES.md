@@ -18,6 +18,9 @@ For the security model behind the update process, see the [Security Guidelines](
 - **Opponent display.** Two separate badges: bid status (e.g. "1/3") on the card fan, score below the name.
 - **Round indicator.** Redesigned as a Dynamic Island-style pill showing trump suit, round number, and card count. Moves between top-center and bottom-left depending on player count.
 - **Seat layouts.** Natural poker-style distribution for all player counts — no more awkward gaps or overlapping UI.
+- **Turn indicator.** "NOW" pill moved to the side of the card fan so it stays visible for top-positioned players in fullscreen.
+- **Settings panel.** Redesigned with a light blue/white body, navy text, and orange accents. Much better contrast and readability.
+- **Card back designs.** Aviation-themed backs: Cockpit Navy, Runway, First Class, Red Eye, Altitude, Sunset Horizon, Radar, Black Box.
 
 ---
 
