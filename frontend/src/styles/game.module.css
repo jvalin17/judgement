@@ -21,55 +21,51 @@
 
 /* Top bar: round info + trump */
 
-/* Round info — card-shaped indicator, bottom-right */
+/* Round info — Dynamic Island pill */
 
-.roundInfoCard {
+.roundIsland {
   position: absolute;
-  bottom: 12px;
-  right: 12px;
   z-index: 10;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
-.roundInfoFace {
-  width: 56px;
-  height: 80px;
-  border: 1.5px solid #4a7fb5;
-  border-radius: var(--card-radius);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  position: relative;
+.roundIslandTop {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.roundInfoNumber {
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+.roundIslandBottom {
+  bottom: 10px;
+  left: 10px;
 }
 
-.roundInfoSuit {
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+.roundIslandSuit {
   line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
-.roundInfoCards {
-  font-size: 0.65rem;
-  font-weight: 600;
-  opacity: 0.7;
-}
-
-.roundInfoLabel {
-  font-size: 0.55rem;
+.roundIslandText {
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
+  color: #ecf0f1;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.roundIslandDivider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Trick area — centered on table */

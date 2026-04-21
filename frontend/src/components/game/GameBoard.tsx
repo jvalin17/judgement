@@ -160,6 +160,7 @@ export function GameBoard() {
         roundNumber={state.roundNumber}
         numCards={state.numCards}
         trumpSuit={state.trumpSuit}
+        playerCount={allPlayers.length}
       />
 
       {orderedPlayers.slice(1).map((player, index) => {
