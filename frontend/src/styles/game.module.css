@@ -476,7 +476,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
   z-index: 4;
 }
 
@@ -492,8 +491,9 @@
   position: relative;
   z-index: 3;
   background: rgba(0, 0, 0, 0.55);
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: var(--radius-sm);
+  margin-top: 4px;
 }
 
 
@@ -547,15 +547,15 @@
 
 .bidBadge {
   position: absolute;
-  bottom: -8px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 5;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.75);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -584,15 +584,11 @@
   font-weight: 700;
   color: var(--color-accent);
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+  margin-top: 3px;
 }
 
 .seatCards {
-  display: flex;
-  justify-content: center;
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 1;
   width: var(--card-width-sm);
   height: var(--card-height-sm);
