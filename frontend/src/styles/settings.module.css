@@ -1,11 +1,11 @@
-/* Settings modal */
+/* Settings modal — light blue / white / navy / orange scheme */
 
 .settingsContent {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
   min-width: 320px;
-  background: linear-gradient(180deg, #243b5c, #2a4468);
+  background: linear-gradient(180deg, #c8ddf0, #b8d0e8);
   margin: calc(-1 * var(--space-lg));
   padding: var(--space-lg);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
@@ -15,8 +15,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  background: linear-gradient(135deg, rgba(10, 25, 60, 0.6), rgba(15, 35, 75, 0.4));
-  border: 1px solid rgba(100, 150, 220, 0.15);
+  background: #f0f4f8;
+  border: 1px solid #1a3050;
   border-radius: var(--radius-lg);
   padding: var(--space-md);
 }
@@ -24,7 +24,7 @@
 .sectionTitle {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #6aafff;
+  color: #1a3050;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   margin-bottom: 2px;
@@ -51,14 +51,14 @@
 }
 
 .cardBackOption:hover {
-  border-color: rgba(100, 160, 240, 0.3);
-  background: rgba(30, 60, 120, 0.2);
+  border-color: rgba(230, 126, 34, 0.4);
+  background: #dbeaf7;
   transform: translateY(-2px);
 }
 
 .cardBackOption.selected {
-  border-color: #4a90e2;
-  background: rgba(40, 80, 160, 0.15);
+  border-color: #e67e22;
+  background: rgba(230, 126, 34, 0.08);
 }
 
 .cardBackPreview {
@@ -67,12 +67,12 @@
   border-radius: 4px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .cardBackLabel {
   font-size: 0.6rem;
-  color: var(--color-text-muted);
+  color: #4a6080;
   text-align: center;
   white-space: nowrap;
 }
@@ -98,35 +98,35 @@
 }
 
 .colorOption:hover {
-  border-color: rgba(100, 160, 240, 0.3);
+  border-color: rgba(230, 126, 34, 0.4);
   transform: translateY(-2px);
 }
 
 .colorOption.selected {
-  border-color: #4a90e2;
+  border-color: #e67e22;
 }
 
 .colorSwatch {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(26, 48, 80, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2);
   transition: box-shadow var(--transition-fast);
 }
 
 .colorOption:hover .colorSwatch {
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.2);
 }
 
 .colorOption.selected .colorSwatch {
-  border-color: #4a90e2;
-  box-shadow: 0 0 10px rgba(74, 144, 226, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+  border-color: #e67e22;
+  box-shadow: 0 0 10px rgba(230, 126, 34, 0.35), 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .colorLabel {
   font-size: 0.6rem;
-  color: var(--color-text-muted);
+  color: #4a6080;
   text-align: center;
 }
 
@@ -140,27 +140,27 @@
 .speedOption {
   flex: 1;
   padding: 8px 12px;
-  background: rgba(10, 25, 60, 0.4);
+  background: #e4edf5;
   border-radius: var(--radius-md);
   text-align: center;
   cursor: pointer;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: rgba(200, 215, 240, 0.6);
+  color: #4a6080;
   transition: all var(--transition-fast);
-  border: 1.5px solid rgba(100, 150, 220, 0.12);
+  border: 1.5px solid rgba(26, 48, 80, 0.12);
 }
 
 .speedOption:hover {
-  background: rgba(20, 50, 100, 0.4);
-  color: #e0e8f5;
-  border-color: rgba(100, 160, 240, 0.25);
+  background: #dbeaf7;
+  color: #1a3050;
+  border-color: rgba(230, 126, 34, 0.3);
 }
 
 .speedOption.selected {
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), rgba(74, 144, 226, 0.08));
-  color: #6aafff;
-  border-color: #4a90e2;
+  background: linear-gradient(135deg, rgba(230, 126, 34, 0.15), rgba(230, 126, 34, 0.06));
+  color: #d35400;
+  border-color: #e67e22;
 }
 
 /* Top-right button group */
@@ -207,10 +207,10 @@
 
 .updateButton {
   padding: 8px 16px;
-  background: linear-gradient(135deg, rgba(200, 40, 40, 0.15), rgba(180, 30, 30, 0.08));
-  border: 1px solid rgba(200, 60, 60, 0.25);
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  border: 1px solid #c0470a;
   border-radius: var(--radius-md);
-  color: #e8d0d0;
+  color: #fff;
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
@@ -219,9 +219,8 @@
 }
 
 .updateButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(220, 50, 50, 0.25), rgba(200, 40, 40, 0.12));
-  border-color: #cc4444;
-  color: #ff8888;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  border-color: #e67e22;
 }
 
 .updateButton:disabled {
@@ -232,11 +231,11 @@
 .updateStatus {
   font-size: var(--font-size-sm);
   line-height: 1.4;
+  color: #1a3050;
 }
 
 .versionInfo {
   font-size: 0.6rem;
-  color: var(--color-text-muted);
+  color: #4a6080;
   margin-top: 2px;
-  opacity: 0.7;
 }
