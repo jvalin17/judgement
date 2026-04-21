@@ -3,12 +3,56 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from backend.app.ml.analysis.persona_loader import Persona, load_personas, get_persona_by_id
 from backend.app.ml.constants import DIMENSIONS
 
 logger = logging.getLogger(__name__)
+
+# --- Persona tiers ---
+# Categories are unlocked based on game difficulty settings.
+# Harder games reward more prestigious persona categories.
+
+TIER_ELITE = {"superhero", "mythology"}          # Hard + turbulence + challenge
+TIER_COMPETITIVE = {"achievement", "poker"}       # Hard/SmartHard or challenge
+TIER_STANDARD = {"cartoon", "pokemon"}            # Medium bots
+TIER_CASUAL = {"animal"}                          # Easy bots
+
+ALL_CATEGORIES = TIER_ELITE | TIER_COMPETITIVE | TIER_STANDARD | TIER_CASUAL
+
+TIERS_BY_LEVEL = {
+    "elite": TIER_ELITE | TIER_COMPETITIVE | TIER_STANDARD | TIER_CASUAL,
+    "competitive": TIER_COMPETITIVE | TIER_STANDARD | TIER_CASUAL,
+    "standard": TIER_STANDARD | TIER_CASUAL,
+    "casual": TIER_CASUAL,
+}
+
+
+def compute_tier(
+    max_ai_difficulty: str,
+    challenge_mode: bool,
+    must_lose_mode: bool,
+) -> str:
+    """Determine persona tier from game settings.
+
+    Args:
+        max_ai_difficulty: highest AI difficulty in the game ("easy", "medium", "hard", "smart_hard")
+        challenge_mode: whether challenge mode is enabled
+        must_lose_mode: whether turbulence mode is enabled
+    """
+    is_hard = max_ai_difficulty in ("hard", "smart_hard")
+
+    if is_hard and must_lose_mode and challenge_mode:
+        return "elite"
+    if is_hard or challenge_mode:
+        return "competitive"
+    if max_ai_difficulty == "medium":
+        return "standard"
+    return "casual"
+
+
+# --- Scoring ---
 
 
 def _evaluate_trigger(trigger: Dict, player_vec: Dict[str, float]) -> bool:
@@ -54,8 +98,6 @@ def score_persona(player_vec: Dict[str, float], persona: Persona) -> float:
     proximity_score = 1.0 - weighted_avg_diff
 
     # Phase 2: Directional affinity bonus
-    # Reward when both player and persona are extreme in the same direction
-    # on the persona's most-weighted dimensions
     affinity_bonus = 0.0
     for dim in persona.key_dims:
         persona_val = persona.traits.get(dim, 0.5)
@@ -78,15 +120,18 @@ def best_personas(
     player_vec: Dict[str, float],
     recent_ids: Optional[List[str]] = None,
     top_k: int = 7,
+    allowed_categories: Optional[Set[str]] = None,
 ) -> List[Tuple[str, float]]:
-    """Return top-K personas with category diversity.
+    """Return top-K personas with category diversity, filtered by allowed categories.
 
-    Ensures at least one candidate per category makes it into the pool,
-    so players can discover superheroes, mythology, etc. instead of
-    always landing on the same few high-similarity categories.
+    Ensures at least one candidate per allowed category makes it into the pool.
     """
     recent = set(recent_ids or [])
-    all_personas = load_personas()
+    allowed = allowed_categories or ALL_CATEGORIES
+    all_personas = [p for p in load_personas() if p.category in allowed]
+
+    if not all_personas:
+        all_personas = load_personas()
 
     # Score every persona
     scored_all: List[Tuple[Persona, float]] = []
@@ -126,17 +171,21 @@ def pick_persona(
     player_vec: Dict[str, float],
     recent_ids: Optional[List[str]] = None,
     rng: Optional[random.Random] = None,
+    tier: str = "elite",
 ) -> Persona:
     """Pick a persona from the top matches using weighted random selection.
 
-    The candidate pool is category-diverse (best_personas guarantees at least
-    one from each category), so even categories that are harder to match
-    have a chance of being selected.
+    The tier controls which categories are available:
+    - elite: all categories (superhero, mythology, achievement, poker, cartoon, pokemon, animal)
+    - competitive: achievement, poker, cartoon, pokemon, animal
+    - standard: cartoon, pokemon, animal
+    - casual: animal only
     """
     if rng is None:
         rng = random.Random()
 
-    top = best_personas(player_vec, recent_ids)
+    allowed = TIERS_BY_LEVEL.get(tier, ALL_CATEGORIES)
+    top = best_personas(player_vec, recent_ids, allowed_categories=allowed)
     if not top:
         return load_personas()[0]
 

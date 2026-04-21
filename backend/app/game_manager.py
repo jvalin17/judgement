@@ -152,11 +152,24 @@ class ManagedGame:
         """Compute a persona award for a player. Returns None on failure."""
         try:
             from backend.app.ml.analysis.fingerprint import compute_fingerprint
-            from backend.app.ml.analysis.persona_match import pick_persona
+            from backend.app.ml.analysis.persona_match import pick_persona, compute_tier
 
             player_traits = compute_fingerprint(self.session_log, player_id)
             logger.info("Fingerprint for %s: %s", player_id, player_traits)
-            persona = pick_persona(player_traits)
+
+            # Determine tier from game settings
+            max_difficulty = self._get_max_ai_difficulty()
+            tier = compute_tier(
+                max_ai_difficulty=max_difficulty,
+                challenge_mode=self.engine.state.config.challenge_mode,
+                must_lose_mode=self.engine.state.config.must_lose_mode,
+            )
+            logger.info("Persona tier: %s (max_ai=%s, challenge=%s, turbulence=%s)",
+                         tier, max_difficulty,
+                         self.engine.state.config.challenge_mode,
+                         self.engine.state.config.must_lose_mode)
+
+            persona = pick_persona(player_traits, tier=tier)
             logger.info("Matched persona: %s (%s)", persona.name, persona.category)
             return PersonaAward(
                 persona_id=persona.id,
@@ -190,6 +203,16 @@ class ManagedGame:
         if not strategy:
             return
         self._execute_ai_action(pid, strategy)
+
+    def _get_max_ai_difficulty(self) -> str:
+        """Return the highest AI difficulty level in the game."""
+        priority = {"easy": 0, "medium": 1, "hard": 2, "smart_hard": 3}
+        max_level = "easy"
+        for strategy in self.ai_strategies.values():
+            level = strategy.strategy_type
+            if priority.get(level, 0) > priority.get(max_level, 0):
+                max_level = level
+        return max_level
 
     def _is_ai_player(self, player_id: str) -> bool:
         player = self._find_player(player_id)

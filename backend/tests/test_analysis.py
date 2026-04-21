@@ -7,6 +7,7 @@ from backend.app.ml.analysis.persona_loader import load_personas, get_persona_by
 from backend.app.ml.analysis.fingerprint import compute_fingerprint, project_round
 from backend.app.ml.analysis.persona_match import (
     score_persona, best_personas, pick_persona, _evaluate_trigger,
+    compute_tier, TIER_ELITE, TIER_COMPETITIVE, TIER_STANDARD, TIER_CASUAL,
 )
 from backend.app.models.session import SessionLog, RoundLog
 from backend.app.models.game import Bid
@@ -457,6 +458,50 @@ class TestPersonaMatch:
         personas = {p.id: p for p in load_personas()}
         categories = {personas[pid].category for pid in top_ids}
         assert len(categories) >= 5
+
+    def test_casual_tier_only_returns_animals(self):
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        top = best_personas(vec, allowed_categories=TIER_CASUAL)
+        personas_map = {p.id: p for p in load_personas()}
+        for pid, _ in top:
+            assert personas_map[pid].category in TIER_CASUAL
+
+    def test_elite_tier_includes_superheroes(self):
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        all_cats = TIER_ELITE | TIER_COMPETITIVE | TIER_STANDARD | TIER_CASUAL
+        top = best_personas(vec, allowed_categories=all_cats)
+        personas_map = {p.id: p for p in load_personas()}
+        categories = {personas_map[pid].category for pid, _ in top}
+        assert "superhero" in categories
+
+    def test_standard_tier_excludes_superheroes(self):
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        allowed = TIER_STANDARD | TIER_CASUAL
+        top = best_personas(vec, allowed_categories=allowed)
+        personas_map = {p.id: p for p in load_personas()}
+        for pid, _ in top:
+            assert personas_map[pid].category not in TIER_ELITE
+
+    def test_compute_tier_elite(self):
+        assert compute_tier("hard", challenge_mode=True, must_lose_mode=True) == "elite"
+        assert compute_tier("smart_hard", challenge_mode=True, must_lose_mode=True) == "elite"
+
+    def test_compute_tier_competitive(self):
+        assert compute_tier("hard", challenge_mode=False, must_lose_mode=False) == "competitive"
+        assert compute_tier("easy", challenge_mode=True, must_lose_mode=False) == "competitive"
+
+    def test_compute_tier_standard(self):
+        assert compute_tier("medium", challenge_mode=False, must_lose_mode=False) == "standard"
+
+    def test_compute_tier_casual(self):
+        assert compute_tier("easy", challenge_mode=False, must_lose_mode=False) == "casual"
+
+    def test_pick_persona_respects_tier(self):
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        personas_map = {p.id: p for p in load_personas()}
+        for seed in range(50):
+            persona = pick_persona(vec, rng=random.Random(seed), tier="casual")
+            assert personas_map[persona.id].category in TIER_CASUAL
 
     def test_achievement_persona_wins_with_trigger(self):
         # A player with precision = 0.95 should get Sniper in top results
