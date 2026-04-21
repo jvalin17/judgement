@@ -75,6 +75,25 @@ describe("PlayerSeat", () => {
     expect(scoreBadge).toHaveTextContent("30");
     expect(bidBadge).not.toBe(scoreBadge);
   });
+
+  it("renders in order: cards with bid badge, then name, then score badge", () => {
+    const { container } = renderSeat({
+      player: makePlayer({ name: "Jalebi" }),
+      ...defaultProps,
+      bid: 2,
+      tricksWon: 1,
+      score: 30,
+    });
+    const seat = container.firstElementChild!;
+    const children = Array.from(seat.children);
+    // child 0: seatCards (contains card fan + bid badge)
+    // child 1: seatName
+    // child 2: scoreBadge
+    expect(children.length).toBeGreaterThanOrEqual(3);
+    expect(children[0].querySelector("[data-testid='bid-Jalebi']")).toBeTruthy();
+    expect(children[1].textContent).toBe("Jalebi");
+    expect(children[2]).toBe(screen.getByTestId("score-Jalebi"));
+  });
 });
 
 describe("Seat layout positions", () => {
