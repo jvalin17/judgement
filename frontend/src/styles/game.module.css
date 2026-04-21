@@ -21,65 +21,55 @@
 
 /* Top bar: round info + trump */
 
-.topBar {
+/* Round info — card-shaped indicator, bottom-right */
+
+.roundInfoCard {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  bottom: 12px;
+  right: 12px;
   z-index: 10;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  gap: var(--space-sm);
-}
-
-.roundLabel {
-  font-weight: 600;
-  font-size: var(--font-size-base);
-}
-
-.roundDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.trumpDisplay {
-  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 
-.trumpCard {
-  width: 36px;
-  height: 50px;
-  background: linear-gradient(135deg, #1a3a5c, #2c5f8a);
-  border: 1px solid #4a7fb5;
+.roundInfoFace {
+  width: 56px;
+  height: 80px;
+  border: 1.5px solid #4a7fb5;
   border-radius: var(--card-radius);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
+  position: relative;
 }
 
-.trumpSymbol {
-  font-size: 1.3rem;
+.roundInfoNumber {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.roundInfoSuit {
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  line-height: 1;
 }
 
-.trumpLabel {
-  font-size: 0.6rem;
+.roundInfoCards {
+  font-size: 0.65rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.roundInfoLabel {
+  font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 0.15em;
   color: var(--color-text-muted);
   text-transform: uppercase;
-}
-
-.cardsLabel {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
 }
 
 /* Trick area — centered on table */
