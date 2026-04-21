@@ -230,10 +230,10 @@ function CommunityDataSection() {
   };
 
   return (
-    <div className={styles.settingsSection} style={{ borderTop: "1px solid var(--color-surface-light)", paddingTop: "var(--space-lg)" }}>
+    <div className={styles.settingsSection}>
       <span className={styles.sectionTitle}>Community Data</span>
       {preview && (
-        <div className={styles.versionInfo} style={{ marginBottom: "var(--space-sm)" }}>
+        <div className={styles.versionInfo}>
           Local: {preview.total} examples ({preview.human_bid_decisions + preview.human_play_decisions} from you)
         </div>
       )}
@@ -419,7 +419,7 @@ function UpdateSection() {
   };
 
   return (
-    <div className={styles.settingsSection} style={{ borderTop: "1px solid var(--color-surface-light)", paddingTop: "var(--space-lg)" }}>
+    <div className={styles.settingsSection}>
       <span className={styles.sectionTitle}>Updates</span>
       <button
         className={styles.updateButton}
