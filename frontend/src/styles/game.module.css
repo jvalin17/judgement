@@ -30,11 +30,11 @@
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 20px;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .roundIslandTop {
