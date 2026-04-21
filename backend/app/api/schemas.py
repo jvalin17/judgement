@@ -18,6 +18,7 @@ class GameSpeed(BaseModel):
     after_card_played: float = 2.0
     after_trick_complete: float = 3.0
     after_round_complete: float = 1.5
+    after_bidding_complete: float = 1.5
 
 
 class CreateGameRequest(BaseModel):

@@ -67,6 +67,8 @@ def _get_event_delay(event_type: EventType, managed: ManagedGame) -> float:
         return speed.after_trick_complete
     if event_type == EventType.ROUND_COMPLETE:
         return speed.after_round_complete
+    if event_type == EventType.BIDDING_COMPLETE:
+        return speed.after_bidding_complete
     return 0
 
 

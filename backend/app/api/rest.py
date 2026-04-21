@@ -99,6 +99,7 @@ async def create_game(request: CreateGameRequest):
             after_card=request.speed.after_card_played,
             after_trick=request.speed.after_trick_complete,
             after_round=request.speed.after_round_complete,
+            after_bidding=request.speed.after_bidding_complete,
         )
     managed = _manager.create_game(config, players, speed=speed)
 

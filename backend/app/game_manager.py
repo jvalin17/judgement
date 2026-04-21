@@ -79,10 +79,11 @@ def _should_nerf_ai() -> bool:
 
 class GameSpeed:
     """Delays (seconds) between AI actions."""
-    def __init__(self, after_card: float = 2.0, after_trick: float = 3.0, after_round: float = 1.5):
+    def __init__(self, after_card: float = 2.0, after_trick: float = 3.0, after_round: float = 1.5, after_bidding: float = 1.5):
         self.after_card_played = after_card
         self.after_trick_complete = after_trick
         self.after_round_complete = after_round
+        self.after_bidding_complete = after_bidding
 
 
 class ManagedGame:
