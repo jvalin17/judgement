@@ -5,6 +5,10 @@
   flex-direction: column;
   gap: var(--space-md);
   min-width: 320px;
+  background: linear-gradient(180deg, #243b5c, #2a4468);
+  margin: calc(-1 * var(--space-lg));
+  padding: var(--space-lg);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .settingsSection {

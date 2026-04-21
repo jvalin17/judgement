@@ -599,17 +599,16 @@
   transform-origin: bottom center;
 }
 
-/* "NOW" turn pill — the single, unmistakable active-player indicator.
-   Bright gold with dark text sits above the player's cards; a gentle bob
-   keeps it in the eye without the noisy glow/pulse halos. */
+/* "NOW" turn pill — bright gold indicator to the right of the player's cards.
+   Positioned to the side so it stays visible for top-edge players in fullscreen. */
 .turnPill {
   position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  right: -38px;
+  transform: translateY(-50%);
   z-index: 6;
-  padding: 3px 10px;
-  font-size: 0.65rem;
+  padding: 3px 8px;
+  font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   color: #1a1a1a;
@@ -624,19 +623,19 @@
 .turnPill::after {
   content: "";
   position: absolute;
-  left: 50%;
-  bottom: -5px;
-  transform: translateX(-50%);
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
   width: 0;
   height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #ffd54a;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 5px solid #ffd54a;
 }
 
 @keyframes turnPillBob {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%      { transform: translateX(-50%) translateY(-3px); }
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50%      { transform: translateY(-50%) translateX(3px); }
 }
 
 @keyframes pulse {
