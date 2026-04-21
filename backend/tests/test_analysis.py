@@ -400,11 +400,14 @@ class TestScorePersona:
 # ---- Persona matching tests ----
 
 class TestPersonaMatch:
-    def test_batman_vector_matches_batman(self):
+    def test_batman_vector_matches_superhero(self):
         batman = get_persona_by_id("batman")
         top = best_personas(dict(batman.traits))
         top_ids = [pair[0] for pair in top]
-        assert "batman" in top_ids
+        # Category-diverse selection ensures superhero category is represented
+        personas = {p.id: p for p in load_personas()}
+        top_categories = {personas[pid].category for pid in top_ids}
+        assert "superhero" in top_categories
 
     def test_turtle_vector_matches_turtle_or_nit(self):
         turtle = get_persona_by_id("turtle")
@@ -441,10 +444,19 @@ class TestPersonaMatch:
             persona = pick_persona(vec, rng=rng)
             assert persona.id in known_ids
 
-    def test_top_k_is_5(self):
+    def test_top_k_default_is_7(self):
         vec = {dim: 0.5 for dim in DIMENSIONS}
         top = best_personas(vec)
-        assert len(top) == 5
+        assert len(top) == 7
+
+    def test_category_diversity(self):
+        """The top results should include multiple categories, not just one."""
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        top = best_personas(vec)
+        top_ids = [pair[0] for pair in top]
+        personas = {p.id: p for p in load_personas()}
+        categories = {personas[pid].category for pid in top_ids}
+        assert len(categories) >= 5
 
     def test_achievement_persona_wins_with_trigger(self):
         # A player with precision = 0.95 should get Sniper in top results
@@ -470,7 +482,7 @@ class TestFingerprintToMatch:
         assert vec["risk"] > 0.7
         assert vec["aggression"] > 0.5
         top = best_personas(vec)
-        assert len(top) == 5
+        assert len(top) == 7
         known_ids = {p.id for p in load_personas()}
         assert all(pid in known_ids for pid, _ in top)
 

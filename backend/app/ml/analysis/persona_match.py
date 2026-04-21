@@ -77,19 +77,49 @@ def score_persona(player_vec: Dict[str, float], persona: Persona) -> float:
 def best_personas(
     player_vec: Dict[str, float],
     recent_ids: Optional[List[str]] = None,
-    top_k: int = 5,
+    top_k: int = 7,
 ) -> List[Tuple[str, float]]:
-    """Return top-K personas by score, with novelty weighting."""
-    recent = set(recent_ids or [])
-    scored: List[Tuple[str, float]] = []
+    """Return top-K personas with category diversity.
 
-    for persona in load_personas():
+    Ensures at least one candidate per category makes it into the pool,
+    so players can discover superheroes, mythology, etc. instead of
+    always landing on the same few high-similarity categories.
+    """
+    recent = set(recent_ids or [])
+    all_personas = load_personas()
+
+    # Score every persona
+    scored_all: List[Tuple[Persona, float]] = []
+    for persona in all_personas:
         raw_score = score_persona(player_vec, persona)
         novelty = 0.6 if persona.id in recent else 1.0
-        scored.append((persona.id, raw_score * novelty))
+        scored_all.append((persona, raw_score * novelty))
 
-    scored.sort(key=lambda pair: -pair[1])
-    return scored[:top_k]
+    # Pick the best persona from each category first
+    best_by_category: Dict[str, Tuple[Persona, float]] = {}
+    for persona, score in scored_all:
+        cat = persona.category
+        if cat not in best_by_category or score > best_by_category[cat][1]:
+            best_by_category[cat] = (persona, score)
+
+    # Start with one per category (sorted by score)
+    diverse: List[Tuple[str, float]] = [
+        (persona.id, score)
+        for persona, score in sorted(best_by_category.values(), key=lambda x: -x[1])
+    ]
+
+    # Fill remaining slots from the global top scores
+    selected_ids = {pair[0] for pair in diverse}
+    scored_all.sort(key=lambda x: -x[1])
+    for persona, score in scored_all:
+        if len(diverse) >= top_k:
+            break
+        if persona.id not in selected_ids:
+            diverse.append((persona.id, score))
+            selected_ids.add(persona.id)
+
+    diverse.sort(key=lambda pair: -pair[1])
+    return diverse[:top_k]
 
 
 def pick_persona(
@@ -97,7 +127,12 @@ def pick_persona(
     recent_ids: Optional[List[str]] = None,
     rng: Optional[random.Random] = None,
 ) -> Persona:
-    """Pick a persona from the top-5 matches using weighted random selection."""
+    """Pick a persona from the top matches using weighted random selection.
+
+    The candidate pool is category-diverse (best_personas guarantees at least
+    one from each category), so even categories that are harder to match
+    have a chance of being selected.
+    """
     if rng is None:
         rng = random.Random()
 
