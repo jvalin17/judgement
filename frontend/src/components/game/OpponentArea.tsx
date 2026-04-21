@@ -19,7 +19,6 @@ interface PlayerSeatProps {
 
 export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, score, cardsRemaining }: PlayerSeatProps) {
   const bidDisplay = bid !== null ? `${tricksWon}/${bid}` : "\u2014";
-  const badgeClass = [styles.statBadge, isCurrentTurn ? styles.statBadgeActive : ""].filter(Boolean).join(" ");
   const cardCount = Math.min(cardsRemaining, 5);
   const fanAngles = getFanAngles(cardCount);
 
@@ -35,14 +34,18 @@ export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, sc
             <CardBack small />
           </div>
         ))}
+        <div
+          className={`${styles.bidBadge} ${isCurrentTurn ? styles.bidBadgeActive : ""}`}
+          data-testid={`bid-${player.name}`}
+        >
+          {bidDisplay}
+        </div>
         {isCurrentTurn && <span className={styles.turnPill}>NOW</span>}
       </div>
-      <div className={badgeClass} data-testid={`seat-${player.name}`}>
-        <div className={styles.statBadgeTop}>{bidDisplay}</div>
-        <div className={styles.statBadgeDivider} />
-        <div className={styles.statBadgeBottom}>{score}</div>
-      </div>
       <span className={styles.seatName}>{player.name}</span>
+      <div className={styles.scoreBadge} data-testid={`score-${player.name}`}>
+        {score}
+      </div>
     </div>
   );
 }
