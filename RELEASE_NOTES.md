@@ -10,7 +10,14 @@ For the security model behind the update process, see the [Security Guidelines](
 
 > Bundled into the next tagged release. To install today, build from source (`./scripts/package.sh`) or use **Settings → Check for Updates** inside the installed app.
 
-*Nothing yet.*
+### Added
+- **Persona tiers.** Harder game settings unlock more prestigious personas. Play Hard AI with turbulence and challenge mode to earn superheroes and mythology personas.
+- **Bidding pause.** Brief delay after all bids are placed before play begins, so the transition doesn't feel instant.
+
+### Changed
+- **Opponent display.** Two separate badges: bid status (e.g. "1/3") on the card fan, score below the name.
+- **Round indicator.** Redesigned as a Dynamic Island-style pill showing trump suit, round number, and card count. Moves between top-center and bottom-left depending on player count.
+- **Seat layouts.** Natural poker-style distribution for all player counts — no more awkward gaps or overlapping UI.
 
 ---
 
