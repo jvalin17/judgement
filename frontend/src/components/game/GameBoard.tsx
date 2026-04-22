@@ -161,6 +161,8 @@ export function GameBoard() {
         numCards={state.numCards}
         trumpSuit={state.trumpSuit}
         playerCount={allPlayers.length}
+        mustLoseMode={state.mustLoseMode}
+        challengeMode={state.challengeMode}
       />
 
       {orderedPlayers.slice(1).map((player, index) => {

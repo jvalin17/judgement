@@ -127,6 +127,8 @@ async def _send_connected(websocket: WebSocket, managed: ManagedGame, game_id: s
             "current_player_id": engine.state.current_player_id,
             "players": [player.model_dump() for player in engine.state.players],
             "host_player_id": managed.host_player_id,
+            "must_lose_mode": engine.state.config.must_lose_mode,
+            "challenge_mode": engine.state.config.challenge_mode,
             **round_data,
         },
     })

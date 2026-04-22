@@ -83,6 +83,8 @@ export interface GameState {
   autoStartSeconds: number | null;
   isHost: boolean;
   awardedPersona: PersonaAward | null;
+  mustLoseMode: boolean;
+  challengeMode: boolean;
 }
 
 export interface RoundSummary {
@@ -122,6 +124,8 @@ export const INITIAL_GAME_STATE: GameState = {
   autoStartSeconds: null,
   isHost: false,
   awardedPersona: null,
+  mustLoseMode: false,
+  challengeMode: false,
 };
 
 export interface VariantConfig {

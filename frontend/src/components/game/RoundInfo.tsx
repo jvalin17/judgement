@@ -8,9 +8,11 @@ interface RoundInfoProps {
   numCards: number | null;
   trumpSuit: string | null;
   playerCount: number;
+  mustLoseMode: boolean;
+  challengeMode: boolean;
 }
 
-export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount }: RoundInfoProps) {
+export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount, mustLoseMode, challengeMode }: RoundInfoProps) {
   if (!roundNumber) return null;
 
   const suit = trumpSuit as Suit | null;
@@ -36,6 +38,23 @@ export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount }: Rou
       <span className={styles.roundIslandText}>
         {numCards} cards
       </span>
+      {(mustLoseMode || challengeMode) && (
+        <>
+          <span className={styles.roundIslandDivider} />
+          <span className={styles.roundIslandModes}>
+            {mustLoseMode && (
+              <span className={styles.modeIcon} title="Turbulence mode — dealer cannot make total bids equal cards">
+                ✈️
+              </span>
+            )}
+            {challengeMode && (
+              <span className={styles.modeIcon} title="Challenge mode — AI plays at full strength">
+                🔥
+              </span>
+            )}
+          </span>
+        </>
+      )}
     </div>
   );
 }

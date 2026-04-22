@@ -161,6 +161,8 @@ function handleConnected(state: GameState, data: ConnectedEventData): GameState 
     bids: data.bids ?? state.bids,
     currentTrick: data.current_trick ?? state.currentTrick,
     tricksWon: data.tricks_won ?? state.tricksWon,
+    mustLoseMode: (data as unknown as Record<string, unknown>).must_lose_mode as boolean ?? state.mustLoseMode,
+    challengeMode: (data as unknown as Record<string, unknown>).challenge_mode as boolean ?? state.challengeMode,
   };
 }
 
