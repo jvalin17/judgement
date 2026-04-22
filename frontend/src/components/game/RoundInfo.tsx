@@ -43,12 +43,12 @@ export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount, mustL
           <span className={styles.roundIslandDivider} />
           <span className={styles.roundIslandModes}>
             {mustLoseMode && (
-              <span className={styles.modeIcon} title="Turbulence mode — dealer cannot make total bids equal cards">
-                ✈️
+              <span className={styles.modeIcon} title="Turbulence — someone must lose every round">
+                ⚠️
               </span>
             )}
             {challengeMode && (
-              <span className={styles.modeIcon} title="Challenge mode — AI plays at full strength">
+              <span className={styles.modeIcon} title="Challenge — AI plays at full strength">
                 🔥
               </span>
             )}

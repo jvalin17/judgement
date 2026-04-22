@@ -41,7 +41,7 @@ No data leaves your computer unless you opt into community data sharing or check
 - **Multiplayer** — create or join rooms with a code, lobby browser, quick-join
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
 - **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
-- **Turbulence mode** — all players are bid-restricted, not just the dealer
+- **Turbulence mode** — guarantees at least one player misses their bid each round
 - **Play style persona** — at game end, get matched to one of 75 personas across 7 categories based on an 11-dimension play fingerprint
 - **Community data sharing** — share anonymized game decisions to help train better AI, download community data from other players
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
@@ -53,7 +53,7 @@ No data leaves your computer unless you opt into community data sharing or check
 - **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
 - **Victory sound effects** — celebratory fanfare when you win, synthesized via Web Audio API
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
-- **357 automated tests** — backend, frontend, AI, WebSocket, ML analysis
+- **371 automated tests** — backend, frontend, AI, WebSocket, ML analysis
 
 ---
 
@@ -170,13 +170,13 @@ judgement/
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
-│   └── tests/              # 310 backend tests
+│   └── tests/              # 322 backend tests
 ├── frontend/src/
 │   ├── components/         # React components
 │   ├── hooks/              # useGame, useWebSocket
 │   ├── context/            # GameContext, SettingsContext
 │   ├── services/           # REST + WebSocket clients
-│   └── test/               # 47 frontend tests (Vitest)
+│   └── test/               # 49 frontend tests (Vitest)
 ├── desktop/                # pywebview launcher
 ├── assets/                 # App icons (PNG, ICNS, SVG)
 ├── scripts/                # Build, package, dev tools
