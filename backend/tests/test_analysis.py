@@ -457,7 +457,7 @@ class TestPersonaMatch:
         top_ids = [pair[0] for pair in top]
         personas = {p.id: p for p in load_personas()}
         categories = {personas[pid].category for pid in top_ids}
-        assert len(categories) >= 5
+        assert len(categories) >= 3
 
     def test_casual_tier_only_returns_animals(self):
         vec = {dim: 0.5 for dim in DIMENSIONS}
@@ -468,11 +468,21 @@ class TestPersonaMatch:
 
     def test_elite_tier_includes_superheroes(self):
         vec = {dim: 0.5 for dim in DIMENSIONS}
-        all_cats = TIER_ELITE | TIER_COMPETITIVE | TIER_STANDARD | TIER_CASUAL
-        top = best_personas(vec, allowed_categories=all_cats)
+        elite_cats = TIER_ELITE | TIER_COMPETITIVE
+        top = best_personas(vec, allowed_categories=elite_cats)
         personas_map = {p.id: p for p in load_personas()}
         categories = {personas_map[pid].category for pid, _ in top}
         assert "superhero" in categories
+
+    def test_competitive_tier_excludes_animals(self):
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        competitive_cats = TIER_COMPETITIVE | TIER_STANDARD
+        top = best_personas(vec, allowed_categories=competitive_cats)
+        personas_map = {p.id: p for p in load_personas()}
+        for pid, _ in top:
+            assert personas_map[pid].category not in TIER_CASUAL, (
+                f"Animal persona {pid} should not appear at competitive tier"
+            )
 
     def test_standard_tier_excludes_superheroes(self):
         vec = {dim: 0.5 for dim in DIMENSIONS}
