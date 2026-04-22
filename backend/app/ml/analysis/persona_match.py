@@ -137,7 +137,7 @@ def best_personas(
     scored_all: List[Tuple[Persona, float]] = []
     for persona in all_personas:
         raw_score = score_persona(player_vec, persona)
-        novelty = 0.6 if persona.id in recent else 1.0
+        novelty = 0.3 if persona.id in recent else 1.0
         scored_all.append((persona, raw_score * novelty))
 
     # Pick the best persona from each category first
@@ -190,7 +190,12 @@ def pick_persona(
         return load_personas()[0]
 
     ids = [pair[0] for pair in top]
-    weights = [max(pair[1], 0.01) for pair in top]
+    scores = [max(pair[1], 0.01) for pair in top]
 
-    chosen_id = rng.choices(ids, weights=weights, k=1)[0]
+    # Add jitter so close scores don't always pick the same persona.
+    # The jitter (up to 15% of score) breaks ties while still favoring
+    # genuinely better matches.
+    jittered = [score * (1.0 + rng.uniform(-0.15, 0.15)) for score in scores]
+
+    chosen_id = rng.choices(ids, weights=jittered, k=1)[0]
     return get_persona_by_id(chosen_id)

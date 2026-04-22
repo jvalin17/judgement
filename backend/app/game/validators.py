@@ -25,23 +25,16 @@ def get_forbidden_bid(
     must_lose_mode: bool,
 ) -> int | None:
     """Return the bid value that this player is NOT allowed to make, or None."""
-    if must_lose_mode:
-        # In must-lose mode, every player is constrained: total bids != num_cards
-        total = sum(bid.amount for bid in bids_so_far)
-        forbidden = num_cards - total
-        if 0 <= forbidden <= num_cards:
-            return forbidden
+    # Only the dealer (last bidder) is ever constrained — total bids != num_cards.
+    # This applies in both standard and must-lose (turbulence) mode.
+    is_dealer = player_index_in_bid_order == num_players - 1
+    if not is_dealer:
         return None
-    else:
-        # Standard mode: only the dealer (last bidder) is constrained
-        is_dealer = player_index_in_bid_order == num_players - 1
-        if not is_dealer:
-            return None
-        total = sum(bid.amount for bid in bids_so_far)
-        forbidden = num_cards - total
-        if 0 <= forbidden <= num_cards:
-            return forbidden
-        return None
+    total = sum(bid.amount for bid in bids_so_far)
+    forbidden = num_cards - total
+    if 0 <= forbidden <= num_cards:
+        return forbidden
+    return None
 
 
 def validate_bid(

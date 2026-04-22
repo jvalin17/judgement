@@ -16,7 +16,7 @@ export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount }: Rou
   const suit = trumpSuit as Suit | null;
   const suitColor = suit ? SUIT_COLORS[suit] : null;
   const isRed = suitColor === "red";
-  const symbolColor = isRed ? "var(--color-card-red)" : "var(--color-card-black)";
+  const symbolColor = isRed ? "#e74c3c" : "#ffffff";
 
   // Top-center is free for 3 and 5 players; occupied for 4 and 6
   const topCenterFree = playerCount === 3 || playerCount === 5;

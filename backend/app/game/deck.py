@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import random
 
 from backend.app.models import Card, Suit, Rank
@@ -10,11 +11,21 @@ def create_deck() -> list[Card]:
 
 
 def shuffle_deck(deck: list[Card], rng: random.Random | None = None) -> list[Card]:
+    """Shuffle with OS-level entropy so back-to-back games never correlate.
+
+    When no explicit RNG is passed (normal gameplay), we seed a fresh
+    Random instance from os.urandom each time.  This breaks any dependence
+    on Python's global Mersenne Twister state and guarantees that two
+    consecutive shuffles share no sequential relationship.
+
+    Tests can still pass a seeded ``rng`` for reproducibility.
+    """
     shuffled = list(deck)
     if rng:
         rng.shuffle(shuffled)
     else:
-        random.shuffle(shuffled)
+        secure_rng = random.Random(os.urandom(32))
+        secure_rng.shuffle(shuffled)
     return shuffled
 
 

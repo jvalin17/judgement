@@ -89,7 +89,8 @@ class GameSpeed:
 class ManagedGame:
     """Wraps a GameEngine with AI dispatch and session logging."""
 
-    def __init__(self, engine: GameEngine, speed: Optional[GameSpeed] = None):
+    def __init__(self, engine: GameEngine, speed: Optional[GameSpeed] = None,
+                 recent_persona_ids: Optional[List[str]] = None):
         self.engine = engine
         self.speed = speed or GameSpeed()
         self.ai_strategies: Dict[str, AIStrategy] = {}
@@ -99,6 +100,7 @@ class ManagedGame:
         self.created_at: datetime = datetime.utcnow()
         self._event_callbacks: List[Callable[[GameEvent], None]] = []
         self.decision_collector = DecisionCollector()
+        self._recent_persona_ids: List[str] = recent_persona_ids or []
 
         engine.add_observer(self._on_event)
 
@@ -169,7 +171,8 @@ class ManagedGame:
                          self.engine.state.config.challenge_mode,
                          self.engine.state.config.must_lose_mode)
 
-            persona = pick_persona(player_traits, tier=tier)
+            persona = pick_persona(player_traits, recent_ids=self._recent_persona_ids, tier=tier)
+            self._recent_persona_ids.append(persona.id)
             logger.info("Matched persona: %s (%s)", persona.name, persona.category)
             return PersonaAward(
                 persona_id=persona.id,
@@ -317,16 +320,26 @@ class ManagedGame:
 class GameManager:
     """Registry of active games. Creates games and wires AI strategies."""
 
+    # Track recently awarded personas across games so we avoid repeats.
+    _MAX_RECENT_PERSONAS = 15
+
     def __init__(self):
         self._games: Dict[str, ManagedGame] = {}
+        self._recent_persona_ids: List[str] = []
 
     def create_game(self, config: GameConfig, players: List[Player], speed: Optional[GameSpeed] = None) -> ManagedGame:
         engine = GameEngine(config)
-        managed = ManagedGame(engine, speed=speed)
+        managed = ManagedGame(engine, speed=speed, recent_persona_ids=self._recent_persona_ids)
         self._register_players(managed, players)
         self._initialize_session_log(managed, config, players)
         self._games[engine.state.game_id] = managed
         return managed
+
+    def record_persona(self, persona_id: str) -> None:
+        """Track a recently awarded persona to avoid repetition across games."""
+        self._recent_persona_ids.append(persona_id)
+        if len(self._recent_persona_ids) > self._MAX_RECENT_PERSONAS:
+            self._recent_persona_ids = self._recent_persona_ids[-self._MAX_RECENT_PERSONAS:]
 
     def _register_players(self, managed: ManagedGame, players: List[Player]) -> None:
         challenge = managed.engine.state.config.challenge_mode
