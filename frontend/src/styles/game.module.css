@@ -30,11 +30,11 @@
   align-items: center;
   gap: 10px;
   padding: 8px 20px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.88);
   border-radius: 24px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
 .roundIslandTop {
@@ -57,7 +57,7 @@
 .roundIslandText {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #ecf0f1;
+  color: #1a1a2e;
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
@@ -65,7 +65,7 @@
 .roundIslandDivider {
   width: 1px;
   height: 18px;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Trick area — centered on table */

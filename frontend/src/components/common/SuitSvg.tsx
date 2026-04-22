@@ -26,15 +26,13 @@ export const SuitSvg = memo(function SuitSvg({ suit, size = 16, className }: Sui
 function SuitPath({ suit }: { suit: Suit }) {
   switch (suit) {
     case SuitValues.SPADES:
-      // Classic spade: pointed top, curved body, two small flares at base, thin stem
+      // Classic playing-card spade: sharp point, full round lobes, flared stem
       return (
         <>
           <path
-            d="M50 4 C50 4 6 42 6 62 C6 78 20 82 36 72 C38 82 40 92 40 92 L60 92 C60 92 62 82 64 72 C80 82 94 78 94 62 C94 42 50 4 50 4Z"
+            d="M50 2 C50 2 48 8 38 22 C28 36 6 50 6 66 C6 80 16 88 28 88 C36 88 42 84 46 76 L46 76 C44 84 42 90 36 96 L64 96 C58 90 56 84 54 76 L54 76 C58 84 64 88 72 88 C84 88 94 80 94 66 C94 50 72 36 62 22 C52 8 50 2 50 2Z"
             fill="currentColor"
           />
-          {/* Cut out between flares and stem to make the base shape clearer */}
-          <ellipse cx="50" cy="78" rx="10" ry="6" fill="currentColor" />
         </>
       );
     case SuitValues.HEARTS:
