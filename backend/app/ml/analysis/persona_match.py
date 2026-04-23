@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Harder games reward more prestigious persona categories.
 
 TIER_ELITE = {"superhero", "mythology"}          # Hard + turbulence + challenge
-TIER_COMPETITIVE = {"achievement", "poker"}       # Hard/SmartHard or challenge
+TIER_COMPETITIVE = {"achievement"}                # Hard/SmartHard or challenge
 TIER_STANDARD = {"cartoon", "pokemon"}            # Medium bots
 TIER_CASUAL = {"animal"}                          # Easy bots
 
