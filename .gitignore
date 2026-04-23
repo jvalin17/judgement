@@ -44,6 +44,8 @@ htmlcov/
 
 # Local notes (not pushed)
 CLAUDE.md
+RELEASE_NOTES.md
+TEST_AUDIT.md
 OPTIMIZATIONS.md
 LEARNINGS.md
 PLAN.md
