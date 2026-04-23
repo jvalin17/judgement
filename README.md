@@ -1,6 +1,5 @@
 # Judgement (Kachu Phool)
 
-[![Test](https://github.com/jvalin17/judgement/actions/workflows/test.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test.yml)
 [![Full Test Suite](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml)
 
 A trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents with adaptive difficulty. Available as a standalone desktop app.
@@ -50,7 +49,7 @@ No data leaves your computer unless you opt into community data sharing or check
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
-- **627 automated tests** — 143 smoke tests in-repo + 484 in the [full test suite](https://github.com/jvalin17/judgement-tests)
+- **674 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push via CI
 
 ---
 
@@ -120,10 +119,8 @@ open dist/Judgement.app
 # Start frontend dev server (proxies to backend on :8000)
 cd frontend && npm run dev
 
-# Run tests
-source .venv/bin/activate
-python3 -m pytest backend/tests/ -v
-cd frontend && npm test
+# Run tests (clones test suite repo if needed)
+./scripts/run-test-suite.sh
 ```
 
 | Task | Command |
@@ -133,8 +130,7 @@ cd frontend && npm test
 | Dev server | `./scripts/judgement dev` |
 | Build standalone app | `./scripts/package.sh` |
 | Frontend dev | `cd frontend && npm run dev` |
-| Backend tests | `source .venv/bin/activate && python3 -m pytest backend/tests/ -v` |
-| Frontend tests | `cd frontend && npm test` |
+| Run tests | `./scripts/run-test-suite.sh` |
 
 ---
 
@@ -166,13 +162,13 @@ judgement/
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
-│   └── tests/              # 122 backend smoke tests
+│   └── tests/              # See jvalin17/judgement-tests
 ├── frontend/src/
 │   ├── components/         # React components
 │   ├── hooks/              # useGame, useWebSocket
 │   ├── context/            # GameContext, SettingsContext
 │   ├── services/           # REST + WebSocket clients
-│   └── test/               # 21 frontend smoke tests (Vitest)
+│   └── test/               # See jvalin17/judgement-tests
 ├── desktop/                # pywebview launcher
 ├── assets/                 # App icons (PNG, ICNS, SVG)
 └── scripts/                # Build, package, launcher, dev tools
@@ -185,20 +181,13 @@ judgement/
 
 ## Testing
 
-**Smoke tests** (this repo) — 143 tests that run fast and cover core logic:
+All tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — 674 tests covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
 
 ```bash
-python3 -m pytest backend/tests/ -v        # 122 backend tests
-cd frontend && npx vitest run               # 21 frontend tests
+./scripts/run-test-suite.sh                 # Clones test repo if needed, runs everything
 ```
 
-**[Full test suite](https://github.com/jvalin17/judgement-tests)** — 484 additional tests covering AI strategies, persona matching, all UI components, edge cases, and integration:
-
-```bash
-./scripts/run-test-suite.sh                 # Runs both smoke + suite
-```
-
-Both run automatically on every push to `main` via GitHub Actions. See badges at the top.
+Runs automatically on every push to `main` via GitHub Actions. See badge at the top.
 
 ---
 
