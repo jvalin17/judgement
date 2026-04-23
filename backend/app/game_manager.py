@@ -173,6 +173,9 @@ class ManagedGame:
 
             persona = pick_persona(player_traits, recent_ids=self._recent_persona_ids, tier=tier)
             self._recent_persona_ids.append(persona.id)
+            # Cap list size to prevent unbounded growth
+            if len(self._recent_persona_ids) > 15:
+                del self._recent_persona_ids[:-15]
             logger.info("Matched persona: %s (%s)", persona.name, persona.category)
             return PersonaAward(
                 persona_id=persona.id,

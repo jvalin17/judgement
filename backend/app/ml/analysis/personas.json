@@ -615,11 +615,11 @@
       "name": "The Anchor",
       "tagline": "Reliable when it matters most",
       "traits": [0.4, 0.8, 0.75, 0.5, 0.5, 0.95, 0.45, 0.8, 0.65, 0.8, 0.5],
-      "weights": [0.4, 1.0, 0.8, 0.5, 0.5, 2.0, 0.4, 1.0, 0.6, 1.2, 0.5],
+      "weights": [0.4, 1.0, 0.8, 0.5, 0.5, 1.2, 0.4, 1.0, 0.6, 1.0, 0.5],
       "triggers": [{"type": "combo", "conditions": [
         {"type": "min", "dim": "consistency", "threshold": 0.85},
         {"type": "min", "dim": "clutch", "threshold": 0.7}
-      ], "bonus": 0.15}]
+      ], "bonus": 0.08}]
     },
     {
       "id": "phoenix",
