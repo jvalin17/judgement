@@ -202,6 +202,35 @@ Both run automatically on every push to `main` via GitHub Actions. See badges at
 
 ---
 
+## Dev Skills (Claude Code)
+
+The [test suite repo](https://github.com/jvalin17/judgement-tests) includes Claude Code skills that automate dev workflows. To load them:
+
+```bash
+git clone https://github.com/jvalin17/judgement-tests.git ../judgement-tests
+claude --add-dir ../judgement-tests
+```
+
+### Available skills
+
+| Skill | Command | What it does |
+|-------|---------|-------------|
+| **write-tests** | `/write-tests` | Analyzes your code changes, generates unit and integration tests, adds them to the test suite repo |
+| **test-suite** | `/test-suite` | Clones test repo if needed, runs all 627 tests (smoke + suite + TypeScript), blocks if anything fails |
+| **ship-checklist** | `/ship-checklist` | Full pre-push gate: writes tests, runs suite, updates docs, then commits and pushes |
+
+### Workflow
+
+After any change — feature, fix, or refactor:
+
+```
+/write-tests       ← auto-generates tests for your changes
+/test-suite         ← runs everything, blocks if any fail
+/ship-checklist     ← writes tests + runs suite + updates docs + pushes (all-in-one)
+```
+
+---
+
 ## Roadmap
 
 - **Online multiplayer** — play with friends from anywhere, not just the same network
