@@ -1,6 +1,7 @@
 # Judgement (Kachu Phool)
 
 [![Test](https://github.com/jvalin17/judgement/actions/workflows/test.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test.yml)
+[![Full Test Suite](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml)
 
 A trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents with adaptive difficulty. Available as a standalone desktop app.
 
@@ -42,18 +43,14 @@ No data leaves your computer unless you opt into community data sharing or check
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
 - **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
 - **Turbulence mode** — guarantees at least one player misses their bid each round
-- **Play style persona** — at game end, get matched to one of 75 personas across 7 categories based on an 11-dimension play fingerprint
+- **Play style persona** — at game end, get matched to one of 75 personas across 7 categories based on an 11-dimension play fingerprint. Persona tier scales with difficulty: Easy unlocks animal personas, Medium adds cartoon and pokemon, Hard/Smart Hard adds achievement and poker, and playing Hard with challenge + turbulence unlocks elite tier (superhero, mythology)
 - **Community data sharing** — share anonymized game decisions to help train better AI, download community data from other players
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Score visible during bidding** — cumulative score shown in the bid selector
-- **CSS-rendered cards** — no image assets, fully scalable
-- **Smooth animations** — dealing, playing, trick collection, celebration effects (confetti, fireworks, rockets, flowers, bubbles, clouds) ranked by final position
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
-- **No telemetry** — zero outbound requests except the manual update check and opt-in community data sharing
-- **Victory sound effects** — celebratory fanfare when you win, synthesized via Web Audio API
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
-- **371 automated tests** — backend, frontend, AI, WebSocket, ML analysis
+- **627 automated tests** — 143 smoke tests in-repo + 484 in the [full test suite](https://github.com/jvalin17/judgement-tests)
 
 ---
 
@@ -158,7 +155,6 @@ cd frontend && npm test
 
 ```
 judgement/
-├── judgement                # Unified launcher (play / setup / dev)
 ├── backend/
 │   ├── app/
 │   │   ├── models/         # Pydantic data models
@@ -170,17 +166,39 @@ judgement/
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
 │   │   └── main.py         # FastAPI entry point
-│   └── tests/              # 322 backend tests
+│   └── tests/              # 122 backend smoke tests
 ├── frontend/src/
 │   ├── components/         # React components
 │   ├── hooks/              # useGame, useWebSocket
 │   ├── context/            # GameContext, SettingsContext
 │   ├── services/           # REST + WebSocket clients
-│   └── test/               # 49 frontend tests (Vitest)
+│   └── test/               # 21 frontend smoke tests (Vitest)
 ├── desktop/                # pywebview launcher
 ├── assets/                 # App icons (PNG, ICNS, SVG)
 └── scripts/                # Build, package, launcher, dev tools
+    ├── judgement           # Unified launcher (play / setup / dev)
+    ├── package.sh          # Build standalone app
+    └── run-test-suite.sh   # Run full test suite locally
 ```
+
+---
+
+## Testing
+
+**Smoke tests** (this repo) — 143 tests that run fast and cover core logic:
+
+```bash
+python3 -m pytest backend/tests/ -v        # 122 backend tests
+cd frontend && npx vitest run               # 21 frontend tests
+```
+
+**[Full test suite](https://github.com/jvalin17/judgement-tests)** — 484 additional tests covering AI strategies, persona matching, all UI components, edge cases, and integration:
+
+```bash
+./scripts/run-test-suite.sh                 # Runs both smoke + suite
+```
+
+Both run automatically on every push to `main` via GitHub Actions. See badges at the top.
 
 ---
 
