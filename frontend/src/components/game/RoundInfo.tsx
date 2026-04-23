@@ -5,6 +5,7 @@ import styles from "../../styles/game.module.css";
 
 interface RoundInfoProps {
   roundNumber: number | null;
+  totalRounds: number | null;
   numCards: number | null;
   trumpSuit: string | null;
   playerCount: number;
@@ -12,7 +13,7 @@ interface RoundInfoProps {
   challengeMode: boolean;
 }
 
-export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount, mustLoseMode, challengeMode }: RoundInfoProps) {
+export function RoundInfo({ roundNumber, totalRounds, numCards, trumpSuit, playerCount, mustLoseMode, challengeMode }: RoundInfoProps) {
   if (!roundNumber) return null;
 
   const suit = trumpSuit as Suit | null;
@@ -24,6 +25,10 @@ export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount, mustL
   const topCenterFree = playerCount === 3 || playerCount === 5;
   const positionClass = topCenterFree ? styles.roundIslandTop : styles.roundIslandBottom;
 
+  const roundTooltip = totalRounds
+    ? `Round ${roundNumber} of ${totalRounds}`
+    : `Round ${roundNumber}`;
+
   return (
     <div className={`${styles.roundIsland} ${positionClass}`}>
       {suit && (
@@ -31,30 +36,30 @@ export function RoundInfo({ roundNumber, numCards, trumpSuit, playerCount, mustL
           <SuitSvg suit={suit} size={22} />
         </span>
       )}
-      <span className={styles.roundIslandText}>
+      <span className={styles.roundIslandText} title={roundTooltip}>
         Round {roundNumber}
       </span>
       <span className={styles.roundIslandDivider} />
       <span className={styles.roundIslandText}>
         {numCards} cards
       </span>
-      {(mustLoseMode || challengeMode) && (
-        <>
-          <span className={styles.roundIslandDivider} />
-          <span className={styles.roundIslandModes}>
-            {mustLoseMode && (
-              <span className={styles.modeIcon} title="Turbulence — someone must lose every round">
-                ⚠️
-              </span>
-            )}
-            {challengeMode && (
-              <span className={styles.modeIcon} title="Challenge — AI plays at full strength">
-                🔥
-              </span>
-            )}
+      <span className={styles.roundIslandDivider} />
+      <span className={styles.roundIslandModes}>
+        {mustLoseMode && (
+          <span className={styles.modeIcon} title="Turbulence — someone must lose every round">
+            ⚠️
           </span>
-        </>
-      )}
+        )}
+        {challengeMode ? (
+          <span className={styles.modeIcon} title="Challenge — AI plays at full strength">
+            🔥
+          </span>
+        ) : (
+          <span className={styles.modeIcon} title="Casual — AI adapts to your level">
+            🎯
+          </span>
+        )}
+      </span>
     </div>
   );
 }

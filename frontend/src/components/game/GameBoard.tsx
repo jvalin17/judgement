@@ -158,6 +158,7 @@ export function GameBoard() {
 
       <RoundInfo
         roundNumber={state.roundNumber}
+        totalRounds={state.totalRounds}
         numCards={state.numCards}
         trumpSuit={state.trumpSuit}
         playerCount={allPlayers.length}

@@ -129,6 +129,7 @@ async def _send_connected(websocket: WebSocket, managed: ManagedGame, game_id: s
             "host_player_id": managed.host_player_id,
             "must_lose_mode": engine.state.config.must_lose_mode,
             "challenge_mode": engine.state.config.challenge_mode,
+            "total_rounds": len(engine._round_configs) if engine._round_configs else None,
             **round_data,
         },
     })

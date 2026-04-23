@@ -272,44 +272,6 @@ class TestJoinGame:
         player_names = [p["name"] for p in state["players"]]
         assert "Bob" in player_names
 
-    def test_join_game_not_found(self):
-        resp = client.post("/api/games/nonexistent/join", json={"player_name": "Bob"})
-        assert resp.status_code == 404
-
-    def test_join_game_already_started(self):
-        # Create auto-start game (already in bidding/playing)
-        create_resp = _create_game()
-        game_id = create_resp.json()["game_id"]
-
-        resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "Charlie"})
-        assert resp.status_code == 400
-        assert "already started" in resp.json()["detail"].lower()
-
-    def test_join_game_full(self):
-        # Create lobby game for 10_to_1 variant (max 5 players)
-        players = [{"name": f"Player{i}", "is_ai": False} for i in range(5)]
-        create_resp = _create_lobby_game(players=players)
-        game_id = create_resp.json()["game_id"]
-
-        resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "Overflow"})
-        assert resp.status_code == 400
-        assert "full" in resp.json()["detail"].lower()
-
-    def test_join_game_duplicate_name(self):
-        create_resp = _create_lobby_game()
-        game_id = create_resp.json()["game_id"]
-
-        resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "Alice"})
-        assert resp.status_code == 400
-        assert "already taken" in resp.json()["detail"].lower()
-
-    def test_join_game_duplicate_name_case_insensitive(self):
-        create_resp = _create_lobby_game()
-        game_id = create_resp.json()["game_id"]
-
-        resp = client.post(f"/api/games/{game_id}/join", json={"player_name": "ALICE"})
-        assert resp.status_code == 400
-
 
 class TestStartGame:
     def test_start_game(self):

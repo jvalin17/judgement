@@ -468,10 +468,81 @@
 }
 
 .turbulenceHint {
-  margin-left: auto;
   font-size: 0.7rem;
   color: #6b8eb8;
   font-weight: 500;
+  text-align: center;
+  margin-top: -4px;
+}
+
+/* --- Mode lever (challenge / casual) --- */
+
+.modeLever {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0 2px;
+}
+
+.modeLeverLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b8eb8;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  user-select: none;
+}
+
+.modeLeverLabelActive {
+  color: #1a365d;
+}
+
+.modeLeverTrack {
+  position: relative;
+  width: 56px;
+  height: 26px;
+  border-radius: 6px;
+  border: 2px solid rgba(26, 54, 93, 0.25);
+  background: linear-gradient(180deg, #c0cfe0, #d8e4f0);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.modeLeverTrackChallenge {
+  background: linear-gradient(180deg, #f0a050, #e8863c);
+  border-color: rgba(230, 126, 34, 0.6);
+}
+
+.modeLeverHandle {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  width: 20px;
+  height: 18px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f0f0f0, #c8c8c8);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: right var(--transition-fast);
+}
+
+/* Notch lines on the lever handle */
+.modeLeverHandle::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 8px;
+  height: 10px;
+  border-left: 1.5px solid rgba(0, 0, 0, 0.2);
+  border-right: 1.5px solid rgba(0, 0, 0, 0.2);
+}
+
+.modeLeverTrackChallenge .modeLeverHandle {
+  right: calc(100% - 23px);
 }
 
 /* --- Take-off button (red airplane) --- */

@@ -198,19 +198,31 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
         </span>
       </button>
 
-      {/* Challenge mode toggle */}
-      <button
-        className={`${styles.turbulenceToggle} ${challengeMode ? styles.challengeActive : ""}`}
-        onClick={() => setChallengeMode(!challengeMode)}
-      >
-        <span className={styles.turbulenceIcon}>{challengeMode ? "\uD83D\uDD25" : "\uD83C\uDFAF"}</span>
-        <span className={styles.turbulenceText}>
-          {challengeMode ? "Challenge Mode" : "Casual"}
+      {/* Challenge/Casual mode lever */}
+      <div className={styles.modeLever}>
+        <span
+          className={`${styles.modeLeverLabel} ${challengeMode ? styles.modeLeverLabelActive : ""}`}
+          onClick={() => setChallengeMode(true)}
+        >
+          🔥 Challenge
         </span>
-        <span className={styles.turbulenceHint}>
-          {challengeMode ? "AI plays at full strength" : "AI adapts to your level"}
+        <button
+          className={`${styles.modeLeverTrack} ${challengeMode ? styles.modeLeverTrackChallenge : ""}`}
+          onClick={() => setChallengeMode(!challengeMode)}
+          aria-label={challengeMode ? "Switch to casual" : "Switch to challenge"}
+        >
+          <span className={styles.modeLeverHandle} />
+        </button>
+        <span
+          className={`${styles.modeLeverLabel} ${!challengeMode ? styles.modeLeverLabelActive : ""}`}
+          onClick={() => setChallengeMode(false)}
+        >
+          🎯 Casual
         </span>
-      </button>
+      </div>
+      <span className={styles.turbulenceHint}>
+        {challengeMode ? "AI plays at full strength" : "AI adapts to your level"}
+      </span>
 
       {error && <p className={styles.error}>{error}</p>}
 

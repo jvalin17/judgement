@@ -1,0 +1,87 @@
+name: Full Test Suite
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  smoke-tests:
+    name: Smoke Tests (main repo)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+
+      - name: Install frontend deps
+        run: cd frontend && npm ci
+
+      - name: Backend smoke tests
+        run: python3 -m pytest backend/tests/ -v --junitxml=results/smoke-backend.xml
+
+      - name: Frontend smoke tests
+        run: cd frontend && npx vitest run --reporter=junit --outputFile=../results/smoke-frontend.xml
+
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: results/*.xml
+        if: always()
+
+  full-suite:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: judgement
+
+      - uses: actions/checkout@v4
+        with:
+          repository: jvalin17/judgement-tests
+          path: judgement-tests
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend deps
+        run: cd judgement && pip install -r requirements.txt
+
+      - name: Install frontend deps
+        run: cd judgement/frontend && npm ci
+
+      - name: Backend suite tests
+        run: |
+          cd judgement
+          JUDGEMENT_REPO=$(pwd) python3 -m pytest ../judgement-tests/backend/ -v --rootdir=../judgement-tests --junitxml=results/suite-backend.xml
+
+      - name: Copy frontend suite tests
+        run: |
+          find judgement-tests/frontend/src -name "*.test.*" -type f | while read src; do
+            rel="${src#judgement-tests/frontend/src/}"
+            mkdir -p "judgement/frontend/src/$(dirname "$rel")"
+            cp "$src" "judgement/frontend/src/$rel"
+          done
+
+      - name: Frontend suite tests
+        run: cd judgement/frontend && npx vitest run --reporter=junit --outputFile=../results/suite-frontend.xml
+
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: judgement/results/*.xml
+        if: always()
