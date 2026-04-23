@@ -23,10 +23,10 @@ jobs:
         run: pip install -r backend/requirements.txt
 
       - name: Install frontend deps
-        run: cd frontend && npm ci
+        run: cd frontend && npm install --no-audit --no-fund
 
       - name: Backend smoke tests
-        run: python3 -m pytest backend/tests/ -v --junitxml=results/smoke-backend.xml
+        run: mkdir -p results && python3 -m pytest backend/tests/ -v --junitxml=results/smoke-backend.xml
 
       - name: Frontend smoke tests
         run: cd frontend && npx vitest run --reporter=junit --outputFile=../results/smoke-frontend.xml
@@ -62,12 +62,12 @@ jobs:
         run: cd judgement && pip install -r backend/requirements.txt
 
       - name: Install frontend deps
-        run: cd judgement/frontend && npm ci
+        run: cd judgement/frontend && npm install --no-audit --no-fund
 
       - name: Backend suite tests
         run: |
           cd judgement
-          JUDGEMENT_REPO=$(pwd) python3 -m pytest ../judgement-tests/backend/ -v --rootdir=../judgement-tests --junitxml=results/suite-backend.xml
+          mkdir -p results && JUDGEMENT_REPO=$(pwd) python3 -m pytest ../judgement-tests/backend/ -v --rootdir=../judgement-tests --junitxml=results/suite-backend.xml
 
       - name: Copy frontend suite tests
         run: |
