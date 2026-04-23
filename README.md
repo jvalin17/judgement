@@ -102,8 +102,8 @@ Only needed if you want to develop or build the app yourself.
 ```bash
 git clone https://github.com/jvalin17/judgement.git
 cd judgement
-./judgement setup        # Install all dependencies (one-time)
-./judgement              # Build frontend + launch the game
+./scripts/judgement setup        # Install all dependencies (one-time)
+./scripts/judgement              # Build frontend + launch the game
 ```
 
 ### Build standalone app
@@ -118,7 +118,7 @@ open dist/Judgement.app
 
 ```bash
 # Start backend dev server (hot reload, auto-creates venv)
-./judgement dev
+./scripts/judgement dev
 
 # Start frontend dev server (proxies to backend on :8000)
 cd frontend && npm run dev
@@ -131,9 +131,9 @@ cd frontend && npm test
 
 | Task | Command |
 |------|---------|
-| Play the game | `./judgement` |
-| First-time setup | `./judgement setup` |
-| Dev server | `./judgement dev` |
+| Play the game | `./scripts/judgement` |
+| First-time setup | `./scripts/judgement setup` |
+| Dev server | `./scripts/judgement dev` |
 | Build standalone app | `./scripts/package.sh` |
 | Frontend dev | `cd frontend && npm run dev` |
 | Backend tests | `source .venv/bin/activate && python3 -m pytest backend/tests/ -v` |
@@ -179,8 +179,7 @@ judgement/
 │   └── test/               # 49 frontend tests (Vitest)
 ├── desktop/                # pywebview launcher
 ├── assets/                 # App icons (PNG, ICNS, SVG)
-├── scripts/                # Build, package, dev tools
-└── requirements.txt        # Python dependencies
+└── scripts/                # Build, package, launcher, dev tools
 ```
 
 ---

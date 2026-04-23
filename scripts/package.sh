@@ -24,7 +24,7 @@ if [ ! -d ".venv" ]; then
     python3 -m venv .venv
     source .venv/bin/activate
     pip install --upgrade pip --quiet
-    pip install -r requirements.txt --quiet
+    pip install -r backend/requirements.txt --quiet
     pip install pyinstaller pywebview --quiet
 else
     source .venv/bin/activate

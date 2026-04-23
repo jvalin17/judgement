@@ -2,12 +2,12 @@
 # Judgement — unified launcher
 #
 # Usage:
-#   ./judgement              Build + launch the game
-#   ./judgement setup        One-time dependency install
-#   ./judgement dev          Start backend dev server (hot reload)
+#   ./scripts/judgement              Build + launch the game
+#   ./scripts/judgement setup        One-time dependency install
+#   ./scripts/judgement dev          Start backend dev server (hot reload)
 #
 set -e
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 PORT="${JUDGEMENT_PORT:-8000}"
 
@@ -69,7 +69,7 @@ cmd_setup() {
     command -v npm &>/dev/null     || { echo "ERROR: npm not found. Install Node.js 18+."; exit 1; }
 
     echo "Installing Python dependencies..."
-    $PIP install -r requirements.txt
+    $PIP install -r backend/requirements.txt
 
     if ! $PYTHON -c "from pydantic_core import __version__" 2>/dev/null; then
         echo "Fixing pydantic architecture mismatch..."
@@ -125,7 +125,7 @@ cmd_dev() {
         python3 -m venv .venv
         source .venv/bin/activate
         pip install --upgrade pip --quiet
-        pip install -r requirements.txt --quiet
+        pip install -r backend/requirements.txt --quiet
         echo "Dependencies installed."
     else
         source .venv/bin/activate

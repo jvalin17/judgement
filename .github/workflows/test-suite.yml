@@ -20,7 +20,7 @@ jobs:
           node-version: '20'
 
       - name: Install backend deps
-        run: pip install -r requirements.txt
+        run: pip install -r backend/requirements.txt
 
       - name: Install frontend deps
         run: cd frontend && npm ci
@@ -59,7 +59,7 @@ jobs:
           node-version: '20'
 
       - name: Install backend deps
-        run: cd judgement && pip install -r requirements.txt
+        run: cd judgement && pip install -r backend/requirements.txt
 
       - name: Install frontend deps
         run: cd judgement/frontend && npm ci

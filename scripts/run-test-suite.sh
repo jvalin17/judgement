@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run the full test suite from jvalin17/judgement-tests against this repo.
-# Usage: ./run-test-suite.sh
+# Usage: ./scripts/run-test-suite.sh
 #
 # Expects judgement-tests repo cloned as a sibling directory:
 #   parent/
@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SUITE_DIR="${JUDGEMENT_TESTS:-$SCRIPT_DIR/../judgement-tests}"
 
 if [ ! -d "$SUITE_DIR/backend" ]; then
