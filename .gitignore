@@ -76,3 +76,5 @@ backend/app/github_token.txt
 
 # Learning data (generated at runtime)
 backend/app/ml/learning/data/*.jsonl
+frontend/coverage/
+backend/app/ml/learning/data/
