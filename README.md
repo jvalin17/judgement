@@ -42,14 +42,14 @@ No data leaves your computer unless you opt into community data sharing or check
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
 - **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
 - **Turbulence mode** — guarantees at least one player misses their bid each round
-- **Play style persona** — at game end, get matched to one of 75 personas across 7 categories based on an 11-dimension play fingerprint. Persona tier scales with difficulty: Easy unlocks animal personas, Medium adds cartoon and pokemon, Hard/Smart Hard adds achievement and poker, and playing Hard with challenge + turbulence unlocks elite tier (superhero, mythology)
+- **Play style persona** — at game end, get matched to one of 75 personas across 6 categories based on an 11-dimension play fingerprint. Persona tier scales with difficulty: Easy unlocks animal personas, Medium adds cartoon and pokemon, Hard/Smart Hard adds achievement, and playing Hard with challenge + turbulence unlocks elite tier (superhero, mythology)
 - **Community data sharing** — share anonymized game decisions to help train better AI, download community data from other players
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Score visible during bidding** — cumulative score shown in the bid selector
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
-- **674 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push via CI
+- **680 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push via CI
 
 ---
 
@@ -181,7 +181,7 @@ judgement/
 
 ## Testing
 
-All tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — 674 tests covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
+All tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — 680 tests covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
 
 ```bash
 ./scripts/run-test-suite.sh                 # Clones test repo if needed, runs everything
@@ -205,7 +205,7 @@ claude --add-dir ../judgement-tests
 | Skill | Command | What it does |
 |-------|---------|-------------|
 | **write-tests** | `/write-tests` | Analyzes your code changes, generates unit and integration tests, adds them to the test suite repo |
-| **test-suite** | `/test-suite` | Clones test repo if needed, runs all 627 tests (smoke + suite + TypeScript), blocks if anything fails |
+| **test-suite** | `/test-suite` | Clones test repo if needed, runs all 680 tests (smoke + suite + TypeScript), blocks if anything fails |
 | **ship-checklist** | `/ship-checklist` | Full pre-push gate: writes tests, runs suite, updates docs, then commits and pushes |
 
 ### Workflow
