@@ -42,6 +42,12 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 
 ## Progress log (most recent at top)
 
+### Session ending 2026-04-29 ~22:25 CT — Player list desync after game start
+- After deploying the previous fix, joiners now appear in the host's *waiting room* but disappear once the game starts: host sees themselves only, joiners see everyone correctly.
+- Root cause: the frontend keeps two parallel player lists in `useGame.ts` reducer state — `lobbyPlayers` (drives `WaitingRoom`) and `players` (drives `GameBoard`, `BidSelector`, scoreboard). The `player_joined` event handler only updated `lobbyPlayers`, not `players`. Joiners receive the `connected` event on their WS open which seeds `state.players` with the full roster, so they look fine. The host opened their WS when they were alone, so `state.players` froze at `[host]` and never grew.
+- Fix in `frontend/src/hooks/useGame.ts handlePlayerJoined`: also append the new player to `state.players` (with `player_type=HUMAN`, `ai_difficulty=null`). Symmetrically, `handlePlayerLeft` now removes from both lists.
+- **Stopped here.** Next: commit, push, redeploy on the VM, retest with two browsers — host should see joiners in the waiting room AND in the game itself.
+
 ### Session ending 2026-04-29 ~22:10 CT — Multiplayer lobby bug fix
 - User report: when host creates a "Play with Friends" room and a second player joins via room code, the host doesn't see the joiner appear in the waiting room, and there's no way to start the game.
 - Root cause: `POST /api/games/{game_id}/join` in `backend/app/api/rest.py` was calling `engine.add_player(player)` directly, bypassing `GameManager.add_human_player()`. The latter is the only thing that emits a `player_joined` event. Without that event, the host's WebSocket never broadcasts the new joiner, `lobbyPlayers` stays at length 1, and `WaitingRoom.tsx` (which renders the "Start Now" button only when `isHost && players.length >= 2`) never shows the start button. So both reported symptoms (no joiner visible + game never starts) trace to one missing event.

@@ -22,6 +22,7 @@ import type {
 import {
   GamePhase,
   INITIAL_GAME_STATE,
+  PlayerType,
   ServerEventType,
 } from "../types";
 
@@ -275,11 +276,29 @@ function handleHand(state: GameState, data: HandEventData): GameState {
 }
 
 function handlePlayerJoined(state: GameState, data: PlayerJoinedEventData): GameState {
-  const alreadyExists = state.lobbyPlayers.some((p) => p.id === data.player_id);
-  if (alreadyExists) return state;
+  const inLobby = state.lobbyPlayers.some((p) => p.id === data.player_id);
+  const inGame = state.players.some((p) => p.id === data.player_id);
+  if (inLobby && inGame) return state;
+  // Mirror the new player into BOTH lists. lobbyPlayers drives the
+  // WaitingRoom UI; players drives every in-game view (GameBoard,
+  // BidSelector, scoreboard). Without this the host saw an empty seat
+  // for joiners once the game started, even after Round 1 dealt cards.
   return {
     ...state,
-    lobbyPlayers: [...state.lobbyPlayers, { id: data.player_id, name: data.player_name, isHost: false }],
+    lobbyPlayers: inLobby
+      ? state.lobbyPlayers
+      : [...state.lobbyPlayers, { id: data.player_id, name: data.player_name, isHost: false }],
+    players: inGame
+      ? state.players
+      : [
+          ...state.players,
+          {
+            id: data.player_id,
+            name: data.player_name,
+            player_type: PlayerType.HUMAN,
+            ai_difficulty: null,
+          },
+        ],
   };
 }
 
@@ -287,6 +306,7 @@ function handlePlayerLeft(state: GameState, data: PlayerLeftEventData): GameStat
   return {
     ...state,
     lobbyPlayers: state.lobbyPlayers.filter((p) => p.id !== data.player_id),
+    players: state.players.filter((p) => p.id !== data.player_id),
     autoStartSeconds: data.player_count < 2 ? null : state.autoStartSeconds,
   };
 }
