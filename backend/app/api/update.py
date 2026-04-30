@@ -251,8 +251,27 @@ def _is_localhost(request: Request) -> bool:
     return client.host in ("127.0.0.1", "::1", "localhost")
 
 
+def _server_mode_enabled() -> bool:
+    """True when this process runs as the public game server (Oracle VM, etc.).
+
+    In that mode the in-app updater MUST be disabled: the localhost check
+    below is meaningless once any reverse proxy / port forward is in front
+    of us, and we don't want random clients triggering `update.sh` on the
+    server. Updates on the server happen via `deployment/update.sh` over SSH.
+    """
+    return os.environ.get("JUDGEMENT_SERVER_MODE", "").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
+
+
 @router.post("/apply")
 async def apply_update(request: Request):
+    if _server_mode_enabled():
+        raise HTTPException(
+            403,
+            "In-app updates are disabled in server mode. "
+            "Update via deployment/update.sh on the host.",
+        )
     if not _is_localhost(request):
         raise HTTPException(403, "Update can only be triggered from localhost")
 
