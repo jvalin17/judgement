@@ -205,7 +205,11 @@ async def join_game(game_id: str, request: JoinGameRequest):
         name=request.player_name.strip(),
         player_type=PlayerType.HUMAN,
     )
-    success = engine.add_player(player)
+    # IMPORTANT: go through the GameManager (not engine.add_player directly)
+    # so a `player_joined` event fires. Otherwise the host's WebSocket never
+    # learns about the new player, the lobbyPlayers list stays at 1, and the
+    # "Start Now" button (which requires >= 2 visible players) never appears.
+    success = _manager.add_human_player(engine.state.game_id, player)
     if not success:
         raise HTTPException(400, "Could not join game")
 
