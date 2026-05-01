@@ -42,6 +42,15 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 
 ## Progress log (most recent at top)
 
+### Session 2026-04-30 (late) — iPhone 17 hang re-diagnosed, Phase D unblocks it
+- User corrected earlier assumption: **both** iPhone 14 (works) and iPhone 17 (broken) are on iOS 26 / Safari 26. So OS version isn't the differentiator. Rules out the "iOS 26 broke ws://" theory.
+- Other observations: iPhone 17 in Safari, no Lockdown Mode, no Private Relay (no iCloud+), no VPN/DNS profile, same Wi-Fi as iPhone 14. When iPhone 17 joins a room created on iPhone 14, the host (iPhone 14) sees the joiner appear → REST `/join` works fine → server emitted `player_joined`. But iPhone 17 itself sees an empty roster (not even self).
+- **Diagnostic added**: connection-status badge in `WaitingRoom.tsx` (commit `3511eed`). Shows Connecting / Connected / Reconnecting / Disconnected pill above the join code, sourced from existing `connectionStatus` in `GameContext`. Wired through `App.tsx` → `WaitingRoomScreen`. Useful long-term too.
+- **Cache headers fix** (commit `09a51af`): added explicit `Cache-Control` on the FastAPI side — `no-cache, must-revalidate` on `index.html` and SPA fallbacks, `public, max-age=1y, immutable` on `/assets/*` (safe because Vite content-hashes them). Verified live: `curl -D - http://147.224.12.15/` → no-cache, `/assets/index-*.js` → immutable. Future deploys are picked up on first navigation; no more "is this a cache issue?" rabbit holes.
+- **Result on iPhone 17 after cache clear:** pill says "Connecting" forever, roster stays empty. So the WebSocket truly never opens — Safari (or some per-device WebKit policy on iPhone 17) is silently blocking `ws://` to a bare-IP origin. iPhone 14 on the same OS doesn't hit it.
+- Earlier "skip persistence and do Phase D" path was the right one after all — TLS fixes this for free because `services/websocket.ts:81` already auto-uses `wss:` when `window.location.protocol === "https:"`. No frontend change needed once we have HTTPS.
+- **Stopped here.** Next session resume point: pick a Phase D approach (see below).
+
 ### Session 2026-04-30 — iPhone 17 hang diagnosed, deferred
 - User report: game works on iPhone 14, but on iPhone 17 (iOS 26 / Safari 26) the screen gets stuck at "Waiting Room" and never transitions to bidding. Same Wi-Fi as the iPhone 14, Private Relay off, happens for both host and joiner roles, also for single-player vs bots.
 - Likely root cause: **Safari 26 refuses (or silently fails) `ws://` WebSocket connections from a top-level `http://<bare-IP>` page.** Page loads fine (plain HTTP fetch + REST works → WaitingRoom renders), but `new WebSocket("ws://147.224.12.15/ws/...")` in `frontend/src/services/websocket.ts:81-85` never reaches `onopen`, so no `round_started` event ever arrives. iPhone 14 (iOS 17/18) is grandfathered into the looser behavior. Single-player hanging at waiting room is consistent because the same code path requires the WS for `round_started`.
@@ -135,6 +144,44 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 - User attempted Oracle Cloud signup. Account took ~15 min to provision (expected). Initial "invalid username/password" was because the identity domain wasn't live yet.
 - User signed in successfully after waiting and completing **2-step MFA** setup (TOTP via authenticator app — required by Oracle; recovery/backup codes should be stored safely by user).
 - **Stopped here.** Next session: pick up at **Step 4 — Create the VM** (see "Next steps" below).
+
+---
+
+## RESUME HERE (next session, 2026-05-01)
+
+We paused mid-discussion of **Phase D (HTTPS)**. Context:
+
+- Persistence work (Phase E, Supabase) was about to start, but user reported the iPhone 17 hang.
+- Diagnosis: WebSocket on iPhone 17 never opens (`ws://` to bare-IP `147.224.12.15` blocked silently by Safari, even though iPhone 14 on same iOS 26 / same Wi-Fi works). Connection badge stays at "Connecting".
+- Conclusion: do **Phase D first**, then Phase E. Phase D gives us `wss://`, which fixes iPhone 17 with zero frontend changes.
+
+**The pending question** I asked the user before we paused — they should answer this first thing tomorrow:
+
+> Domain strategy for Phase D? Options:
+> 1. **DuckDNS + Caddy on the VM (Let's Encrypt auto-issue).** ~20 min, $0, end-to-end TLS, no third-party CDN. **My recommendation.**
+> 2. **DuckDNS + Cloudflare Flexible mode.** Cloudflare proxies HTTPS → HTTP on the last hop. Adds CDN benefits, slightly fiddlier DNS setup.
+> 3. **Buy a cheap .com via Cloudflare Registrar** (~$10/yr at cost). Cleanest URL, breaks the strict $0 constraint.
+
+**My pick if user defers:** Option 1 (DuckDNS + Caddy). Reasoning:
+- Strict $0, no extra account beyond one-click DuckDNS login.
+- Caddy auto-issues + auto-renews Let's Encrypt certs with literally one config line. Battle-tested for WebSockets on free-tier VMs.
+- End-to-end TLS without manually managing certs.
+- Avoids Cloudflare's WS frame-size and idle-timeout quirks (100s default — would need tuning for our long-lived game sessions).
+- Plays cleanly with Phase E later (Supabase auth wants HTTPS origin).
+
+**Plan if we go Option 1:**
+1. User claims a DuckDNS subdomain (e.g. `judgement-anurag.duckdns.org`) and pastes the token here.
+2. Open port 443 on Oracle VCN security list (port 80 already open).
+3. On the VM: install Caddy, write a `/etc/caddy/Caddyfile` with `judgement-anurag.duckdns.org { reverse_proxy localhost:8000 }`. Caddy auto-issues + renews the cert. Update `docker-compose.yml` to bind to `127.0.0.1:8000` instead of `0.0.0.0:80` so only Caddy is publicly exposed.
+4. Add a tiny systemd timer (or Caddy module) to refresh the DuckDNS A-record every 6h pointing at `147.224.12.15` (the IP doesn't change, but DuckDNS requires periodic updates to keep the subdomain alive).
+5. Test on iPhone 17 first — pill should show "Connected" (now via wss://), game should start normally.
+6. Update PROGRESS.md, mark Phase D done, then start Phase E (Supabase persistence — see plan below in earlier section).
+
+**Phase E status:** plan already agreed with user (name-only identity, persist stats + history + accounts + ML data, Supabase Postgres free tier, three-commit rollout). User needs to create the Supabase project and paste the pooler connection string back. **Not blocked by Phase D** — could proceed in parallel, but doing Phase D first is cleaner for the iPhone 17 unblock + future auth.
+
+**Open / parked items not lost:**
+- iPhone 17 multiplayer hang (this whole thread). Will be retested as Phase D's first verification step.
+- Connection-status badge in WaitingRoom — already shipped, but we may want to add the same indicator to the in-game header (currently only shown during waiting room). Defer until requested.
 
 ---
 
