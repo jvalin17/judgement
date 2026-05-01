@@ -86,6 +86,12 @@ class JoinGameRequest(BaseModel):
     player_name: str
 
 
+class AddBotRequest(BaseModel):
+    player_id: str  # caller — must be the host
+    difficulty: AIDifficulty = AIDifficulty.MEDIUM
+    name: Optional[str] = None  # if None, auto-pick from sweets list
+
+
 class JoinGameResponse(BaseModel):
     player_id: str
     game_id: str

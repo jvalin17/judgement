@@ -12,6 +12,7 @@ from backend.app.api.schemas import (
     SessionLogResponse, PlayerSetup,
     JoinGameRequest, JoinGameResponse, LobbyStateResponse,
     LobbyGameInfo, LobbyListResponse, QuickJoinRequest,
+    AddBotRequest,
 )
 from backend.app.game_manager import GameManager, ManagedGame
 
@@ -214,6 +215,34 @@ async def join_game(game_id: str, request: JoinGameRequest):
         raise HTTPException(400, "Could not join game")
 
     return JoinGameResponse(player_id=pid, game_id=engine.state.game_id)
+
+
+@router.post("/{game_id}/add-bot", response_model=ActionResponse)
+async def add_bot(game_id: str, request: AddBotRequest):
+    """Host-only: add a single AI player to a multiplayer waiting room.
+
+    Symmetric to `/join` but for bots. The new player is broadcast to all
+    connected clients via the same `player_joined` WS event used for humans,
+    so the host's WaitingRoom updates instantly without a custom handler.
+    """
+    managed = _require_game(game_id)
+    engine = managed.engine
+
+    if engine.state.phase != GamePhase.LOBBY:
+        raise HTTPException(400, "Game already started")
+
+    if managed.host_player_id and managed.host_player_id != request.player_id:
+        raise HTTPException(403, "Only the host can add bots")
+
+    max_p = max_players_for_variant(engine.state.config.variant)
+    if len(engine.state.players) >= max_p:
+        raise HTTPException(400, "Game is full")
+
+    bot = _manager.add_ai_player(game_id, request.difficulty, request.name)
+    if not bot:
+        raise HTTPException(400, "Could not add bot (name taken or game full)")
+
+    return ActionResponse(success=True, message=f"Added {bot.name}")
 
 
 @router.post("/{game_id}/start", response_model=ActionResponse)

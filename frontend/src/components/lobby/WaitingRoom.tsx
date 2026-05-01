@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { startGame as apiStartGame } from "../../services/api";
+import { startGame as apiStartGame, addBot as apiAddBot } from "../../services/api";
+import { AIDifficulty } from "../../types";
 import { Button } from "../common";
 import styles from "../../styles/waiting.module.css";
 
@@ -31,6 +32,8 @@ export function WaitingRoom({
   const [copied, setCopied] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [botDifficulty, setBotDifficulty] = useState<AIDifficulty>(AIDifficulty.MEDIUM);
+  const [addingBot, setAddingBot] = useState(false);
 
   const handleCopyCode = useCallback(() => {
     navigator.clipboard.writeText(gameId).then(() => {
@@ -50,7 +53,22 @@ export function WaitingRoom({
     }
   }, [gameId, playerId]);
 
+  const handleAddBot = useCallback(async () => {
+    setAddingBot(true);
+    setError(null);
+    try {
+      await apiAddBot(gameId, playerId, botDifficulty);
+      // No local state update needed — the server emits `player_joined` over
+      // the WS and useGame.ts handles the roster update for us.
+    } catch (addErr) {
+      setError(addErr instanceof Error ? addErr.message : "Failed to add bot");
+    } finally {
+      setAddingBot(false);
+    }
+  }, [gameId, playerId, botDifficulty]);
+
   const emptySlots = maxPlayers - players.length;
+  const canAddBot = isHost && emptySlots > 0;
 
   return (
     <div className={styles.waitingRoom}>
@@ -87,6 +105,25 @@ export function WaitingRoom({
       {autoStartSeconds !== null && (
         <div className={styles.countdown}>
           Starting in {autoStartSeconds}s...
+        </div>
+      )}
+
+      {canAddBot && (
+        <div className={styles.botRow}>
+          <label className={styles.botLabel}>Add a bot:</label>
+          <select
+            className={styles.botSelect}
+            value={botDifficulty}
+            onChange={(e) => setBotDifficulty(e.target.value as AIDifficulty)}
+            disabled={addingBot}
+          >
+            <option value={AIDifficulty.EASY}>Easy</option>
+            <option value={AIDifficulty.MEDIUM}>Medium</option>
+            <option value={AIDifficulty.HARD}>Hard</option>
+          </select>
+          <Button variant="secondary" onClick={handleAddBot} disabled={addingBot}>
+            {addingBot ? "Adding..." : "Add Bot"}
+          </Button>
         </div>
       )}
 

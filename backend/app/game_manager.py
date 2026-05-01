@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import random
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Callable
@@ -379,6 +380,50 @@ class GameManager:
             for player in players
         ]
         managed.session_log.variant = config.variant.value
+
+    def add_ai_player(
+        self,
+        game_id: str,
+        difficulty: AIDifficulty,
+        name: Optional[str] = None,
+    ) -> Optional[Player]:
+        """Add a single AI player to an in-lobby game and broadcast `player_joined`.
+
+        Mirrors `add_human_player` so the WaitingRoom on every connected client
+        updates via the same event path. Returns the created Player on success,
+        or None if the game is missing/full/started or the chosen name collides.
+        """
+        managed = self._games.get(game_id)
+        if not managed:
+            return None
+        used_names = {p.name for p in managed.engine.state.players}
+        if name:
+            ai_name = name.strip()
+            if not ai_name or ai_name in used_names:
+                return None
+        else:
+            ai_name = next(
+                (n for n in AI_SWEETS_NAMES if n not in used_names),
+                f"Bot {len(managed.engine.state.players) + 1}",
+            )
+            if ai_name in used_names:
+                return None
+        ai_player = Player(
+            id=f"ai-{uuid.uuid4().hex[:8]}",
+            name=ai_name,
+            player_type=PlayerType.AI,
+            ai_difficulty=difficulty,
+        )
+        if not managed.engine.add_player(ai_player):
+            return None
+        managed.ai_strategies[ai_player.id] = _make_strategy(difficulty)
+        event = player_joined_event(
+            player_id=ai_player.id,
+            player_name=ai_player.name,
+            player_count=len(managed.engine.state.players),
+        )
+        managed._notify_callbacks(event)
+        return ai_player
 
     def add_human_player(self, game_id: str, player: Player) -> bool:
         managed = self._games.get(game_id)

@@ -42,6 +42,26 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 
 ## Progress log (most recent at top)
 
+### Session 2026-04-30 — Add Bot in multiplayer waiting room
+- New feature: host can add AI players to a multiplayer room before starting, mirroring the single-player setup flow.
+- Backend:
+  - `GameManager.add_ai_player(game_id, difficulty, name=None)` — creates the Player, calls `engine.add_player`, registers the strategy in `ai_strategies` (without this the bot would sit idle on its turn), and broadcasts `player_joined` via the same callback path used for humans.
+  - Auto-picks names from `AI_SWEETS_NAMES`, falls back to `Bot N` if all sweets are taken.
+  - New endpoint `POST /api/games/{game_id}/add-bot` — host-only (checks `host_player_id`), lobby-only, capacity-checked. New schema `AddBotRequest { player_id, difficulty, name? }`.
+- Frontend:
+  - `addBot(gameId, playerId, difficulty)` in `services/api.ts`.
+  - `WaitingRoom.tsx`: when `isHost && emptySlots > 0`, renders a difficulty dropdown (Easy / Medium / Hard, default Medium) + "Add Bot" button. On click, POSTs to `/add-bot`; the server's `player_joined` event flows through the existing WS handler, so the new bot appears in every connected client's roster automatically (no extra reducer wiring).
+  - CSS additions (`.botRow`, `.botLabel`, `.botSelect`) styled to match the dashed empty-slot aesthetic.
+- Per user choices: per-bot difficulty picker, auto-named, no remove button, no "fill all" button.
+- Verified locally: smoke test created a game, added Hard + Easy bots, both got strategies, both `player_joined` events fired, game started successfully into bidding phase. Frontend `tsc -b && vite build` clean. No lints.
+- Next: commit, push to `deploy/oracle-vm`, redeploy on VM, two-browser test.
+
+### Session 2026-04-30 — Player list desync fix verified live
+- Re-read progress, confirmed the `useGame.ts` fix (`handlePlayerJoined` / `handlePlayerLeft` mirror into both `lobbyPlayers` and `players`) was already committed (`1452a91`) and pushed to `deploy/oracle-vm`.
+- Ran `deployment/update.sh` on the VM — `Already up to date`, all layers cached, container restarted cleanly. `/health` → `{"status":"ok"}`.
+- User verified two-browser end-to-end: host now sees joiners in waiting room AND in-game. Multiplayer lobby + player-list bugs both closed.
+- Next: user has more issues to fix before moving to Phase D / E. Awaiting list.
+
 ### Session ending 2026-04-29 ~22:25 CT — Player list desync after game start
 - After deploying the previous fix, joiners now appear in the host's *waiting room* but disappear once the game starts: host sees themselves only, joiners see everyone correctly.
 - Root cause: the frontend keeps two parallel player lists in `useGame.ts` reducer state — `lobbyPlayers` (drives `WaitingRoom`) and `players` (drives `GameBoard`, `BidSelector`, scoreboard). The `player_joined` event handler only updated `lobbyPlayers`, not `players`. Joiners receive the `connected` event on their WS open which seeds `state.players` with the full roster, so they look fine. The host opened their WS when they were alone, so `state.players` froze at `[host]` and never grew.
@@ -116,7 +136,7 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 - ✅ Updater route hardened with `JUDGEMENT_SERVER_MODE` guard.
 - ✅ Deployment files committed and pushed to GitHub (branch `deploy/oracle-vm`).
 - ✅ App deployed and reachable on `http://147.224.12.15/` (browser confirmed).
-- ⏳ End-to-end WebSocket multiplayer test across two devices — pending user confirmation.
+- ✅ End-to-end WebSocket multiplayer test across two devices — verified working 2026-04-30.
 - ⬜ Phase D — HTTPS via Cloudflare (deferred).
 - ⬜ Phase E — Postgres persistence + stats (deferred).
 

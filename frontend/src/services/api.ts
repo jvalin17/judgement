@@ -209,6 +209,18 @@ export async function startGame(
   return handleResponse<ActionResponse>(response);
 }
 
+export async function addBot(
+  gameId: string,
+  playerId: string,
+  difficulty: "easy" | "medium" | "hard",
+): Promise<ActionResponse> {
+  const response = await postJson(`${BASE_URL}/${gameId}/add-bot`, {
+    player_id: playerId,
+    difficulty,
+  });
+  return handleResponse<ActionResponse>(response);
+}
+
 export async function getLobbyList(): Promise<{ games: LobbyGameInfo[] }> {
   const response = await fetch("/api/lobby");
   return handleResponse<{ games: LobbyGameInfo[] }>(response);
