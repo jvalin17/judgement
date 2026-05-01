@@ -42,6 +42,14 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 
 ## Progress log (most recent at top)
 
+### Session 2026-04-30 — iPhone 17 hang diagnosed, deferred
+- User report: game works on iPhone 14, but on iPhone 17 (iOS 26 / Safari 26) the screen gets stuck at "Waiting Room" and never transitions to bidding. Same Wi-Fi as the iPhone 14, Private Relay off, happens for both host and joiner roles, also for single-player vs bots.
+- Likely root cause: **Safari 26 refuses (or silently fails) `ws://` WebSocket connections from a top-level `http://<bare-IP>` page.** Page loads fine (plain HTTP fetch + REST works → WaitingRoom renders), but `new WebSocket("ws://147.224.12.15/ws/...")` in `frontend/src/services/websocket.ts:81-85` never reaches `onopen`, so no `round_started` event ever arrives. iPhone 14 (iOS 17/18) is grandfathered into the looser behavior. Single-player hanging at waiting room is consistent because the same code path requires the WS for `round_started`.
+- Why we didn't fully confirm: would need Safari Web Inspector via a Mac + USB. Diagnosis is well-grounded enough; the fix is the same either way.
+- Fix (deferred): **Phase D — HTTPS.** Once the site serves over `https://` with a real cert, the WS code already picks `wss:` automatically (`window.location.protocol === "https:"` check in `services/websocket.ts:81`). No frontend code change needed.
+- Decision: skip for now, continue to Phase E (persistence). User accepts iPhone 17 users hitting the site via iPhone 14 / desktop browser until Phase D is done.
+- Open item: when we do Phase D, retest on iPhone 17 first thing — it should "just work" with `wss://`.
+
 ### Session 2026-04-30 — Bot dropdown readability fix
 - User reported the difficulty `<select>` popup showed blank entries until hovered (only the selected default "Medium" was visible).
 - First attempt set `option { background: var(--color-surface); color: var(--color-text); }` — didn't help.
