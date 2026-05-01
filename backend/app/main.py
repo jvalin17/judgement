@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -55,8 +55,25 @@ def _resolve_dist_dir() -> Path:
 
 DIST_DIR = _resolve_dist_dir()
 
+_INDEX_HEADERS = {"Cache-Control": "no-cache, must-revalidate"}
+_ASSET_HEADERS = {"Cache-Control": "public, max-age=31536000, immutable"}
+
+
 if DIST_DIR.is_dir():
     app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="static")
+
+    # Vite emits content-hashed filenames under /assets, so the StaticFiles mount
+    # above is safe to cache aggressively. Everything else (index.html, /favicon,
+    # SPA fallbacks) MUST revalidate or iOS Safari will pin a stale bundle and
+    # users will run pre-fix code for days. (We hit this in the iPhone 17
+    # diagnosis on 2026-04-30.)
+    @app.middleware("http")
+    async def _set_static_cache_headers(request: Request, call_next):
+        response = await call_next(request)
+        path = request.url.path
+        if path.startswith("/assets/"):
+            response.headers.setdefault("Cache-Control", _ASSET_HEADERS["Cache-Control"])
+        return response
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
@@ -69,11 +86,10 @@ if DIST_DIR.is_dir():
         page looked broken (no favicon, no rangoli table motif).
         """
         candidate = (DIST_DIR / full_path).resolve()
-        # Guard against path traversal: candidate must stay inside DIST_DIR
         try:
             candidate.relative_to(DIST_DIR.resolve())
         except ValueError:
-            return FileResponse(DIST_DIR / "index.html")
+            return FileResponse(DIST_DIR / "index.html", headers=_INDEX_HEADERS)
         if full_path and candidate.is_file():
-            return FileResponse(candidate)
-        return FileResponse(DIST_DIR / "index.html")
+            return FileResponse(candidate, headers=_INDEX_HEADERS)
+        return FileResponse(DIST_DIR / "index.html", headers=_INDEX_HEADERS)
