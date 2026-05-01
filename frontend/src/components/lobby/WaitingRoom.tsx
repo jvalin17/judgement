@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { startGame as apiStartGame, addBot as apiAddBot } from "../../services/api";
 import { AIDifficulty } from "../../types";
+import { ConnectionStatus } from "../../services/websocket";
 import { Button } from "../common";
 import styles from "../../styles/waiting.module.css";
 
@@ -17,8 +18,16 @@ interface WaitingRoomProps {
   players: LobbyPlayer[];
   autoStartSeconds: number | null;
   maxPlayers: number;
+  connectionStatus: ConnectionStatus;
   onLeave: () => void;
 }
+
+const STATUS_LABELS: Record<ConnectionStatus, string> = {
+  [ConnectionStatus.CONNECTED]: "Connected",
+  [ConnectionStatus.CONNECTING]: "Connecting…",
+  [ConnectionStatus.RECONNECTING]: "Reconnecting…",
+  [ConnectionStatus.DISCONNECTED]: "Disconnected",
+};
 
 export function WaitingRoom({
   gameId,
@@ -27,6 +36,7 @@ export function WaitingRoom({
   players,
   autoStartSeconds,
   maxPlayers,
+  connectionStatus,
   onLeave,
 }: WaitingRoomProps) {
   const [copied, setCopied] = useState(false);
@@ -70,9 +80,21 @@ export function WaitingRoom({
   const emptySlots = maxPlayers - players.length;
   const canAddBot = isHost && emptySlots > 0;
 
+  const statusClass =
+    connectionStatus === ConnectionStatus.CONNECTED
+      ? styles.statusConnected
+      : connectionStatus === ConnectionStatus.DISCONNECTED
+        ? styles.statusDisconnected
+        : styles.statusPending;
+
   return (
     <div className={styles.waitingRoom}>
       <h2 className={styles.title}>Waiting Room</h2>
+
+      <div className={`${styles.connectionBadge} ${statusClass}`}>
+        <span className={styles.connectionDot} />
+        {STATUS_LABELS[connectionStatus]}
+      </div>
 
       <div className={styles.joinCodeSection}>
         <span className={styles.joinCodeLabel}>Game Code</span>

@@ -70,7 +70,7 @@ function CurrentScreen({ phase, gameId, onGameCreated, onPlayAgain }: CurrentScr
 }
 
 function WaitingRoomScreen({ onPlayAgain }: { onPlayAgain: () => void }) {
-  const { state } = useGameContext();
+  const { state, connectionStatus } = useGameContext();
 
   return (
     <WaitingRoom
@@ -80,6 +80,7 @@ function WaitingRoomScreen({ onPlayAgain }: { onPlayAgain: () => void }) {
       players={state.lobbyPlayers}
       autoStartSeconds={state.autoStartSeconds}
       maxPlayers={5}
+      connectionStatus={connectionStatus}
       onLeave={onPlayAgain}
     />
   );

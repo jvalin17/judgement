@@ -15,6 +15,41 @@
   margin: 0;
 }
 
+/* Connection status badge */
+
+.connectionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-light);
+}
+
+.connectionDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.statusConnected {
+  color: #2ecc71;
+}
+
+.statusPending {
+  color: var(--color-accent);
+}
+
+.statusDisconnected {
+  color: var(--color-danger);
+}
+
 /* Join code */
 
 .joinCodeSection {
