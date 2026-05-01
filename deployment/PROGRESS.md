@@ -42,6 +42,14 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 
 ## Progress log (most recent at top)
 
+### Session 2026-04-30 — Bot dropdown readability fix
+- User reported the difficulty `<select>` popup showed blank entries until hovered (only the selected default "Medium" was visible).
+- First attempt set `option { background: var(--color-surface); color: var(--color-text); }` — didn't help.
+- Root cause: theme's `--color-surface` is `rgba(0,0,0,0.2)` (semi-transparent, designed to composite over the dark gradient body). The native `<option>` popup is rendered by the OS on a white backdrop, so the transparent surface composited to white and the near-white `--color-text` (`#ecf0f1`) text became invisible. The OS hover highlight is opaque, which is why hovering "fixed" it.
+- Fix in `frontend/src/styles/waiting.module.css`: hardcoded opaque colors on `.botSelect option` — `background-color: #2c3e50` (matches `--color-primary`) and `color: #ecf0f1`. No JS changes.
+- Built, committed, pushed to `deploy/oracle-vm`, redeployed via `update.sh` on the VM. User hard-refreshed and confirmed all three difficulties are now readable.
+- Next: awaiting next issue from user's list.
+
 ### Session 2026-04-30 — Add Bot in multiplayer waiting room
 - New feature: host can add AI players to a multiplayer room before starting, mirroring the single-player setup flow.
 - Backend:
