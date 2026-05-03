@@ -66,7 +66,11 @@
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: var(--space-md);
+  padding:
+    calc(var(--space-md) + var(--safe-top))
+    calc(var(--space-md) + var(--safe-right))
+    calc(var(--space-md) + var(--safe-bottom))
+    calc(var(--space-md) + var(--safe-left));
 }
 
 .modal {
@@ -75,7 +79,7 @@
   box-shadow: var(--shadow-modal);
   max-width: 480px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
 }
 

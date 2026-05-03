@@ -1,7 +1,11 @@
 .waitingRoom {
   max-width: 420px;
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding:
+    calc(var(--space-xl) + var(--safe-top))
+    calc(var(--space-xl) + var(--safe-right))
+    calc(var(--space-xl) + var(--safe-bottom))
+    calc(var(--space-xl) + var(--safe-left));
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);

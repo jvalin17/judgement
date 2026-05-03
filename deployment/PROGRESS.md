@@ -42,6 +42,24 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 
 ## Progress log (most recent at top)
 
+### Session 2026-05-03 — Mobile fit / safe-area pass (pre-Phase-D)
+- User reported the app doesn't auto-scale on iPhone — UI cut off on both iPhone 14 and iPhone 17, in both portrait and landscape, both lobby and game board.
+- Root causes identified by reading layout CSS:
+  1. `index.html` had no `viewport-fit=cover` and no safe-area awareness, so positioned chrome (round pill at `top:10px`, `bottom:10px`; `topButtons`; settings button at `top:12px`) sat under the Dynamic Island / home indicator on notched iPhones.
+  2. `.gameBoard` is `height: 100dvh; overflow: hidden` with everything absolutely positioned. On a short landscape phone (~390px tall), the bid bar (`bottom: card-height + 56px = 160px`) plus the trick area at `top: 45%` plus the hand pinned to `bottom: 0` overflow and get clipped.
+  3. `.handCards` had `overflow: visible` with negatively-margined cards — 7+ cards × 72px - 10px overlap ≈ 444px clipped on a 390px phone with no scroll fallback.
+  4. No landscape-specific compression for short viewports.
+- Changes (all CSS / one HTML):
+  - `frontend/index.html`: viewport now `width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no`. Added `theme-color`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`.
+  - `frontend/src/styles/global.css`: added `--safe-top/right/bottom/left` vars sourced from `env(safe-area-inset-*)` with `0px` fallback; added `overscroll-behavior: none` and `-webkit-tap-highlight-color: transparent` on `body`.
+  - `frontend/src/styles/game.module.css`: padded `roundIslandTop/Bottom`, `bidBar`, `playerInfo`, `handArea` by safe-area insets; added `touch-action: manipulation` on `.gameBoard`. Made `.handCards` `overflow-x: auto` (with hidden scrollbar) so an oversized hand scrolls horizontally instead of clipping. Added a `@media (orientation: landscape) and (max-height: 500px)` block that shrinks `--card-width/height` to 56/80, lifts the trick area, tightens the bid bar / player info, and a portrait `max-height: 700px` block that pulls the bottom stack closer to the cards.
+  - `frontend/src/styles/settings.module.css`: `.topButtons` (× and gear) padded by safe-area top/right.
+  - `frontend/src/styles/lobby.module.css`: `.lobby` padding wraps each side with `safe-area-inset-*`; `.settingsButton` (control tower) offset by safe-area.
+  - `frontend/src/styles/waiting.module.css`: `.waitingRoom` padded by safe-area on all four sides.
+  - `frontend/src/styles/common.module.css`: `.modalOverlay` padded by safe-area; `.modal` switched from `90vh` to `90dvh` so it uses the dynamic viewport (no clip when iOS toolbars expand).
+- `npm run build` clean. No lint errors.
+- Next: commit, push to `deploy/oracle-vm`, run `update.sh` on the VM, retest on iPhone 14 + 17 (portrait & landscape). Then resume Phase D (HTTPS via DuckDNS + Caddy).
+
 ### Session 2026-04-30 (late) — iPhone 17 hang re-diagnosed, Phase D unblocks it
 - User corrected earlier assumption: **both** iPhone 14 (works) and iPhone 17 (broken) are on iOS 26 / Safari 26. So OS version isn't the differentiator. Rules out the "iOS 26 broke ws://" theory.
 - Other observations: iPhone 17 in Safari, no Lockdown Mode, no Private Relay (no iCloud+), no VPN/DNS profile, same Wi-Fi as iPhone 14. When iPhone 17 joins a room created on iPhone 14, the host (iPhone 14) sees the joiner appear → REST `/join` works fine → server emitted `player_joined`. But iPhone 17 itself sees an empty roster (not even self).
