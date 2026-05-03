@@ -1,0 +1,18 @@
+# Reverse proxy in front of the Judgement container.
+# Caddy auto-issues + auto-renews a Let's Encrypt cert for this hostname.
+# WebSockets (wss://) are proxied transparently — Caddy detects the Upgrade
+# and Connection headers and tunnels them with no extra config.
+#
+# Install location on the VM: /etc/caddy/Caddyfile
+
+judgement-game.duckdns.org {
+	encode zstd gzip
+
+	reverse_proxy 127.0.0.1:8000 {
+		# Forward the real client IP so FastAPI's --proxy-headers /
+		# --forwarded-allow-ips * picks it up correctly.
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}

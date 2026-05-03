@@ -95,10 +95,38 @@ Common causes: missing dependency in `requirements.txt`, code error in `backend/
 You haven't logged out/in since `setup-vm.sh` added you to the docker group. Either re-SSH, or prefix commands with `sg docker -c "..."` like the scripts do.
 
 **Frontend loads but WebSocket fails**
-Check the browser console. The current setup uses `ws://` (since we're on plain HTTP). HTTPS/WSS comes in Phase D.
+Check the browser console. After Phase D, the page is served over HTTPS so the
+client auto-uses `wss://`. If WS fails, tail Caddy: `sudo journalctl -u caddy -f`.
 
-## 7. What's NOT done yet (Phase D / E)
+## 7. Phase D — HTTPS via DuckDNS + Caddy
 
-- HTTPS — currently plain HTTP. Browsers will warn about insecure connection. Cloudflare in front (free) will fix this in Phase D.
+Done as of session 2026-05-03. Runbook for re-applying or rebuilding from scratch:
+
+```bash
+# On the VM, after the repo is pulled:
+DUCKDNS_TOKEN=<your-token> bash ~/judgement/deployment/install-caddy.sh
+```
+
+This installs Caddy from the official Cloudsmith repo, drops our `Caddyfile` at
+`/etc/caddy/Caddyfile`, kicks off Let's Encrypt cert issuance, and sets up a
+systemd timer that pings DuckDNS every 6h to keep the A-record alive.
+
+The container's `docker-compose.yml` was changed from `0.0.0.0:80 → 8000` to
+`127.0.0.1:8000 → 8000`. Caddy is now the sole public listener.
+
+Verify:
+
+```bash
+sudo systemctl status caddy --no-pager
+sudo systemctl list-timers duckdns-update.timer
+curl -I https://judgement-game.duckdns.org/health
+```
+
+If Caddy fails to issue a cert, check `sudo journalctl -u caddy -n 200`. Common
+causes: port 443 still blocked at Oracle VCN level, DNS not yet propagated, or
+DuckDNS subdomain points at the wrong IP.
+
+## 8. What's NOT done yet (Phase E)
+
 - Persistence — `GameManager` is in-memory; redeploy = lose active games. Postgres comes in Phase E.
 - The in-app updater (`/api/update/apply`) is **disabled** in server mode (env var `JUDGEMENT_SERVER_MODE=1`). Updates here happen via `update.sh` over SSH.

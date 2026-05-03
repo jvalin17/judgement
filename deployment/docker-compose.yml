@@ -1,8 +1,9 @@
 # Deployed on the Oracle VM. Run from the repo root with:
 #   docker compose -f deployment/docker-compose.yml up -d --build
 #
-# Listens on port 80 of the host so players can hit http://<public-ip>/ directly.
-# HTTPS will be added in Phase D (Cloudflare in front of this).
+# Phase D: container binds to 127.0.0.1:8000 only. Caddy (running on the host,
+# not in this compose) listens on :80 and :443, terminates TLS, and reverse-
+# proxies to this loopback port. The container is no longer publicly exposed.
 
 services:
   judgement:
@@ -13,7 +14,7 @@ services:
     container_name: judgement
     restart: unless-stopped
     ports:
-      - "80:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - JUDGEMENT_SERVER_MODE=1
     healthcheck:
