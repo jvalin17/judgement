@@ -95,14 +95,25 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now duckdns-update.timer
 sudo systemctl start duckdns-update.service || true
 
-echo "==> 5/5 Ensuring host firewall allows 443"
+echo "==> 5/5 Ensuring host firewall allows 80 + 443"
 if command -v ufw >/dev/null 2>&1; then
+	sudo ufw allow 80/tcp || true
 	sudo ufw allow 443/tcp || true
 fi
-# Oracle's default iptables drops 443 — make sure we explicitly allow it and persist.
-if ! sudo iptables -C INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null; then
-	sudo iptables -I INPUT 6 -p tcp --dport 443 -j ACCEPT
-fi
+# Oracle's default Ubuntu image has a REJECT rule near the top of INPUT.
+# Insert ACCEPTs at position 1 so they pre-empt it. We delete any matching
+# rule first to avoid duplicates piling up across re-runs.
+ensure_accept_at_top() {
+	local port="$1"
+	# Remove ALL existing matching rules (handles past reruns that inserted
+	# at the wrong position).
+	while sudo iptables -C INPUT -p tcp --dport "${port}" -j ACCEPT 2>/dev/null; do
+		sudo iptables -D INPUT -p tcp --dport "${port}" -j ACCEPT
+	done
+	sudo iptables -I INPUT 1 -p tcp --dport "${port}" -j ACCEPT
+}
+ensure_accept_at_top 80
+ensure_accept_at_top 443
 if command -v netfilter-persistent >/dev/null 2>&1; then
 	sudo netfilter-persistent save || true
 fi

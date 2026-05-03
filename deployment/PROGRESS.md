@@ -42,6 +42,22 @@ Run the existing FastAPI + React app on **one always-on internet server** so mul
 
 ## Progress log (most recent at top)
 
+### Session 2026-05-03 (later) — Phase D done: HTTPS via DuckDNS + Caddy 🎉
+- Picked Option 1 from the recommendations: DuckDNS (free dynamic DNS) + Caddy on the VM with Let's Encrypt auto-issuance. End-to-end TLS, no third party in the data path, no idle-WS-timeout quirks.
+- User claimed `judgement-game.duckdns.org` and pointed it at `147.224.12.15`. DuckDNS token saved at `/etc/duckdns-token` on the VM (root-only, 600).
+- Added these files (committed in `2bdbda0`):
+  - `deployment/Caddyfile` — single-vhost reverse proxy with `reverse_proxy 127.0.0.1:8000`, forwards `X-Real-IP / X-Forwarded-For / X-Forwarded-Proto`. Caddy's defaults handle the WS Upgrade/Connection headers automatically.
+  - `deployment/duckdns-update.sh` — pings DuckDNS to keep the A-record alive.
+  - `deployment/install-caddy.sh` — idempotent host setup: installs Caddy from the Cloudsmith repo, drops the Caddyfile, enables/reloads the systemd unit, installs the DuckDNS keepalive service + 6h timer (also runs once on boot), opens 80/443 at host firewall.
+  - `deployment/docker-compose.yml`: rebound the container from `0.0.0.0:80 → 8000` to `127.0.0.1:8000 → 8000`. Caddy is now the **only** public listener; the FastAPI container is no longer directly exposed.
+  - `deployment/DEPLOY.md`: added Phase D runbook + verify commands.
+- Hit one snag during install: Caddy got a `urn:ietf:params:acme:error:connection` from Let's Encrypt for both `http-01` and `tls-alpn-01` challenges. Cause: the install script inserted `ACCEPT tcp dpt:443` at iptables INPUT position 6, but Oracle's stock Ubuntu 24.04 image has its `REJECT icmp-host-prohibited` at position 5 — so 443 packets hit REJECT first and were dropped before reaching Caddy. Verified with `iptables -L INPUT -n --line-numbers`.
+- Fix: moved `ACCEPT 80` and `ACCEPT 443` to positions 1–2 with `iptables -I INPUT 1 …`, persisted via `netfilter-persistent save`, restarted Caddy. Cert issued in <10s.
+- **Hardened `install-caddy.sh`** so this doesn't recur: it now uses an `ensure_accept_at_top` helper that deletes any matching ACCEPT rule (regardless of position) and re-inserts at position 1, for both 80 and 443. Idempotent across reruns.
+- **Verified live**: `curl -I https://judgement-game.duckdns.org/health` → `HTTP/2 405` (HEAD not allowed, but `Server: uvicorn`, `Via: 1.1 Caddy`, valid TLS handshake — exactly what we want). `GET` returns `{"status":"ok"}`.
+- iPhone 17 retest: pending the user opening the new HTTPS URL on their phone. Expectation: `services/websocket.ts:81` auto-picks `wss://`, the connection-status pill goes green, the iPhone-17 hang is closed.
+- **Stopped here.** Next: confirm iPhone 17 on `https://judgement-game.duckdns.org/`, then commit the install-script fix, then move to Phase E (Supabase persistence).
+
 ### Session 2026-05-03 — Mobile fit / safe-area pass (pre-Phase-D)
 - User reported the app doesn't auto-scale on iPhone — UI cut off on both iPhone 14 and iPhone 17, in both portrait and landscape, both lobby and game board.
 - Root causes identified by reading layout CSS:
@@ -218,8 +234,9 @@ We paused mid-discussion of **Phase D (HTTPS)**. Context:
 - ✅ Deployment files committed and pushed to GitHub (branch `deploy/oracle-vm`).
 - ✅ App deployed and reachable on `http://147.224.12.15/` (browser confirmed).
 - ✅ End-to-end WebSocket multiplayer test across two devices — verified working 2026-04-30.
-- ⬜ Phase D — HTTPS via Cloudflare (deferred).
-- ⬜ Phase E — Postgres persistence + stats (deferred).
+- ✅ Phase D — HTTPS via DuckDNS + Caddy (Let's Encrypt). Live at `https://judgement-game.duckdns.org/` as of 2026-05-03.
+- ⬜ iPhone 17 retest on the new HTTPS URL (pending user verification).
+- ⬜ Phase E — Postgres persistence + stats (next).
 
 ---
 
@@ -373,11 +390,15 @@ Once Steps 4–6 are done, paste the **public IPv4** here and confirm SSH works.
 
 ## Quick reference
 
+- **Live URL:** https://judgement-game.duckdns.org/
 - **Oracle region:** US West (San Jose) — `us-sanjose-1`
-- **Planned VM name:** `judgement-server`
-- **Planned VCN:** `judgement-vcn`
+- **VM name:** `judgement-server`
+- **VCN:** `judgement-vcn`
 - **OS user (Ubuntu image):** `ubuntu`
+- **Public IPv4:** `147.224.12.15`
 - **SSH key path (Windows):** `$HOME\.ssh\oracle_judgement` (private) / `.pub` (public)
+- **DuckDNS token:** stored at `/etc/duckdns-token` on the VM (root-only).
+- **Caddyfile:** `/etc/caddy/Caddyfile` on the VM, source under `deployment/Caddyfile`.
 - **Local dev URL:** http://127.0.0.1:8000
 - **Local run command:**
 
