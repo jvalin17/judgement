@@ -72,11 +72,11 @@ No Python, Node.js, or terminal needed. Just download and play.
 | Variant | Rounds | Max Players |
 |---------|--------|-------------|
 | 10 down to 1 | 10 | 5 |
-| 8 down & up | 16 | 6 |
-| 10 down & up | 20 | 5 |
-| 8 short | 10 | 6 |
+| 8 down & up (8→1→8) | 16 | 6 |
+| 10 down & up (10→1→10) | 20 | 5 |
+| 8 short (8→5→8) | 8 | 6 |
 | 8 down to 4 | 5 | 6 |
-| 3 quick | 3 | 10 |
+| Quick game (5, 3, 5) | 3 | 10 |
 
 ---
 
@@ -215,10 +215,13 @@ Runs automatically on every push to `main` and on pull requests via GitHub Actio
 
 ## System Requirements
 
+**Online play:** Any modern browser. No install needed.
+
+**Desktop app:**
+
 | | Requirement |
 |---|---|
-| **Download size** | ~15 MB |
-| **Disk space** | ~25 MB installed |
+| **Download size** | ~15 MB (macOS), ~17 MB (Windows) |
 | **Memory** | ~100 MB RAM |
 | **Internet** | Not required for solo play. Needed for online multiplayer, community data sharing, and update checks. |
 | **macOS** | 11 Big Sur or later (Apple Silicon). Intel Macs: [build from source](#build-from-source). |
