@@ -4,12 +4,18 @@
 # Phase D: container binds to 127.0.0.1:8000 only. Caddy (running on the host,
 # not in this compose) listens on :80 and :443, terminates TLS, and reverse-
 # proxies to this loopback port. The container is no longer publicly exposed.
+#
+# Secrets: create deployment/.env with JUDGEMENT_GITHUB_TOKEN=ghp_xxx
+# Docker compose auto-loads .env from the same directory as this file.
 
 services:
   judgement:
     build:
       context: ..
       dockerfile: deployment/Dockerfile
+      args:
+        GIT_SHA: ${GIT_SHA:-unknown}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
     image: judgement:latest
     container_name: judgement
     restart: unless-stopped

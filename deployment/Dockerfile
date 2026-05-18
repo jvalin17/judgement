@@ -33,6 +33,13 @@ RUN pip install -r backend/requirements.txt
 # Copy backend source.
 COPY backend/ backend/
 
+# Generate version_info.json so the server doesn't show "dev".
+# ARG is set by docker compose via the build context.
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+RUN printf '{"git_sha": "%s", "build_date": "%s", "source_dir": null}\n' \
+    "$GIT_SHA" "$BUILD_DATE" > backend/app/version_info.json
+
 # Copy the prebuilt frontend from stage 1 to the location main.py expects:
 # Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 # = /app/frontend/dist
