@@ -18,21 +18,16 @@ if [ ! -d "$SUITE_DIR/backend" ]; then
     exit 1
 fi
 
-echo "=== Running smoke tests (main repo) ==="
-python3 -m pytest backend/tests/ -v
-cd frontend && npx vitest run && cd ..
-
-echo ""
-echo "=== Running full test suite ==="
-
-# Backend: run suite tests with main repo on sys.path
+echo "=== Backend tests ==="
 JUDGEMENT_REPO="$SCRIPT_DIR" python3 -m pytest "$SUITE_DIR/backend/" -v --rootdir="$SUITE_DIR"
 
-# Frontend: copy suite test files in, run, clean up
+echo ""
+echo "=== Frontend tests ==="
+
+# Copy suite frontend tests into main repo's frontend/src, run, clean up
 TEMP_MARKER="$SCRIPT_DIR/frontend/src/.suite-tests-copied"
 cleanup() {
     if [ -f "$TEMP_MARKER" ]; then
-        # Remove only the files we copied
         while IFS= read -r file; do
             rm -f "$SCRIPT_DIR/frontend/src/$file"
         done < "$TEMP_MARKER"
@@ -41,7 +36,6 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Copy suite frontend tests into main repo's frontend/src
 find "$SUITE_DIR/frontend/src" -name "*.test.*" -type f | while IFS= read -r src_file; do
     rel="${src_file#$SUITE_DIR/frontend/src/}"
     dest="$SCRIPT_DIR/frontend/src/$rel"
@@ -50,7 +44,11 @@ find "$SUITE_DIR/frontend/src" -name "*.test.*" -type f | while IFS= read -r src
     echo "$rel" >> "$TEMP_MARKER"
 done
 
-cd frontend && npx vitest run && cd ..
+cd "$SCRIPT_DIR/frontend" && npx vitest run
+
+echo ""
+echo "=== TypeScript check ==="
+npx tsc -b
 
 echo ""
 echo "=== All tests passed ==="

@@ -49,7 +49,7 @@ No data leaves your computer unless you opt into community data sharing or check
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
 - **Local learning** — Smart Hard AI learns from your games and gets stronger over time
-- **680 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push via CI
+- **710 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push via CI
 
 ---
 
@@ -187,7 +187,7 @@ All tests live in the **[test suite repo](https://github.com/jvalin17/judgement-
 ./scripts/run-test-suite.sh                 # Clones test repo if needed, runs everything
 ```
 
-Runs automatically on every push to `main` via GitHub Actions. See badge at the top.
+Runs automatically on every push to `main` and on pull requests via GitHub Actions. See badge at the top.
 
 ---
 
@@ -205,7 +205,7 @@ claude --add-dir ../judgement-tests
 | Skill | Command | What it does |
 |-------|---------|-------------|
 | **write-tests** | `/write-tests` | Analyzes your code changes, generates unit and integration tests, adds them to the test suite repo |
-| **test-suite** | `/test-suite` | Clones test repo if needed, runs all 680 tests (smoke + suite + TypeScript), blocks if anything fails |
+| **test-suite** | `/test-suite` | Clones test repo if needed, runs all 710 tests (smoke + suite + TypeScript), blocks if anything fails |
 | **ship-checklist** | `/ship-checklist` | Full pre-push gate: writes tests, runs suite, updates docs, then commits and pushes |
 
 ### Workflow
