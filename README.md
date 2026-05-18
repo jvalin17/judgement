@@ -45,7 +45,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
-- **710 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push and PR via CI
+- **757 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push and PR via CI
 - **Production health monitoring** — daily automated checks for uptime, TLS, security headers
 
 ---
@@ -190,7 +190,7 @@ See [`deployment/DEPLOY.md`](deployment/DEPLOY.md) for the full runbook.
 
 ## Testing
 
-All 710 tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
+All 757 tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
 
 ```bash
 # Clone test repo as sibling (one-time)
