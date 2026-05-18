@@ -44,6 +44,12 @@ class DecisionCollector:
         # player_id -> list of (features, label, strategy_type) tuples
         self._bid_decisions: Dict[str, List[tuple]] = {}
         self._play_decisions: Dict[str, List[tuple]] = {}
+        # player_id -> whether they opted in to community data sharing
+        self._share_consent: Dict[str, bool] = {}
+
+    def set_share_consent(self, player_id: str, consented: bool) -> None:
+        """Mark whether a player has opted in to community data sharing."""
+        self._share_consent[player_id] = consented
 
     def record_bid(
         self,
@@ -84,17 +90,18 @@ class DecisionCollector:
         for winner_id in winner_ids:
             bid_count = len(self._bid_decisions.get(winner_id, []))
             play_count = len(self._play_decisions.get(winner_id, []))
+            consented = self._share_consent.get(winner_id, False)
 
             for features, label, strategy_type in self._bid_decisions.get(winner_id, []):
                 neighbor_model.append_example(
                     bid_file, features, label,
-                    metadata={"strategy_type": strategy_type},
+                    metadata={"strategy_type": strategy_type, "share_consent": consented},
                 )
                 count += 1
             for features, label, strategy_type in self._play_decisions.get(winner_id, []):
                 neighbor_model.append_example(
                     play_file, features, label,
-                    metadata={"strategy_type": strategy_type},
+                    metadata={"strategy_type": strategy_type, "share_consent": consented},
                 )
                 count += 1
 

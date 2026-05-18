@@ -3,54 +3,50 @@
 [![Full Test Suite](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml)
 [![Production Health](https://github.com/jvalin17/judgement/actions/workflows/health-check.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/health-check.yml)
 
-A trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents with adaptive difficulty. Available as a standalone desktop app.
+A trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI or online with friends. Available as a standalone desktop app and a live web version.
 
 Also known as **Kachuful**, **Oh Hell**, or **Estimation** in different regions.
 
 ---
 
-## Download & Play
+## Play Online
+
+**https://judgement-game.duckdns.org**
+
+No download or install needed. Play from any browser. Multiplayer supported.
+
+---
+
+## Download Desktop App
 
 **[Download latest release](https://github.com/jvalin17/judgement/releases/latest)**
 
 | Platform | Download | Install |
 |----------|----------|---------|
-| **macOS** | [Judgement-macOS.tar.gz](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-macOS.tar.gz) | Extract → move to Applications → double-click |
-| **Windows** | [Judgement-Windows.zip](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-Windows.zip) | Extract → run `Judgement.exe` |
+| **macOS** | [Judgement-macOS.tar.gz](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-macOS.tar.gz) | Extract, move to Applications, double-click |
+| **Windows** | [Judgement-Windows.zip](https://github.com/jvalin17/judgement/releases/latest/download/Judgement-Windows.zip) | Extract, run `Judgement.exe` |
 
 No Python, Node.js, or terminal needed. Just download and play.
 
-### What's in the bundle
-
-The download is a self-contained app — everything is bundled:
-
-- **Game engine** — rules, scoring, trick resolution
-- **4 AI opponents** — Easy, Medium, Hard, and Smart Hard (learns from your games)
-- **75 player personas** — personality matching based on play style
-- **Web frontend** — pre-built React app served locally
-- **Local server** — FastAPI + WebSockets, runs on your machine only
-
-No data leaves your computer unless you opt into community data sharing or check for updates.
-
-**macOS first launch:** macOS may block the app since it's not from the App Store. Right-click the app → **Open** → click **Open** in the dialog. You only need to do this once.
+**macOS first launch:** macOS may block the app since it's not from the App Store. Right-click the app, click **Open**, then click **Open** in the dialog. You only need to do this once.
 
 ---
 
 ## Features
 
 - **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (learns from game winners via kNN)
-- **Multiplayer** — create or join rooms with a code, lobby browser, quick-join
+- **Online multiplayer** — play at https://judgement-game.duckdns.org with friends from anywhere
+- **Local multiplayer** — create or join rooms with a code, lobby browser, quick-join
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
 - **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
 - **Turbulence mode** — guarantees at least one player misses their bid each round
-- **Play style persona** — at game end, get matched to one of 75 personas across 6 categories based on an 11-dimension play fingerprint. Persona tier scales with difficulty: Easy unlocks animal personas, Medium adds cartoon and pokemon, Hard/Smart Hard adds achievement, and playing Hard with challenge + turbulence unlocks elite tier (superhero, mythology)
-- **Community data sharing** — share anonymized game decisions to help train better AI, download community data from other players
+- **Play style persona** — at game end, get matched to one of 75 personas across 6 categories based on an 11-dimension play fingerprint
+- **Community data sharing** — opt-in to share anonymized game decisions; the server learns from community data and SmartHardAI gets smarter over time
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
-- **Score visible during bidding** — cumulative score shown in the bid selector
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
-- **Local learning** — Smart Hard AI learns from your games and gets stronger over time
-- **710 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push via CI
+- **710 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push and PR via CI
+- **Production health monitoring** — daily automated checks for uptime, TLS, security headers
 
 ---
 
@@ -120,7 +116,7 @@ open dist/Judgement.app
 # Start frontend dev server (proxies to backend on :8000)
 cd frontend && npm run dev
 
-# Run tests (clones test suite repo if needed)
+# Run tests (requires judgement-tests repo as sibling)
 ./scripts/run-test-suite.sh
 ```
 
@@ -145,6 +141,7 @@ cd frontend && npm run dev
 | AI | Rule-based strategies + kNN learning engine |
 | ML | Player fingerprinting, persona matching, community data sharing |
 | Desktop | PyInstaller, pywebview |
+| Deployment | Docker, Caddy (HTTPS), Oracle Cloud VM |
 
 ---
 
@@ -158,7 +155,7 @@ judgement/
 │   │   ├── game/           # Rules engine (pure logic, no I/O)
 │   │   ├── ai/             # AI strategies (Easy, Medium, Hard, SmartHard)
 │   │   ├── ml/             # Machine learning infrastructure
-│   │   │   ├── learning/   # kNN model, feature extraction, data collector
+│   │   │   ├── learning/   # kNN model, feature extraction, data collector, sync
 │   │   │   └── analysis/   # Play style fingerprinting + persona matching
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
@@ -169,63 +166,49 @@ judgement/
 │   ├── hooks/              # useGame, useWebSocket
 │   ├── context/            # GameContext, SettingsContext
 │   ├── services/           # REST + WebSocket clients
-│   └── test/               # See jvalin17/judgement-tests
+│   └── test/               # Test helpers
+├── deployment/             # Docker, Caddy, VM setup, deploy scripts
 ├── desktop/                # pywebview launcher
 ├── assets/                 # App icons (PNG, ICNS, SVG)
 └── scripts/                # Build, package, launcher, dev tools
-    ├── judgement           # Unified launcher (play / setup / dev)
-    ├── package.sh          # Build standalone app
-    └── run-test-suite.sh   # Run full test suite locally
 ```
+
+---
+
+## Deployment
+
+The live server runs on an Oracle Cloud Always Free VM ($0/month).
+
+- **Docker** single-container deployment with volume for ML data persistence
+- **Caddy** reverse proxy with auto-HTTPS via Let's Encrypt
+- **DuckDNS** free dynamic DNS at `judgement-game.duckdns.org`
+- **CI/CD** — tests run on every push/PR, health checks run daily
+
+See [`deployment/DEPLOY.md`](deployment/DEPLOY.md) for the full runbook.
 
 ---
 
 ## Testing
 
-All tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — 680 tests covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
+All 710 tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
 
 ```bash
-./scripts/run-test-suite.sh                 # Clones test repo if needed, runs everything
-```
-
-Runs automatically on every push to `main` and on pull requests via GitHub Actions. See badge at the top.
-
----
-
-## Dev Skills (Claude Code)
-
-The [test suite repo](https://github.com/jvalin17/judgement-tests) includes Claude Code skills that automate dev workflows. To load them:
-
-```bash
+# Clone test repo as sibling (one-time)
 git clone https://github.com/jvalin17/judgement-tests.git ../judgement-tests
-claude --add-dir ../judgement-tests
+
+# Run all tests locally
+./scripts/run-test-suite.sh
 ```
 
-### Available skills
-
-| Skill | Command | What it does |
-|-------|---------|-------------|
-| **write-tests** | `/write-tests` | Analyzes your code changes, generates unit and integration tests, adds them to the test suite repo |
-| **test-suite** | `/test-suite` | Clones test repo if needed, runs all 710 tests (smoke + suite + TypeScript), blocks if anything fails |
-| **ship-checklist** | `/ship-checklist` | Full pre-push gate: writes tests, runs suite, updates docs, then commits and pushes |
-
-### Workflow
-
-After any change — feature, fix, or refactor:
-
-```
-/write-tests       ← auto-generates tests for your changes
-/test-suite         ← runs everything, blocks if any fail
-/ship-checklist     ← writes tests + runs suite + updates docs + pushes (all-in-one)
-```
+Runs automatically on every push to `main` and on pull requests via GitHub Actions. See badges at the top.
 
 ---
 
 ## Roadmap
 
-- **Online multiplayer** — play with friends from anywhere, not just the same network
 - **Mobile app** — lightweight PWA or native app for phones and tablets
 - **Smarter AI** — neural network models trained on community data for more human-like play
+- **Persistence** — save game history and stats to a database (currently in-memory)
 - **Public API** — expose the game engine so others can build bots, dashboards, or tournaments
 
 ---
@@ -237,8 +220,7 @@ After any change — feature, fix, or refactor:
 | **Download size** | ~15 MB |
 | **Disk space** | ~25 MB installed |
 | **Memory** | ~100 MB RAM |
-| **Internet** | Not required for solo play. Needed for multiplayer, community data sharing, and update checks. |
+| **Internet** | Not required for solo play. Needed for online multiplayer, community data sharing, and update checks. |
 | **macOS** | 11 Big Sur or later (Apple Silicon). Intel Macs: [build from source](#build-from-source). |
 | **Windows** | Windows 10 or later |
 | **Linux** | Build from source — Python 3.9+ with GTK/WebKit |
-

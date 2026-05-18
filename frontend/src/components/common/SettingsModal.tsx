@@ -190,6 +190,7 @@ function AnimationSpeedPicker({ selected, onSelect }: AnimationSpeedPickerProps)
 // --- Community Data Section ---
 
 function CommunityDataSection() {
+  const { settings, updateShareData } = useSettings();
   const [preview, setPreview] = useState<SharePreviewResponse | null>(null);
   const [shareStatus, setShareStatus] = useState<"idle" | "sharing" | "done" | "error">("idle");
   const [downloadStatus, setDownloadStatus] = useState<"idle" | "downloading" | "done" | "error">("idle");
@@ -232,6 +233,18 @@ function CommunityDataSection() {
   return (
     <div className={styles.settingsSection}>
       <span className={styles.sectionTitle}>Community Data</span>
+      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", margin: "4px 0 8px" }}>
+        <input
+          type="checkbox"
+          checked={settings.shareData}
+          onChange={(event) => updateShareData(event.target.checked)}
+          style={{ width: "16px", height: "16px", cursor: "pointer" }}
+        />
+        <span style={{ fontSize: "0.85rem" }}>Help improve AI by sharing my game decisions</span>
+      </label>
+      <div className={styles.versionInfo} style={{ marginBottom: "8px" }}>
+        Anonymized numeric features only — no names or personal data
+      </div>
       {preview && (
         <div className={styles.versionInfo}>
           Local: {preview.total} examples ({preview.human_bid_decisions + preview.human_play_decisions} from you)
@@ -264,9 +277,6 @@ function CommunityDataSection() {
           {message}
         </div>
       )}
-      <div className={styles.versionInfo}>
-        Shares anonymized numeric features only — no names or personal data
-      </div>
     </div>
   );
 }

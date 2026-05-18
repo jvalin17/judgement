@@ -1,5 +1,8 @@
+import asyncio
+import logging
 import os
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -10,13 +13,32 @@ from fastapi.responses import FileResponse
 from backend.app.api import rest, websocket, update, data_sharing
 from backend.app.game_manager import GameManager
 
+logger = logging.getLogger(__name__)
+
 _server_mode = os.environ.get("JUDGEMENT_SERVER_MODE") == "1"
+
+
+@asynccontextmanager
+async def _lifespan(application: FastAPI):
+    """Startup/shutdown hooks for server mode."""
+    sync_task = None
+    if _server_mode:
+        from backend.app.ml.learning.data_sync import download_community_data, run_periodic_sync
+        logger.info("Server mode: downloading community ML data on startup")
+        download_community_data()
+        sync_task = asyncio.create_task(run_periodic_sync(interval_minutes=60))
+    yield
+    if sync_task:
+        sync_task.cancel()
+
+
 app = FastAPI(
     title="Judgement Card Game",
     version="0.1.0",
     docs_url=None if _server_mode else "/docs",
     redoc_url=None if _server_mode else "/redoc",
     openapi_url=None if _server_mode else "/openapi.json",
+    lifespan=_lifespan,
 )
 
 # CORS: only needed in dev (production serves frontend from same origin)

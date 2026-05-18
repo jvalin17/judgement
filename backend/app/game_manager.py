@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import random
+import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -318,7 +319,24 @@ class ManagedGame:
     def _flush_winner_decisions(self, event: GameEvent) -> None:
         winner_ids = event.data.get("winners", [])
         if winner_ids:
-            self.decision_collector.flush_winner(winner_ids)
+            count = self.decision_collector.flush_winner(winner_ids)
+            # Trigger background upload if enough consented examples accumulated
+            if count > 0:
+                self._maybe_trigger_upload(count)
+
+    @staticmethod
+    def _maybe_trigger_upload(new_examples: int) -> None:
+        """Trigger background upload if enough consented examples have accumulated."""
+        try:
+            from backend.app.ml.learning.data_sync import increment_upload_counter, upload_server_data
+            if increment_upload_counter(new_examples):
+                threading.Thread(
+                    target=upload_server_data,
+                    kwargs={"consent_only": True},
+                    daemon=True,
+                ).start()
+        except Exception as exc:
+            logger.debug("Upload trigger skipped: %s", exc)
 
 
 class GameManager:

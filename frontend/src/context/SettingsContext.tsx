@@ -12,6 +12,7 @@ interface SettingsContextValue {
   updateCardBack: (design: CardBackDesign) => void;
   updateTableColor: (color: TableColor) => void;
   updateAnimationSpeed: (speed: AnimationSpeed) => void;
+  updateShareData: (enabled: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -20,8 +21,23 @@ interface SettingsProviderProps {
   children: ReactNode;
 }
 
+const STORAGE_KEY = "judgement-settings";
+
+function loadPersistedSettings(): GameSettings {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return { ...DEFAULT_SETTINGS, ...parsed };
+    }
+  } catch {
+    // Ignore corrupted storage
+  }
+  return DEFAULT_SETTINGS;
+}
+
 export function SettingsProvider({ children }: SettingsProviderProps) {
-  const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<GameSettings>(loadPersistedSettings);
 
   // Apply CSS variables whenever settings change
   useEffect(() => {
@@ -49,8 +65,17 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     setSettings((prev) => ({ ...prev, animationSpeed: speed }));
   }, []);
 
+  const updateShareData = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, shareData: enabled }));
+  }, []);
+
+  // Persist settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  }, [settings]);
+
   return (
-    <SettingsContext.Provider value={{ settings, updateCardBack, updateTableColor, updateAnimationSpeed }}>
+    <SettingsContext.Provider value={{ settings, updateCardBack, updateTableColor, updateAnimationSpeed, updateShareData }}>
       {children}
     </SettingsContext.Provider>
   );

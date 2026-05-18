@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import math
+import random
 from typing import List, Optional, Tuple
 
 from backend.app.ml.data_store import get_default_store
@@ -19,6 +20,9 @@ DEFAULT_K = 5
 
 # Minimum examples needed before predictions are used
 MIN_EXAMPLES = 10
+
+# Cap examples to keep kNN prediction fast (O(n) linear scan)
+MAX_KNN_EXAMPLES = 5000
 
 # Small constant to avoid division by zero in weighted voting
 _DISTANCE_EPSILON = 1e-6
@@ -33,7 +37,13 @@ def _find_neighbors(
     examples: List[dict],
     k: int,
 ) -> List[Tuple[dict, float]]:
-    """Find k nearest neighbors by Euclidean distance."""
+    """Find k nearest neighbors by Euclidean distance.
+
+    When the dataset exceeds MAX_KNN_EXAMPLES, randomly subsamples to keep
+    prediction time bounded at O(MAX_KNN_EXAMPLES) instead of O(n).
+    """
+    if len(examples) > MAX_KNN_EXAMPLES:
+        examples = random.sample(examples, MAX_KNN_EXAMPLES)
     distances = []
     for example in examples:
         dist = _euclidean_distance(query, example["features"])

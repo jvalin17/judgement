@@ -21,6 +21,7 @@ export interface CreateGameRequest {
   challenge_mode?: boolean;
   players: PlayerSetup[];
   auto_start?: boolean;
+  share_data?: boolean;
 }
 
 export interface CreateGameResponse {
@@ -194,9 +195,11 @@ export interface LobbyStateResponse {
 export async function joinGame(
   gameId: string,
   playerName: string,
+  shareData: boolean = false,
 ): Promise<JoinGameResponse> {
   const response = await postJson(`${BASE_URL}/${gameId}/join`, {
     player_name: playerName,
+    share_data: shareData,
   });
   return handleResponse<JoinGameResponse>(response);
 }

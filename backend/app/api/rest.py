@@ -114,6 +114,12 @@ async def create_game(request: CreateGameRequest):
 
     managed.is_public = request.is_public
 
+    # Set data sharing consent for human players
+    if request.share_data:
+        for player in players:
+            if player.player_type == PlayerType.HUMAN:
+                managed.decision_collector.set_share_consent(player.id, True)
+
     if request.auto_start:
         managed.engine.start_game()
 
@@ -213,6 +219,9 @@ async def join_game(game_id: str, request: JoinGameRequest):
     success = _manager.add_human_player(engine.state.game_id, player)
     if not success:
         raise HTTPException(400, "Could not join game")
+
+    if request.share_data:
+        managed.decision_collector.set_share_consent(pid, True)
 
     return JoinGameResponse(player_id=pid, game_id=engine.state.game_id)
 

@@ -36,12 +36,14 @@ export interface GameSettings {
   cardBack: CardBackDesign;
   tableColor: TableColor;
   animationSpeed: AnimationSpeed;
+  shareData: boolean;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
   cardBack: CardBackDesign.CLASSIC_BLUE,
   tableColor: TableColor.CLASSIC_GREEN,
   animationSpeed: AnimationSpeed.SLOW,
+  shareData: false,
 };
 
 export const TABLE_COLOR_MAP: Record<TableColor, { base: string; dark: string; light: string }> = {

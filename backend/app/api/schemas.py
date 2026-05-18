@@ -29,6 +29,7 @@ class CreateGameRequest(BaseModel):
     speed: Optional[GameSpeed] = None
     auto_start: bool = True
     is_public: bool = False
+    share_data: bool = False
 
 
 class CreateGameResponse(BaseModel):
@@ -84,6 +85,7 @@ class SessionLogResponse(BaseModel):
 
 class JoinGameRequest(BaseModel):
     player_name: str
+    share_data: bool = False
 
 
 class AddBotRequest(BaseModel):

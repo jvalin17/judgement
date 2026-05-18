@@ -15,11 +15,17 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8000:8000"
+    volumes:
+      - ml-data:/app/backend/app/ml/learning/data
     environment:
       - JUDGEMENT_SERVER_MODE=1
+      - JUDGEMENT_GITHUB_TOKEN=${JUDGEMENT_GITHUB_TOKEN:-}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=3).status==200 else 1)"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 20s
+
+volumes:
+  ml-data:

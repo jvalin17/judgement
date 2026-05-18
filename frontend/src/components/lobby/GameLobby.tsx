@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { VARIANT_LIST, VARIANT_CONFIG, PlayerType } from "../../types";
+import { useSettings } from "../../context/SettingsContext";
 import { createGame, joinGame } from "../../services/api";
 import type { PlayerSetup as PlayerSetupRequest } from "../../services/api";
 import { SettingsModal } from "../common";
@@ -67,6 +68,7 @@ interface MainLobbyProps {
 }
 
 function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
+  const { settings } = useSettings();
   const [playerName, setPlayerName] = useState("");
   const [variantIndex, setVariantIndex] = useState(0);
   const [mustLoseMode, setMustLoseMode] = useState(false);
@@ -118,6 +120,7 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
         variant,
         must_lose_mode: mustLoseMode,
         challenge_mode: challengeMode,
+        share_data: settings.shareData,
         players: allPlayers.map((player): PlayerSetupRequest => ({
           name: player.name.trim(),
           is_ai: player.playerType === PlayerType.AI,
@@ -250,6 +253,7 @@ interface MultiplayerPageProps {
 }
 
 function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
+  const { settings } = useSettings();
   const [hostName, setHostName] = useState("");
   const [createVariantIndex, setCreateVariantIndex] = useState(0);
   const [createMustLose, setCreateMustLose] = useState(false);
@@ -275,6 +279,7 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
       const request = {
         variant: createVariant,
         must_lose_mode: createMustLose,
+        share_data: settings.shareData,
         players: [{ name: hostName.trim(), is_ai: false, ai_difficulty: null }] as PlayerSetupRequest[],
         auto_start: false,
       };
@@ -300,7 +305,7 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
     setJoinError(null);
     setIsJoining(true);
     try {
-      const response = await joinGame(joinCode.trim(), joinName.trim());
+      const response = await joinGame(joinCode.trim(), joinName.trim(), settings.shareData);
       onGameCreated(response.game_id, response.player_id);
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : "Failed to join room");

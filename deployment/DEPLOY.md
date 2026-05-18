@@ -32,7 +32,7 @@ When it finishes, you should see container status `Up`.
 ## 3. Verify from your laptop
 
 ```powershell
-curl http://<PUBLIC_IP>/health
+curl https://judgement-game.duckdns.org/health
 ```
 
 Expected response:
@@ -41,7 +41,20 @@ Expected response:
 {"status":"ok"}
 ```
 
-Then open `http://<PUBLIC_IP>/` in a browser. You should see the Judgement lobby.
+Then open `https://judgement-game.duckdns.org/` in a browser. You should see the Judgement lobby.
+
+## 3b. ML data persistence and community sharing
+
+The container uses a Docker volume (`ml-data`) to persist ML training data across
+restarts. To enable community data sharing (upload/download to GitHub releases),
+create a `.env` file on the VM:
+
+```bash
+echo "JUDGEMENT_GITHUB_TOKEN=ghp_your_token_here" > ~/judgement/deployment/.env
+```
+
+The token needs `repo` scope on `jvalin17/judgement`. Without it, the server still
+collects and uses ML data locally — it just can't sync with GitHub.
 
 ## 4. Updating later
 
@@ -77,7 +90,7 @@ docker system df
 
 ## 6. Troubleshooting
 
-**`curl http://<IP>/health` hangs / times out from your laptop**
+**`curl https://judgement-game.duckdns.org/health` hangs / times out from your laptop**
 - VCN security list missing port 80 ingress rule — re-check Step 5 in `PROGRESS.md`.
 - Host iptables blocking — re-run the iptables/ufw section of `setup-vm.sh`, or:
   ```bash
