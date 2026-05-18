@@ -14,11 +14,12 @@ import logging
 import os
 import tempfile
 import threading
+import time
 import urllib.error
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Request
 
 from backend.app.ml.data_store import get_default_store
 from backend.app.ml.learning.decision_collector import get_bid_data_file, get_play_data_file
@@ -26,6 +27,45 @@ from backend.app.ml.learning.decision_collector import get_bid_data_file, get_pl
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/data", tags=["data-sharing"])
+
+
+# ---------------------------------------------------------------------------
+# Simple in-process rate limiter (no external dependencies)
+# ---------------------------------------------------------------------------
+
+class _RateLimiter:
+    """Token-bucket rate limiter keyed by client IP."""
+
+    def __init__(self, requests_per_minute: int = 10):
+        self._max_tokens = requests_per_minute
+        self._refill_rate = requests_per_minute / 60.0  # tokens per second
+        self._buckets: Dict[str, tuple] = {}  # ip -> (tokens, last_refill_time)
+        self._lock = threading.Lock()
+
+    def allow(self, client_ip: str) -> bool:
+        now = time.monotonic()
+        with self._lock:
+            if client_ip not in self._buckets:
+                self._buckets[client_ip] = (self._max_tokens - 1, now)
+                return True
+            tokens, last_time = self._buckets[client_ip]
+            elapsed = now - last_time
+            tokens = min(self._max_tokens, tokens + elapsed * self._refill_rate)
+            if tokens >= 1:
+                self._buckets[client_ip] = (tokens - 1, now)
+                return True
+            self._buckets[client_ip] = (tokens, now)
+            return False
+
+
+_data_sharing_limiter = _RateLimiter(requests_per_minute=10)
+
+
+def _check_rate_limit(request: Request) -> None:
+    """Raise 429 if the client has exceeded the rate limit."""
+    client_ip = request.headers.get("x-real-ip", request.client.host if request.client else "unknown")
+    if not _data_sharing_limiter.allow(client_ip):
+        raise HTTPException(429, "Too many requests. Try again in a minute.")
 
 GITHUB_REPO = "jvalin17/judgement"
 RELEASE_TAG = "community-data"
@@ -92,8 +132,9 @@ async def share_preview():
 
 
 @router.post("/share")
-async def share_data():
+async def share_data(request: Request):
     """Upload local winner decisions to GitHub release as community data."""
+    _check_rate_limit(request)
     token = _get_github_token()
     if not token:
         return {
@@ -151,8 +192,9 @@ async def check_community_data():
 
 
 @router.post("/community/download")
-async def download_community_data():
+async def download_community_data(request: Request):
     """Download community data from GitHub release and merge with local data."""
+    _check_rate_limit(request)
     try:
         import urllib.request
 

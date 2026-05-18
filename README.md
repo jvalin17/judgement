@@ -45,7 +45,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
-- **757 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push and PR via CI
+- **766 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push and PR via CI
 - **Production health monitoring** — daily automated checks for uptime, TLS, security headers
 
 ---

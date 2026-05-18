@@ -13,6 +13,7 @@ judgement-game.duckdns.org {
 		X-Frame-Options "DENY"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss://judgement-game.duckdns.org; img-src 'self' data:"
 	}
 
 	reverse_proxy 127.0.0.1:8000 {

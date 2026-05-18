@@ -115,7 +115,7 @@ jobs:
           echo "---"
 
           MISSING=0
-          for HEADER in "strict-transport-security" "x-content-type-options" "x-frame-options"; do
+          for HEADER in "strict-transport-security" "x-content-type-options" "x-frame-options" "content-security-policy"; do
             if echo "$HEADERS" | grep -qi "$HEADER"; then
               echo "Found: $HEADER"
             else
