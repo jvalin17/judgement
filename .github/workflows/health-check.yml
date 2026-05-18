@@ -89,7 +89,6 @@ jobs:
           echo "WebSocket endpoint check passed (HTTP $CODE)"
 
       - name: Sensitive endpoints not exposed
-        continue-on-error: true  # Remove after deploying docs_url=None to production
         run: |
           FAILED=0
           for ENDPOINT in /docs /redoc /openapi.json; do
@@ -108,7 +107,7 @@ jobs:
           echo "Sensitive endpoints check passed"
 
       - name: Security headers present
-        continue-on-error: true  # Remove after deploying Caddyfile with header block
+        continue-on-error: true  # Remove after deploying updated Caddyfile to VM: bash ~/judgement/deployment/update.sh
         run: |
           HEADERS=$(curl --silent --head --max-time 10 "$SITE/health")
           echo "$HEADERS"
