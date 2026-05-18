@@ -8,6 +8,13 @@
 judgement-game.duckdns.org {
 	encode zstd gzip
 
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
 	reverse_proxy 127.0.0.1:8000 {
 		# Forward the real client IP so FastAPI's --proxy-headers /
 		# --forwarded-allow-ips * picks it up correctly.

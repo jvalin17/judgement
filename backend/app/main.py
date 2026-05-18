@@ -10,7 +10,14 @@ from fastapi.responses import FileResponse
 from backend.app.api import rest, websocket, update, data_sharing
 from backend.app.game_manager import GameManager
 
-app = FastAPI(title="Judgement Card Game", version="0.1.0")
+_server_mode = os.environ.get("JUDGEMENT_SERVER_MODE") == "1"
+app = FastAPI(
+    title="Judgement Card Game",
+    version="0.1.0",
+    docs_url=None if _server_mode else "/docs",
+    redoc_url=None if _server_mode else "/redoc",
+    openapi_url=None if _server_mode else "/openapi.json",
+)
 
 # CORS: only needed in dev (production serves frontend from same origin)
 cors_origins = [

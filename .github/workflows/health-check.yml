@@ -1,0 +1,140 @@
+name: Production Health
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 12 * * *'  # daily at noon UTC
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Live Site Health
+    runs-on: ubuntu-latest
+    env:
+      SITE: https://judgement-game.duckdns.org
+
+    steps:
+      - name: TLS certificate validity
+        run: |
+          echo "--- Checking TLS certificate ---"
+          EXPIRY=$(echo | openssl s_client -servername judgement-game.duckdns.org \
+            -connect judgement-game.duckdns.org:443 2>/dev/null \
+            | openssl x509 -noout -enddate 2>/dev/null \
+            | cut -d= -f2)
+
+          if [ -z "$EXPIRY" ]; then
+            echo "::error::Could not retrieve TLS certificate"
+            exit 1
+          fi
+
+          EXPIRY_EPOCH=$(date -d "$EXPIRY" +%s)
+          NOW_EPOCH=$(date +%s)
+          DAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+
+          echo "Certificate expires: $EXPIRY ($DAYS_LEFT days remaining)"
+
+          if [ "$DAYS_LEFT" -lt 7 ]; then
+            echo "::error::TLS certificate expires in $DAYS_LEFT days!"
+            exit 1
+          fi
+
+          if [ "$DAYS_LEFT" -lt 14 ]; then
+            echo "::warning::TLS certificate expires in $DAYS_LEFT days"
+          fi
+
+          echo "TLS check passed"
+
+      - name: Health endpoint returns 200
+        run: |
+          RESPONSE=$(curl --fail --silent --max-time 10 "$SITE/health")
+          echo "Response: $RESPONSE"
+
+          STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))")
+
+          if [ "$STATUS" != "ok" ]; then
+            echo "::error::/health returned status='$STATUS', expected 'ok'"
+            exit 1
+          fi
+          echo "Health check passed"
+
+      - name: Response time under 5 seconds
+        run: |
+          TIME=$(curl --silent --output /dev/null --write-out '%{time_total}' --max-time 10 "$SITE/health")
+          echo "Response time: ${TIME}s"
+
+          SLOW=$(python3 -c "print('yes' if float('$TIME') > 5.0 else 'no')")
+
+          if [ "$SLOW" = "yes" ]; then
+            echo "::error::Response time ${TIME}s exceeds 5s threshold"
+            exit 1
+          fi
+          echo "Response time check passed"
+
+      - name: WebSocket handshake
+        run: |
+          # Hit a dummy WS path — we just need to verify the upgrade mechanism works.
+          # A 101 means full upgrade success. A 403/404 after upgrade still proves
+          # the WS stack is alive (rejection is application-level, not transport).
+          CODE=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 \
+            -H "Connection: Upgrade" \
+            -H "Upgrade: websocket" \
+            -H "Sec-WebSocket-Version: 13" \
+            -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+            "$SITE/ws/health-check/probe")
+
+          echo "WebSocket probe returned HTTP $CODE"
+
+          if [ "$CODE" = "000" ]; then
+            echo "::error::WebSocket connection failed — no response from server"
+            exit 1
+          fi
+
+          # 101 = upgrade success, 403 = app rejected (WS stack works)
+          if [ "$CODE" = "101" ] || [ "$CODE" = "403" ] || [ "$CODE" = "404" ]; then
+            echo "WebSocket handshake check passed (server responded to upgrade request)"
+          else
+            echo "::error::Unexpected HTTP $CODE on WebSocket upgrade"
+            exit 1
+          fi
+
+      - name: Sensitive endpoints not exposed
+        continue-on-error: true  # Remove after deploying docs_url=None to production
+        run: |
+          FAILED=0
+          for ENDPOINT in /docs /redoc /openapi.json; do
+            CODE=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 "$SITE$ENDPOINT")
+            if [ "$CODE" = "200" ]; then
+              echo "::error::$ENDPOINT is publicly accessible (HTTP $CODE) — should return 404"
+              FAILED=1
+            else
+              echo "$ENDPOINT returned HTTP $CODE (good)"
+            fi
+          done
+
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+          echo "Sensitive endpoints check passed"
+
+      - name: Security headers present
+        continue-on-error: true  # Remove after deploying Caddyfile with header block
+        run: |
+          HEADERS=$(curl --silent --head --max-time 10 "$SITE/health")
+          echo "$HEADERS"
+          echo "---"
+
+          MISSING=0
+          for HEADER in "strict-transport-security" "x-content-type-options" "x-frame-options"; do
+            if echo "$HEADERS" | grep -qi "$HEADER"; then
+              echo "Found: $HEADER"
+            else
+              echo "::error::Missing security header: $HEADER"
+              MISSING=1
+            fi
+          done
+
+          if [ "$MISSING" -eq 1 ]; then
+            exit 1
+          fi
+          echo "Security headers check passed"

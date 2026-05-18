@@ -1,6 +1,7 @@
 # Judgement (Kachu Phool)
 
 [![Full Test Suite](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml)
+[![Production Health](https://github.com/jvalin17/judgement/actions/workflows/health-check.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/health-check.yml)
 
 A trick-taking card game built with React, TypeScript, FastAPI, and WebSockets. Play solo against AI opponents with adaptive difficulty. Available as a standalone desktop app.
 
