@@ -190,7 +190,7 @@ See [`deployment/DEPLOY.md`](deployment/DEPLOY.md) for the full runbook.
 
 ## Testing
 
-All 757 tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
+All 766 tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
 
 ```bash
 # Clone test repo as sibling (one-time)
