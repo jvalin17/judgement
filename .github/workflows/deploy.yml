@@ -1,0 +1,27 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["Full Test Suite"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to VM
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Deploy via SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key \
+            ubuntu@${{ secrets.VM_HOST }} \
+            "bash ~/judgement/deployment/update.sh"
+
+          rm -f ~/.ssh/deploy_key
+          echo "Deployment complete"
