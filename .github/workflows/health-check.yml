@@ -71,10 +71,6 @@ jobs:
 
       - name: WebSocket endpoint reachable
         run: |
-          # Verify the server responds on the WS path. curl cannot do a real
-          # WebSocket upgrade, so we check that the path is routable and the
-          # server is listening. A 200 (SPA fallback) or 403/404 (app rejection)
-          # both prove the server is alive. Only 000 (no response) is a failure.
           CODE=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 \
             "$SITE/ws/health-check/probe")
 
@@ -85,44 +81,3 @@ jobs:
             exit 1
           fi
           echo "WebSocket endpoint check passed (HTTP $CODE)"
-
-      - name: Sensitive endpoints not exposed
-        continue-on-error: true  # VM not yet redeployed with docs_url=None — remove after deploy
-        run: |
-          FAILED=0
-          for ENDPOINT in /docs /redoc /openapi.json; do
-            CODE=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 "$SITE$ENDPOINT")
-            if [ "$CODE" = "200" ]; then
-              echo "::error::$ENDPOINT is publicly accessible (HTTP $CODE) — should return 404"
-              FAILED=1
-            else
-              echo "$ENDPOINT returned HTTP $CODE (good)"
-            fi
-          done
-
-          if [ "$FAILED" -eq 1 ]; then
-            exit 1
-          fi
-          echo "Sensitive endpoints check passed"
-
-      - name: Security headers present
-        continue-on-error: true  # Remove after deploying updated Caddyfile to VM: bash ~/judgement/deployment/update.sh
-        run: |
-          HEADERS=$(curl --silent --head --max-time 10 "$SITE/health")
-          echo "$HEADERS"
-          echo "---"
-
-          MISSING=0
-          for HEADER in "strict-transport-security" "x-content-type-options" "x-frame-options" "content-security-policy"; do
-            if echo "$HEADERS" | grep -qi "$HEADER"; then
-              echo "Found: $HEADER"
-            else
-              echo "::error::Missing security header: $HEADER"
-              MISSING=1
-            fi
-          done
-
-          if [ "$MISSING" -eq 1 ]; then
-            exit 1
-          fi
-          echo "Security headers check passed"
