@@ -719,10 +719,12 @@
 @media (orientation: landscape) and (max-height: 500px) {
   :root,
   .gameBoard {
-    --card-width: 56px;
-    --card-height: 80px;
-    --card-width-sm: 40px;
-    --card-height-sm: 60px;
+    --card-width: clamp(44px, 7vh, 56px);
+    --card-height: clamp(64px, 10vh, 80px);
+    --card-width-sm: clamp(32px, 5vh, 40px);
+    --card-height-sm: clamp(48px, 7.5vh, 60px);
+    --pip-size: clamp(8px, 1.2vh, 12px);
+    --pip-size-sm: clamp(6px, 0.9vh, 10px);
   }
 
   .roundIslandTop {
@@ -786,5 +788,130 @@
 
   .playerInfo {
     bottom: calc(var(--card-height) + 28px + var(--safe-bottom));
+  }
+}
+
+/* ================================================================
+   Phone portrait (<480px): compact layout
+   - Hide opponent card-back fans (waste of space)
+   - Island bar pinned at top center, never overlapping hand
+   - Aggressive card overlap so 10 cards fit without scroll
+   - Proportional scaling of badges, buttons, text
+   ================================================================ */
+@media (max-width: 480px) {
+  /* R3: Hide opponent card backs, show only badges */
+  .seatCards {
+    display: none;
+  }
+
+  .seat {
+    gap: 2px;
+  }
+
+  .bidBadge {
+    position: static;
+    transform: none;
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+
+  .scoreBadge {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+    margin-top: 2px;
+  }
+
+  .seatName {
+    font-size: 0.6rem;
+    max-width: 64px;
+    padding: 1px 6px;
+  }
+
+  .turnPill {
+    position: static;
+    transform: none;
+    margin-top: 2px;
+    font-size: 0.5rem;
+    padding: 2px 6px;
+  }
+
+  .turnPill::after {
+    display: none;
+  }
+
+  /* R4: Island bar always at top center, above everything */
+  .roundIsland {
+    padding: 5px 14px;
+    gap: 6px;
+  }
+
+  .roundIslandTop {
+    top: calc(6px + var(--safe-top));
+    z-index: 20;
+  }
+
+  .roundIslandText {
+    font-size: 0.75rem;
+  }
+
+  .roundIslandDivider {
+    height: 14px;
+  }
+
+  /* R5: Aggressive card overlap — 10 cards in ~320px width */
+  .handCards > * {
+    margin-left: -16px;
+  }
+
+  .handCards > *:first-child {
+    margin-left: 0;
+  }
+
+  .handCards {
+    padding: 14px 4px 4px;
+  }
+
+  /* R6: Scale trick area + bid bar proportionally */
+  .trickArea {
+    min-height: 90px;
+    padding: var(--space-xs);
+  }
+
+  .bidBar {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .bidButton {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+  }
+
+  .statBadge {
+    width: 40px;
+    height: 40px;
+  }
+
+  .statBadgeTop {
+    font-size: 0.8rem;
+  }
+
+  .statBadgeBottom {
+    font-size: 0.6rem;
+  }
+
+  .playerInfoAvatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.55rem;
+  }
+
+  .playerInfoName {
+    font-size: 0.65rem;
+    max-width: 60px;
   }
 }

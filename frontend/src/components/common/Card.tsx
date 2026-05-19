@@ -31,7 +31,7 @@ export const Card = memo(function Card({ card, playable = false, selected = fals
     small ? styles.small : "",
   ].filter(Boolean).join(" ");
 
-  const cornerSuitSize = small ? 12 : 16;
+  const cornerSuitSize = small ? 10 : 14;
 
   return (
     <div className={classNames} onClick={playable ? onClick : undefined} role={playable ? "button" : undefined}>
@@ -84,12 +84,10 @@ function PipGrid({ rank, suit, small }: PipGridProps) {
   const positions = PIP_LAYOUTS[rank as number];
   if (!positions) return <AceDesign suit={suit} />;
 
-  const pipSize = small ? 12 : 18;
-
   return (
     <div className={styles.pipGrid}>
       {positions.map((position, index) => (
-        <Pip key={index} position={position} suit={suit} size={pipSize} />
+        <Pip key={index} position={position} suit={suit} small={small} />
       ))}
     </div>
   );
@@ -98,13 +96,13 @@ function PipGrid({ rank, suit, small }: PipGridProps) {
 interface PipProps {
   position: PipPosition;
   suit: Suit;
-  size: number;
+  small: boolean;
 }
 
-function Pip({ position, suit, size }: PipProps) {
+function Pip({ position, suit, small }: PipProps) {
   return (
     <span
-      className={styles.pip}
+      className={`${styles.pip} ${small ? styles.pipSmall : ""}`}
       style={{
         left: `${position.x}%`,
         top: `${position.y}%`,
@@ -113,7 +111,7 @@ function Pip({ position, suit, size }: PipProps) {
           : "translate(-50%, -50%)",
       }}
     >
-      <SuitSvg suit={suit} size={size} />
+      <SuitSvg suit={suit} className={styles.pipSvg} />
     </span>
   );
 }
@@ -138,7 +136,7 @@ function FaceCardDesign({ rank, suit }: FaceCardDesignProps) {
 function AceDesign({ suit }: { suit: Suit }) {
   return (
     <span className={styles.aceSymbol}>
-      <SuitSvg suit={suit} size={42} />
+      <SuitSvg suit={suit} className={styles.aceSvg} />
     </span>
   );
 }

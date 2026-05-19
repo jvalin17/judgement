@@ -138,7 +138,7 @@
 
 .rank {
   font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
-  font-size: 1.05rem;
+  font-size: clamp(0.7rem, 1.1vw, 1.2rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -169,6 +169,17 @@
   line-height: 0;
 }
 
+/* Pip SVGs sized via CSS variable so they scale with the card */
+.pipSvg {
+  width: var(--pip-size) !important;
+  height: var(--pip-size) !important;
+}
+
+.pipSmall .pipSvg {
+  width: var(--pip-size-sm) !important;
+  height: var(--pip-size-sm) !important;
+}
+
 /* ---- Face card (J, Q, K) ---- */
 
 .faceCardCenter {
@@ -190,6 +201,11 @@
   transform: translate(-50%, -50%);
   line-height: 0;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+}
+
+.aceSvg {
+  width: clamp(28px, 3.5vw, 42px) !important;
+  height: clamp(28px, 3.5vw, 42px) !important;
 }
 
 /* ===================================================================

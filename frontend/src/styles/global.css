@@ -37,12 +37,17 @@
   --space-xl: 32px;
   --space-2xl: 48px;
 
-  /* Card dimensions (mobile-first) */
-  --card-width: 72px;
-  --card-height: 104px;
-  --card-width-sm: 52px;
-  --card-height-sm: 78px;
-  --card-radius: 8px;
+  /* Card dimensions — fluid scaling with clamp(phone, preferred, desktop).
+     Preferred uses vw so cards grow/shrink with viewport width. */
+  --card-width: clamp(52px, 8vw, 110px);
+  --card-height: clamp(75px, 11.6vw, 160px);
+  --card-width-sm: clamp(36px, 5vw, 60px);
+  --card-height-sm: clamp(54px, 7.5vw, 90px);
+  --card-radius: clamp(6px, 0.8vw, 10px);
+
+  /* Pip size scales with card width so pips never overflow */
+  --pip-size: clamp(10px, 1.4vw, 18px);
+  --pip-size-sm: clamp(8px, 1vw, 12px);
 
   /* Typography */
   --font-primary: "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -79,13 +84,9 @@
 
 @media (min-width: 768px) {
   :root {
-    --card-width: 110px;
-    --card-height: 160px;
-    --card-width-sm: 60px;
-    --card-height-sm: 90px;
-    --card-radius: 10px;
     --font-size-base: 1rem;
     --font-size-lg: 1.125rem;
+    /* Card dimensions already fluid via clamp() — no overrides needed */
   }
 }
 
