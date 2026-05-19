@@ -1,8 +1,6 @@
 name: Production Health
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: '0 12 * * *'  # daily at noon UTC
   workflow_dispatch:
