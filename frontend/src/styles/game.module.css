@@ -608,16 +608,32 @@
   margin-top: 3px;
 }
 
-.seatCards {
+/* Opponent avatar — single circle replacing card-back fans */
+
+.seatAvatar {
   position: relative;
-  z-index: 1;
-  width: var(--card-width-sm);
-  height: var(--card-height-sm);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  z-index: 2;
 }
 
-.seatCard {
-  position: absolute;
-  transform-origin: bottom center;
+.seatAvatarActive {
+  border-color: #ffd54a;
+  box-shadow: 0 0 12px rgba(255, 213, 74, 0.5);
+}
+
+.seatAvatarBidText {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.02em;
 }
 
 /* "NOW" turn pill — bright gold indicator to the right of the player's cards.
@@ -766,10 +782,13 @@
     height: 42px;
   }
 
-  .bidBadge {
-    width: 36px;
-    height: 36px;
-    font-size: 0.8rem;
+  .seatAvatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .seatAvatarBidText {
+    font-size: 0.85rem;
   }
 
   .scoreBadge {
@@ -799,21 +818,17 @@
    - Proportional scaling of badges, buttons, text
    ================================================================ */
 @media (max-width: 480px) {
-  /* R3: Hide opponent card backs, show only badges */
-  .seatCards {
-    display: none;
-  }
-
   .seat {
     gap: 2px;
   }
 
-  .bidBadge {
-    position: static;
-    transform: none;
-    width: 36px;
-    height: 36px;
-    font-size: 0.8rem;
+  .seatAvatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .seatAvatarBidText {
+    font-size: 0.85rem;
   }
 
   .scoreBadge {

@@ -1,5 +1,4 @@
 import type { Player } from "../../types";
-import { CardBack } from "../common";
 import styles from "../../styles/game.module.css";
 
 interface SeatPosition {
@@ -17,31 +16,20 @@ interface PlayerSeatProps {
   cardsRemaining: number;
 }
 
-export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, score, cardsRemaining }: PlayerSeatProps) {
+export function PlayerSeat({ player, position, isCurrentTurn, bid, tricksWon, score }: PlayerSeatProps) {
   const bidDisplay = bid !== null ? `${tricksWon}/${bid}` : "\u2014";
-  const cardCount = Math.min(cardsRemaining, 5);
-  const fanAngles = getFanAngles(cardCount);
+  const avatarColor = getAvatarColor(player.name);
 
   return (
     <div className={styles.seat} style={{ left: position.left, top: position.top }}>
-      <div className={styles.seatCards}>
-        {fanAngles.map((angle, index) => (
-          <div
-            key={index}
-            className={styles.seatCard}
-            style={{ transform: `translateX(${angle * 2}px) rotate(${angle}deg)` }}
-          >
-            <CardBack small />
-          </div>
-        ))}
-        <div
-          className={`${styles.bidBadge} ${isCurrentTurn ? styles.bidBadgeActive : ""}`}
-          data-testid={`bid-${player.name}`}
-        >
-          {bidDisplay}
-        </div>
-        {isCurrentTurn && <span className={styles.turnPill}>NOW</span>}
+      <div
+        className={`${styles.seatAvatar} ${isCurrentTurn ? styles.seatAvatarActive : ""}`}
+        style={{ backgroundColor: avatarColor }}
+        data-testid={`bid-${player.name}`}
+      >
+        <span className={styles.seatAvatarBidText}>{bidDisplay}</span>
       </div>
+      {isCurrentTurn && <span className={styles.turnPill}>NOW</span>}
       <span className={styles.seatName}>{player.name}</span>
       <div className={styles.scoreBadge} data-testid={`score-${player.name}`}>
         {score}
@@ -86,9 +74,3 @@ export function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-function getFanAngles(count: number): number[] {
-  if (count <= 1) return [0];
-  const spread = 20;
-  const step = spread / (count - 1);
-  return Array.from({ length: count }, (_, index) => -spread / 2 + step * index);
-}
