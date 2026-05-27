@@ -14,18 +14,20 @@ logger = logging.getLogger(__name__)
 class Persona:
     """A single persona from the corpus."""
 
-    __slots__ = ("id", "category", "name", "tagline", "traits", "weights", "triggers")
+    __slots__ = ("id", "category", "name", "tagline", "fact", "traits", "weights", "triggers")
 
     def __init__(
         self, persona_id: str, category: str, name: str, tagline: str,
         traits: Dict[str, float],
         weights: Optional[Dict[str, float]] = None,
         triggers: Optional[List[Dict]] = None,
+        fact: Optional[str] = None,
     ):
         self.id = persona_id
         self.category = category
         self.name = name
         self.tagline = tagline
+        self.fact = fact or ""
         self.traits = traits
         self.weights = weights or {dim: 1.0 for dim in traits}
         self.triggers = triggers or []
@@ -60,6 +62,7 @@ def load_personas() -> Tuple[Persona, ...]:
             traits=traits,
             weights=weights,
             triggers=triggers,
+            fact=entry.get("fact", ""),
         ))
     logger.debug("Loaded %d personas from %s", len(personas), corpus_path)
     return tuple(personas)

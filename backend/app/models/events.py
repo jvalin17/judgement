@@ -80,6 +80,7 @@ class PersonaAward(BaseModel):
     persona_name: str
     persona_category: str
     persona_tagline: str
+    persona_fact: str = ""
     traits: Dict[str, float]
     player_traits: Dict[str, float]
 

@@ -12,20 +12,21 @@ logger = logging.getLogger(__name__)
 
 # --- Persona tiers ---
 # Categories are unlocked based on game difficulty settings.
-# Harder games reward more prestigious persona categories.
+# Tiers are CUMULATIVE — higher tiers include all lower categories plus exclusive ones.
+# Elite-exclusive: bollywood (16), superhero (10), mythology (8) = 34 prestige personas.
 
-TIER_ELITE = {"superhero", "mythology"}          # Hard + turbulence + challenge
-TIER_COMPETITIVE = {"achievement"}                # Hard/SmartHard or challenge
-TIER_STANDARD = {"cartoon", "pokemon"}            # Medium bots
-TIER_CASUAL = {"animal"}                          # Easy bots
+TIER_ELITE = {"bollywood", "superhero", "anime"}   # Elite-only (36)
+TIER_COMPETITIVE = {"mythology", "achievement"}     # Competitive+ (18)
+TIER_STANDARD = {"cartoon", "pokemon"}              # Standard+ (24)
+TIER_CASUAL = {"animal"}                            # All tiers (12)
 
 ALL_CATEGORIES = TIER_ELITE | TIER_COMPETITIVE | TIER_STANDARD | TIER_CASUAL
 
 TIERS_BY_LEVEL = {
-    "elite": TIER_ELITE | TIER_COMPETITIVE,
-    "competitive": TIER_COMPETITIVE | TIER_STANDARD,
-    "standard": TIER_STANDARD | TIER_CASUAL,
-    "casual": TIER_CASUAL,
+    "elite": TIER_ELITE,                                                         # 36 exclusive
+    "competitive": TIER_COMPETITIVE | TIER_STANDARD | TIER_CASUAL,               # 54
+    "standard": TIER_STANDARD | TIER_CASUAL,                                     # 36
+    "casual": TIER_CASUAL,                                                       # 12
 }
 
 
@@ -119,7 +120,7 @@ def score_persona(player_vec: Dict[str, float], persona: Persona) -> float:
 def best_personas(
     player_vec: Dict[str, float],
     recent_ids: Optional[List[str]] = None,
-    top_k: int = 7,
+    top_k: int = 12,
     allowed_categories: Optional[Set[str]] = None,
 ) -> List[Tuple[str, float]]:
     """Return top-K personas with category diversity, filtered by allowed categories.
@@ -193,9 +194,9 @@ def pick_persona(
     scores = [max(pair[1], 0.01) for pair in top]
 
     # Add jitter so close scores don't always pick the same persona.
-    # The jitter (up to 15% of score) breaks ties while still favoring
-    # genuinely better matches.
-    jittered = [score * (1.0 + rng.uniform(-0.15, 0.15)) for score in scores]
+    # The jitter (up to 30% of score) breaks ties while still favoring
+    # genuinely better matches but ensuring variety across games.
+    jittered = [score * (1.0 + rng.uniform(-0.30, 0.30)) for score in scores]
 
     chosen_id = rng.choices(ids, weights=jittered, k=1)[0]
     return get_persona_by_id(chosen_id)

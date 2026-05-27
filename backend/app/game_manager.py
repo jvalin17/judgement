@@ -184,6 +184,7 @@ class ManagedGame:
                 persona_name=persona.name,
                 persona_category=persona.category,
                 persona_tagline=persona.tagline,
+                persona_fact=persona.fact,
                 traits=persona.traits,
                 player_traits=player_traits,
             )

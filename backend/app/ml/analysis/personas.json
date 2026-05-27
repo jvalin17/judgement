@@ -728,7 +728,7 @@
     },
     {
       "id": "swat_kats",
-      "category": "cartoon",
+      "category": "anime",
       "name": "SWAT Kats",
       "tagline": "Precision strikes, disciplined takedowns",
       "traits": [
@@ -791,136 +791,54 @@
       ]
     },
     {
-      "id": "courage",
-      "category": "cartoon",
-      "name": "Courage",
-      "tagline": "Scared of everything but somehow survives",
-      "traits": [
-        0.15,
-        0.8,
-        0.95,
-        0.2,
-        0.3,
-        0.9,
-        0.1,
-        0.8,
-        0.5,
-        0.5,
-        0.5
-      ],
-      "weights": [
-        0.3,
-        1.0,
-        1.5,
-        0.3,
-        0.3,
-        1.5,
-        0.2,
-        1.0,
-        0.5,
-        0.5,
-        0.5
+      "id": "near",
+      "category": "anime",
+      "name": "N",
+      "tagline": "Solves the game like a puzzle — one cold move at a time",
+      "fact": "Near fidgets with toys and finger puppets while thinking. He built a massive tower of dice during one of his most critical deductions in the Kira case.",
+      "traits": [0.25, 0.95, 0.9, 0.25, 0.7, 0.9, 0.25, 0.95, 0.7, 0.85, 0.6],
+      "weights": [0.3, 1.5, 1.2, 0.3, 0.7, 1.2, 0.3, 1.5, 0.7, 1.0, 0.6]
+    },
+    {
+      "id": "ryuk",
+      "category": "anime",
+      "name": "Ryuk",
+      "tagline": "Plays for chaos, not victory — bored gods make wild moves",
+      "fact": "Ryuk is hopelessly addicted to apples — he describes human-world apples as being like cigarettes and alcohol combined for shinigami, and goes through withdrawal contortions without them.",
+      "traits": [0.7, 0.3, 0.6, 0.4, 0.8, 0.2, 0.6, 0.3, 0.8, 0.4, 0.5],
+      "weights": [0.8, 0.3, 0.6, 0.4, 1.2, 0.3, 0.7, 0.3, 0.8, 0.4, 0.5]
+    },
+    {
+      "id": "light_yagami",
+      "category": "anime",
+      "name": "Light Yagami",
+      "tagline": "The god complex — plans five moves ahead, bids like royalty",
+      "fact": "Light scored a perfect 100% on nationwide university entrance exams while simultaneously running a secret campaign as Kira — the only student in Japan to achieve a perfect score.",
+      "traits": [0.7, 0.95, 0.7, 0.7, 0.8, 0.8, 0.85, 0.9, 0.55, 0.8, 0.35],
+      "weights": [0.7, 1.5, 0.7, 0.7, 0.8, 0.8, 1.2, 1.5, 0.5, 1.0, 0.4],
+      "triggers": [
+        {
+          "type": "combo",
+          "conditions": [
+            {"type": "min", "dim": "planning", "threshold": 0.85},
+            {"type": "min", "dim": "boldness", "threshold": 0.75}
+          ],
+          "bonus": 0.08
+        }
       ]
     },
     {
-      "id": "ed_edd_eddy",
+      "id": "flintstones",
       "category": "cartoon",
-      "name": "Ed Edd n Eddy",
-      "tagline": "Always involved, plans never quite work",
-      "traits": [
-        0.6,
-        0.3,
-        0.4,
-        0.3,
-        0.4,
-        0.4,
-        0.3,
-        0.3,
-        0.4,
-        0.4,
-        0.5
-      ],
-      "weights": [
-        0.6,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5
-      ]
-    },
-    {
-      "id": "ren_stimpy",
-      "category": "cartoon",
-      "name": "Ren & Stimpy",
-      "tagline": "Unhinged chaos, nobody knows what's next",
-      "traits": [
-        0.95,
-        0.2,
-        0.1,
-        0.95,
-        0.5,
-        0.3,
-        0.85,
-        0.15,
-        0.5,
-        0.5,
-        0.4
-      ],
-      "weights": [
-        1.5,
-        0.3,
-        0.2,
-        1.5,
-        0.5,
-        0.4,
-        1.5,
-        0.2,
-        0.5,
-        0.5,
-        0.4
-      ]
-    },
-    {
-      "id": "phineas_ferb",
-      "category": "cartoon",
-      "name": "Phineas & Ferb",
-      "tagline": "I know what we're gonna do today \u2014 win quietly",
-      "traits": [
-        0.4,
-        0.85,
-        0.8,
-        0.6,
-        0.6,
-        0.95,
-        0.4,
-        0.85,
-        0.6,
-        0.6,
-        0.5
-      ],
-      "weights": [
-        0.4,
-        1.2,
-        0.8,
-        0.6,
-        0.6,
-        1.5,
-        0.4,
-        1.2,
-        0.6,
-        0.6,
-        0.5
-      ]
+      "name": "Flintstones",
+      "tagline": "Yabba dabba doo — loud bids, big heart, lucky stumbles",
+      "fact": "Fred Flintstone was the first animated character shown in bed with his spouse on prime-time American TV. The show was originally aimed at adults, not children.",
+      "traits": [0.6, 0.35, 0.4, 0.65, 0.45, 0.5, 0.6, 0.35, 0.6, 0.5, 0.5],
+      "weights": [0.7, 0.4, 0.4, 0.8, 0.5, 0.5, 0.7, 0.4, 0.7, 0.5, 0.5]
     },
     {
       "id": "samurai_jack",
-      "category": "cartoon",
+      "category": "anime",
       "name": "Samurai Jack",
       "tagline": "Reads opponents, strikes at the right moment",
       "traits": [
@@ -951,67 +869,38 @@
       ]
     },
     {
-      "id": "captain_planet",
+      "id": "baloo",
       "category": "cartoon",
-      "name": "Captain Planet",
-      "tagline": "Steady as the earth, same power every round",
-      "traits": [
-        0.3,
-        0.7,
-        0.8,
-        0.4,
-        0.3,
-        0.98,
-        0.3,
-        0.7,
-        0.5,
-        0.5,
-        0.5
-      ],
-      "weights": [
-        0.4,
-        0.7,
-        0.8,
-        0.4,
-        0.3,
-        1.5,
-        0.3,
-        0.7,
-        0.5,
-        0.5,
-        0.5
-      ]
+      "name": "Baloo",
+      "tagline": "Bare necessities — coasts easy, clutches hard",
+      "fact": "In TaleSpin, Baloo was reimagined as a cargo pilot running a failing air freight business — a surprisingly ambitious reinvention for a character whose philosophy is doing as little as possible.",
+      "traits": [0.3, 0.3, 0.9, 0.25, 0.7, 0.6, 0.3, 0.4, 0.7, 0.55, 0.5],
+      "weights": [0.3, 0.3, 1.5, 0.3, 0.8, 0.6, 0.3, 0.4, 0.8, 0.6, 0.5]
     },
     {
-      "id": "deedee",
-      "category": "cartoon",
-      "name": "Dee Dee",
-      "tagline": "Ooh what does THIS button do? Unpredictable chaos",
-      "traits": [
-        0.5,
-        0.6,
-        0.5,
-        0.5,
-        0.95,
-        0.3,
-        0.5,
-        0.5,
-        0.6,
-        0.5,
-        0.6
-      ],
-      "weights": [
-        0.5,
-        0.6,
-        0.5,
-        0.5,
-        1.5,
-        0.4,
-        0.5,
-        0.5,
-        0.6,
-        0.5,
-        0.7
+      "id": "uncle_scrooge",
+      "category": "anime",
+      "name": "Uncle Scrooge",
+      "tagline": "Tougher than the toughies, smarter than the smarties",
+      "fact": "In Don Rosa's backstory, Scrooge earned his Number One Dime as a shoeshine boy in Glasgow — an American dime from a ditch-digger that taught him to always be smarter and tougher than everyone.",
+      "traits": [0.25, 0.9, 0.85, 0.35, 0.7, 0.9, 0.35, 0.85, 0.8, 0.7, 0.5],
+      "weights": [0.3, 1.5, 1.2, 0.3, 0.7, 1.5, 0.3, 1.2, 1.0, 0.7, 0.5]
+    },
+    {
+      "id": "popeye",
+      "category": "anime",
+      "name": "Popeye",
+      "tagline": "Starts slow, eats spinach, finishes strong",
+      "fact": "Popeye was a minor one-off character in the comic strip Thimble Theatre in 1929, which had been running for 10 years before he appeared. He was so popular he took over the entire strip.",
+      "traits": [0.55, 0.3, 0.5, 0.8, 0.5, 0.5, 0.7, 0.4, 0.9, 0.9, 0.7],
+      "weights": [0.5, 0.3, 0.5, 1.0, 0.5, 0.5, 0.8, 0.4, 1.5, 1.5, 0.8],
+      "triggers": [
+        {
+          "type": "min",
+          "dim": "resilience",
+          "threshold": 0.8,
+          "bonus": 0.08
+        }
       ]
     },
     {
@@ -1048,9 +937,10 @@
     },
     {
       "id": "krrish",
-      "category": "cartoon",
+      "category": "bollywood",
       "name": "Krrish",
       "tagline": "Lightning-fast, balanced hero",
+      "fact": "Krrish's mask was inspired by a Venetian carnival mask. Hrithik performed most stunts himself, including the iconic flying scene shot in Singapore.",
       "traits": [
         0.6,
         0.7,
@@ -1080,9 +970,10 @@
     },
     {
       "id": "shaktimaan",
-      "category": "cartoon",
+      "category": "bollywood",
       "name": "Shaktimaan",
       "tagline": "Yogic restraint, perfect discipline",
+      "fact": "Shaktimaan ran for 400+ episodes on Doordarshan and was India's first live-action superhero. Mukesh Khanna trained in yoga for the role — the seven chakra powers were based on real Kundalini concepts.",
       "traits": [
         0.3,
         0.95,
@@ -1112,7 +1003,7 @@
     },
     {
       "id": "dexter",
-      "category": "cartoon",
+      "category": "anime",
       "name": "Dexter",
       "tagline": "Boy genius \u2014 over-engineers every trick",
       "traits": [
@@ -1144,7 +1035,7 @@
     },
     {
       "id": "bugs_bunny",
-      "category": "cartoon",
+      "category": "anime",
       "name": "Bugs Bunny",
       "tagline": "Calm trickster, \"Eh, what's up doc\" energy",
       "traits": [
@@ -1368,7 +1259,7 @@
     },
     {
       "id": "mowgli",
-      "category": "cartoon",
+      "category": "anime",
       "name": "Mowgli",
       "tagline": "Wild instincts, learns fast",
       "traits": [
@@ -2591,6 +2482,204 @@
           "bonus": 0.08
         }
       ]
+    },
+    {
+      "id": "dhurandhar",
+      "category": "bollywood",
+      "name": "Dhurandhar",
+      "tagline": "The scheming secretary — always three moves ahead",
+      "fact": "Dhurandhar Pradhan from Panchayat is the quintessential small-town bureaucrat who runs the village from behind a desk. Faisal Malik's portrayal became so iconic that fans started calling real-life gram sachivs 'Dhurandhar'.",
+      "traits": [0.3, 0.9, 0.85, 0.3, 0.7, 0.8, 0.35, 0.85, 0.7, 0.6, 0.5],
+      "weights": [0.4, 1.5, 1.2, 0.3, 0.8, 1.2, 0.4, 1.5, 0.7, 0.6, 0.5]
+    },
+    {
+      "id": "jawaan",
+      "category": "bollywood",
+      "name": "Jawaan",
+      "tagline": "Patient vigilante — explodes when the moment comes",
+      "fact": "Jawan became the highest-grossing Hindi film of 2023, crossing 1100 crore worldwide. SRK played a dual role — the father's patience and the son's rage — mirroring two completely different card-playing styles.",
+      "traits": [0.75, 0.8, 0.65, 0.8, 0.6, 0.65, 0.85, 0.7, 0.8, 0.9, 0.6],
+      "weights": [0.8, 1.0, 0.7, 1.0, 0.6, 0.6, 1.2, 0.8, 1.0, 1.5, 0.6],
+      "triggers": [
+        {
+          "type": "min",
+          "dim": "clutch",
+          "threshold": 0.8,
+          "bonus": 0.08
+        }
+      ]
+    },
+    {
+      "id": "lughai",
+      "category": "bollywood",
+      "name": "Lughai",
+      "tagline": "The patient elder — seen it all, never flustered",
+      "fact": "Lughai from Panchayat is the village pradhaan's silent enforcer who speaks in riddles. Durgesh Kumar's deadpan delivery made him a meme legend — his one-liners get more replays than the plot twists.",
+      "traits": [0.15, 0.6, 0.95, 0.15, 0.3, 0.9, 0.2, 0.7, 0.75, 0.4, 0.4],
+      "weights": [0.3, 0.6, 1.5, 0.2, 0.3, 1.5, 0.2, 0.7, 0.8, 0.4, 0.4]
+    },
+    {
+      "id": "supandi",
+      "category": "bollywood",
+      "name": "Supandi",
+      "tagline": "Clueless but somehow still at the table",
+      "fact": "Supandi is Tinkle Comics' most beloved character since 1983. He's been fired from every job imaginable — but his misunderstandings are so pure that readers root for him anyway. The original creator based him on a real house-help.",
+      "traits": [0.5, 0.1, 0.3, 0.3, 0.2, 0.1, 0.4, 0.1, 0.4, 0.2, 0.3],
+      "weights": [0.5, 0.3, 0.4, 0.4, 0.3, 0.3, 0.5, 0.3, 0.4, 0.3, 0.4]
+    },
+    {
+      "id": "shershaah",
+      "category": "bollywood",
+      "name": "Shershaah",
+      "tagline": "Yeh dil maange more — fearless and clutch",
+      "fact": "Based on Captain Vikram Batra who captured Point 4875 in the Kargil War. His call sign was 'Shershaah' (Lion King). He famously radioed 'Yeh dil maange more' after capturing a peak — a Pepsi slogan turned war cry.",
+      "traits": [0.8, 0.75, 0.5, 0.85, 0.65, 0.7, 0.95, 0.75, 0.9, 0.95, 0.7],
+      "weights": [1.0, 0.8, 0.5, 1.2, 0.6, 0.7, 1.5, 0.8, 1.2, 1.5, 0.7],
+      "triggers": [
+        {
+          "type": "combo",
+          "conditions": [
+            {"type": "min", "dim": "boldness", "threshold": 0.8},
+            {"type": "min", "dim": "clutch", "threshold": 0.8}
+          ],
+          "bonus": 0.1
+        }
+      ]
+    },
+    {
+      "id": "rajnikant",
+      "category": "bollywood",
+      "name": "Rajnikant",
+      "tagline": "Style has no limit — bends the game to his will",
+      "fact": "Rajnikant was a bus conductor in Bangalore before acting. His signature coin-flip and cigarette-flick were improvised on set. In Japan, his films are so popular that 'Muthu' ran for over a year in Tokyo theatres.",
+      "traits": [0.85, 0.5, 0.4, 0.9, 0.7, 0.75, 0.95, 0.6, 0.95, 0.95, 0.6],
+      "weights": [1.2, 0.5, 0.4, 1.5, 0.7, 0.8, 1.5, 0.5, 1.5, 1.5, 0.6],
+      "triggers": [
+        {
+          "type": "min",
+          "dim": "boldness",
+          "threshold": 0.85,
+          "bonus": 0.1
+        }
+      ]
+    },
+    {
+      "id": "baahubali",
+      "category": "bollywood",
+      "name": "Baahubali",
+      "tagline": "The warrior king — plans the war, not just the battle",
+      "fact": "Baahubali was India's first film to cross 1000 crore. The waterfall climbing scene took 109 days to shoot. 'Katappa ne Baahubali ko kyun maara?' became the most-asked question in Indian cinema history.",
+      "traits": [0.6, 0.85, 0.75, 0.7, 0.65, 0.85, 0.8, 0.8, 0.9, 0.85, 0.75],
+      "weights": [0.6, 1.2, 0.8, 0.8, 0.6, 1.2, 1.0, 1.0, 1.2, 1.2, 0.8],
+      "triggers": [
+        {
+          "type": "min",
+          "dim": "resilience",
+          "threshold": 0.8,
+          "bonus": 0.08
+        }
+      ]
+    },
+    {
+      "id": "gully_boy",
+      "category": "bollywood",
+      "name": "Gully Boy",
+      "tagline": "Apna time aayega — underdog with a steep rise",
+      "fact": "Gully Boy was inspired by real Mumbai rappers Naezy and Divine. 'Apna Time Aayega' became an anthem for anyone hustling from the bottom. The film was India's official entry to the 92nd Academy Awards.",
+      "traits": [0.55, 0.5, 0.5, 0.6, 0.9, 0.45, 0.65, 0.5, 0.75, 0.65, 0.95],
+      "weights": [0.5, 0.5, 0.5, 0.6, 1.5, 0.4, 0.7, 0.5, 0.8, 0.7, 1.5],
+      "triggers": [
+        {
+          "type": "min",
+          "dim": "trajectory",
+          "threshold": 0.85,
+          "bonus": 0.1
+        }
+      ]
+    },
+    {
+      "id": "ranvijay",
+      "category": "bollywood",
+      "name": "Ranvijay Singh",
+      "tagline": "The Roadies king — thrives under pressure",
+      "fact": "Ranvijay won the first season of MTV Roadies in 2003 by cycling 350km through Rajasthan. He went from contestant to host to the face of Indian adventure TV. His catchphrase 'game on' defined a generation of reality TV.",
+      "traits": [0.6, 0.65, 0.6, 0.7, 0.8, 0.7, 0.7, 0.65, 0.8, 0.8, 0.6],
+      "weights": [0.6, 0.7, 0.6, 0.8, 1.0, 0.7, 0.7, 0.7, 1.0, 1.2, 0.6]
+    },
+    {
+      "id": "stree",
+      "category": "bollywood",
+      "name": "Stree",
+      "tagline": "Silent for rounds, then devastatingly precise",
+      "fact": "Stree was inspired by the urban legend of Nale Ba from 1990s Bangalore, where people wrote 'come tomorrow' on doors to ward off a witch. The film turned a horror premise into a 300 crore comedy franchise.",
+      "traits": [0.4, 0.7, 0.85, 0.6, 0.5, 0.35, 0.7, 0.85, 0.6, 0.9, 0.5],
+      "weights": [0.4, 0.7, 1.2, 0.6, 0.5, 0.4, 0.8, 1.2, 0.6, 1.5, 0.5],
+      "triggers": [
+        {
+          "type": "combo",
+          "conditions": [
+            {"type": "max", "dim": "consistency", "threshold": 0.4},
+            {"type": "min", "dim": "clutch", "threshold": 0.8}
+          ],
+          "bonus": 0.1
+        }
+      ]
+    },
+    {
+      "id": "don",
+      "category": "bollywood",
+      "name": "Don",
+      "tagline": "Don ko pakadna mushkil hi nahi, namumkin hai",
+      "fact": "The original Don (1978) was Amitabh's idea of a double-role thriller. SRK's 2006 remake flipped the twist — the real Don was alive all along. The dialogue 'Don ko pakadna mushkil hi nahi, namumkin hai' is quoted more than any villain line in Hindi cinema.",
+      "traits": [0.7, 0.95, 0.8, 0.5, 0.75, 0.85, 0.75, 0.95, 0.8, 0.85, 0.55],
+      "weights": [0.7, 1.5, 0.8, 0.5, 0.8, 1.0, 0.8, 1.5, 0.8, 1.0, 0.5],
+      "triggers": [
+        {
+          "type": "combo",
+          "conditions": [
+            {"type": "min", "dim": "precision", "threshold": 0.85},
+            {"type": "min", "dim": "planning", "threshold": 0.85}
+          ],
+          "bonus": 0.1
+        }
+      ]
+    },
+    {
+      "id": "bhediya",
+      "category": "bollywood",
+      "name": "Bhediya",
+      "tagline": "Calm until the wolf takes over",
+      "fact": "Bhediya is set in Arunachal Pradesh and was the first Bollywood film to use real tribal folklore about shapeshifters. The VFX transformation sequence took 6 months to render — and Varun actually howled at the moon on set to get into character.",
+      "traits": [0.65, 0.4, 0.4, 0.75, 0.8, 0.3, 0.7, 0.4, 0.6, 0.55, 0.5],
+      "weights": [0.7, 0.4, 0.4, 1.0, 1.2, 0.3, 0.8, 0.4, 0.6, 0.5, 0.5]
+    },
+    {
+      "id": "devdas",
+      "category": "bollywood",
+      "name": "Devdas",
+      "tagline": "Brilliant start, tragic spiral",
+      "fact": "Devdas has been adapted 16 times across languages — more than any other Indian novel. SRK's 2002 version cost 50 crore (a record then) and premiered at Cannes. The character's flaw isn't love — it's the inability to act when it matters.",
+      "traits": [0.5, 0.6, 0.3, 0.35, 0.2, 0.3, 0.4, 0.65, 0.15, 0.2, 0.15],
+      "weights": [0.5, 0.6, 0.4, 0.4, 0.3, 0.4, 0.5, 0.7, 0.3, 0.3, 0.3],
+      "triggers": [
+        {
+          "type": "combo",
+          "conditions": [
+            {"type": "max", "dim": "resilience", "threshold": 0.25},
+            {"type": "max", "dim": "trajectory", "threshold": 0.25}
+          ],
+          "bonus": 0.1
+        }
+      ]
+    },
+    {
+      "id": "chunnilal",
+      "category": "bollywood",
+      "name": "Chunnilal",
+      "tagline": "Charming opportunist — scrappy survivor",
+      "fact": "Chunnilal is Devdas's mirror — both are doomed, but Chunni knows it and still keeps hustling. Jackie Shroff's portrayal made him the heart of the film. His kotha scenes with Chandramukhi are considered some of the finest acting in 2000s Bollywood.",
+      "traits": [0.55, 0.45, 0.45, 0.5, 0.7, 0.4, 0.55, 0.45, 0.55, 0.5, 0.45],
+      "weights": [0.6, 0.5, 0.5, 0.5, 0.8, 0.4, 0.6, 0.5, 0.6, 0.5, 0.5]
     }
   ]
 }
