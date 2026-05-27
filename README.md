@@ -40,7 +40,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
 - **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
 - **Turbulence mode** — guarantees at least one player misses their bid each round
-- **Play style persona** — at game end, get matched to one of 90 personas across 8 categories (including Bollywood and Anime exclusives) based on an 11-dimension play fingerprint
+- **Play style persona** — at game end, get matched to one of 90 personas across 8 categories based on an 11-dimension play fingerprint. Unlock exclusive prestige personas at higher difficulty tiers
 - **Community data sharing** — opt-in to share anonymized game decisions; the server learns from community data and SmartHardAI gets smarter over time
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
