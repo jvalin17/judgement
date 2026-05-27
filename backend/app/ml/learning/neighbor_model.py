@@ -18,24 +18,19 @@ import random
 from typing import Dict, List, Optional, Tuple
 
 from backend.app.ml.data_store import get_default_store
+from backend.app.ml.learning.model_base import Prediction
 
 logger = logging.getLogger(__name__)
-
-# --- Prediction result ---
-
-class Prediction:
-    """A prediction with value and confidence score."""
-    __slots__ = ("value", "confidence")
-
-    def __init__(self, value: int, confidence: float):
-        self.value = value
-        self.confidence = confidence
 
 
 # --- CardGameKNN ---
 
 class CardGameKNN:
     """kNN classifier with normalization, confidence, and outcome weighting."""
+
+    @property
+    def model_name(self) -> str:
+        return "knn"
 
     def __init__(
         self,
@@ -61,6 +56,7 @@ class CardGameKNN:
         self,
         features: List[float],
         examples: List[dict],
+        context: Optional[Dict] = None,
     ) -> Optional[Prediction]:
         """Predict a label from examples. Returns None if insufficient data or low confidence."""
         if len(examples) < self._min_examples:

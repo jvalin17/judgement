@@ -31,6 +31,10 @@ from backend.app.ai.medium import MediumAI
 from backend.app.ai.hard import HardAI
 from backend.app.ai.smart_hard import SmartHardAI
 from backend.app.ml.learning.decision_collector import DecisionCollector
+from backend.app.ml.learning.neighbor_model import CardGameKNN
+from backend.app.ml.learning.decision_tree import DecisionTreeModel
+from backend.app.ml.learning.naive_bayes import NaiveBayesModel
+from backend.app.ml.learning.strategy_classifier import StrategyClassifier
 
 
 STRATEGY_MAP = {
@@ -39,12 +43,12 @@ STRATEGY_MAP = {
     AIDifficulty.HARD: HardAI,
 }
 
+MODEL_POOL = [CardGameKNN, DecisionTreeModel, NaiveBayesModel, StrategyClassifier]
+
 AI_SWEETS_NAMES = ("Gulab Jamun", "Jalebi", "Rasgulla", "Barfi", "Ladoo", "Kaju Katli")
 
 
-def _make_strategy(difficulty: AIDifficulty, use_smart: bool = False) -> AIStrategy:
-    if use_smart and difficulty == AIDifficulty.HARD:
-        return SmartHardAI()
+def _make_strategy(difficulty: AIDifficulty) -> AIStrategy:
     cls = STRATEGY_MAP.get(difficulty, EasyAI)
     return cls()
 
@@ -368,17 +372,15 @@ class GameManager:
     def _register_players(self, managed: ManagedGame, players: List[Player]) -> None:
         challenge = managed.engine.state.config.challenge_mode
 
-        # Pick one random Hard AI bot to use the ML strategy
-        hard_ai_players = [
-            player for player in players
-            if self._needs_ai_strategy(player) and player.ai_difficulty == AIDifficulty.HARD
-        ]
-        smart_player_id = random.choice(hard_ai_players).id if hard_ai_players else None
-
         # Occasionally nerf AI difficulty so the player can win (disabled in challenge mode)
         nerf = (not challenge) and _should_nerf_ai()
         if nerf:
             logger.info("Difficulty nerf active this game — AI playing softer")
+
+        # Shuffle model pool so each hard bot gets a different ML model
+        models = list(MODEL_POOL)
+        random.shuffle(models)
+        hard_index = 0
 
         for player in players:
             managed.engine.add_player(player)
@@ -386,8 +388,14 @@ class GameManager:
                 effective_difficulty = player.ai_difficulty
                 if nerf and effective_difficulty in _NERF_MAP:
                     effective_difficulty = _NERF_MAP[effective_difficulty]
-                use_smart = (not nerf) and player.id == smart_player_id
-                managed.ai_strategies[player.id] = _make_strategy(effective_difficulty, use_smart=use_smart)
+
+                if (not nerf) and effective_difficulty == AIDifficulty.HARD:
+                    model_cls = models[hard_index % len(models)]
+                    managed.ai_strategies[player.id] = SmartHardAI(model=model_cls())
+                    logger.info("Assigned %s model to %s", model_cls.__name__, player.name)
+                    hard_index += 1
+                else:
+                    managed.ai_strategies[player.id] = _make_strategy(effective_difficulty)
 
     def _needs_ai_strategy(self, player: Player) -> bool:
         return player.player_type == PlayerType.AI and player.ai_difficulty is not None
