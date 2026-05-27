@@ -5,8 +5,6 @@ import { PIP_LAYOUTS } from "./pipLayouts";
 import type { PipPosition } from "./pipLayouts";
 import { SuitSvg } from "./SuitSvg";
 import { FaceCardArt } from "./FaceCardArt";
-import { useSettings } from "../../context/SettingsContext";
-import { CARD_BACK_DESIGN_CLASS } from "./SettingsModal";
 import styles from "../../styles/card.module.css";
 
 interface CardProps {
@@ -138,24 +136,6 @@ function AceDesign({ suit }: { suit: Suit }) {
     <span className={styles.aceSymbol}>
       <SuitSvg suit={suit} className={styles.aceSvg} />
     </span>
-  );
-}
-
-// --- Card back ---
-
-interface CardBackProps {
-  small?: boolean;
-}
-
-export function CardBack({ small = false }: CardBackProps) {
-  const { settings } = useSettings();
-  const designClass = CARD_BACK_DESIGN_CLASS[settings.cardBack];
-  const classNames = [styles.cardBack, designClass, small ? styles.small : ""].filter(Boolean).join(" ");
-
-  return (
-    <div className={classNames}>
-      <div className={styles.backPattern} />
-    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { GameSettings, CardBackDesign, TableColor, AnimationSpeed } from "../types";
+import type { GameSettings, TableColor, AnimationSpeed } from "../types";
 import {
   DEFAULT_SETTINGS,
   TABLE_COLOR_MAP,
@@ -9,7 +9,6 @@ import {
 
 interface SettingsContextValue {
   settings: GameSettings;
-  updateCardBack: (design: CardBackDesign) => void;
   updateTableColor: (color: TableColor) => void;
   updateAnimationSpeed: (speed: AnimationSpeed) => void;
   updateShareData: (enabled: boolean) => void;
@@ -53,10 +52,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     root.setProperty("--transition-slow", `${speeds.slow}ms ease`);
   }, [settings.tableColor, settings.animationSpeed]);
 
-  const updateCardBack = useCallback((design: CardBackDesign) => {
-    setSettings((prev) => ({ ...prev, cardBack: design }));
-  }, []);
-
   const updateTableColor = useCallback((color: TableColor) => {
     setSettings((prev) => ({ ...prev, tableColor: color }));
   }, []);
@@ -75,7 +70,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   }, [settings]);
 
   return (
-    <SettingsContext.Provider value={{ settings, updateCardBack, updateTableColor, updateAnimationSpeed, updateShareData }}>
+    <SettingsContext.Provider value={{ settings, updateTableColor, updateAnimationSpeed, updateShareData }}>
       {children}
     </SettingsContext.Provider>
   );

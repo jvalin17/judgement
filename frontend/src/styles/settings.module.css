@@ -30,53 +30,6 @@
   margin-bottom: 2px;
 }
 
-/* Card back picker */
-
-.cardBackGrid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-
-.cardBackOption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  transition: border-color var(--transition-fast), transform var(--transition-fast), background var(--transition-fast);
-}
-
-.cardBackOption:hover {
-  border-color: rgba(230, 126, 34, 0.4);
-  background: #dbeaf7;
-  transform: translateY(-2px);
-}
-
-.cardBackOption.selected {
-  border-color: #e67e22;
-  background: rgba(230, 126, 34, 0.08);
-}
-
-.cardBackPreview {
-  width: 44px;
-  height: 64px;
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.cardBackLabel {
-  font-size: 0.6rem;
-  color: #4a6080;
-  text-align: center;
-  white-space: nowrap;
-}
-
 /* Table color picker */
 
 .colorGrid {

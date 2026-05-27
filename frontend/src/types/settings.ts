@@ -1,16 +1,3 @@
-export const CardBackDesign = {
-  CLASSIC_BLUE: "classic_blue",
-  COCKPIT_NAVY: "cockpit_navy",
-  RUNWAY_GRAY: "runway_gray",
-  FIRST_CLASS: "first_class",
-  RED_EYE: "red_eye",
-  ALTITUDE_WHITE: "altitude_white",
-  SUNSET_HORIZON: "sunset_horizon",
-  RADAR_GREEN: "radar_green",
-  BLACKBOX: "blackbox",
-} as const;
-export type CardBackDesign = (typeof CardBackDesign)[keyof typeof CardBackDesign];
-
 export const TableColor = {
   CLASSIC_GREEN: "classic_green",
   NAVY_BLUE: "navy_blue",
@@ -33,14 +20,12 @@ export const AnimationSpeed = {
 export type AnimationSpeed = (typeof AnimationSpeed)[keyof typeof AnimationSpeed];
 
 export interface GameSettings {
-  cardBack: CardBackDesign;
   tableColor: TableColor;
   animationSpeed: AnimationSpeed;
   shareData: boolean;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
-  cardBack: CardBackDesign.CLASSIC_BLUE,
   tableColor: TableColor.CLASSIC_GREEN,
   animationSpeed: AnimationSpeed.SLOW,
   shareData: false,
@@ -70,18 +55,6 @@ export const TABLE_COLOR_LABELS: Record<TableColor, string> = {
   [TableColor.TEAL_OCEAN]: "Teal Ocean",
   [TableColor.ROYAL_PURPLE]: "Royal Purple",
   [TableColor.COFFEE_BROWN]: "Coffee Brown",
-};
-
-export const CARD_BACK_LABELS: Record<CardBackDesign, string> = {
-  [CardBackDesign.CLASSIC_BLUE]: "Classic Blue",
-  [CardBackDesign.COCKPIT_NAVY]: "Cockpit Navy",
-  [CardBackDesign.RUNWAY_GRAY]: "Runway",
-  [CardBackDesign.FIRST_CLASS]: "First Class",
-  [CardBackDesign.RED_EYE]: "Red Eye",
-  [CardBackDesign.ALTITUDE_WHITE]: "Altitude",
-  [CardBackDesign.SUNSET_HORIZON]: "Horizon",
-  [CardBackDesign.RADAR_GREEN]: "Radar",
-  [CardBackDesign.BLACKBOX]: "Black Box",
 };
 
 export const ANIMATION_SPEED_MAP: Record<AnimationSpeed, { fast: number; base: number; slow: number }> = {

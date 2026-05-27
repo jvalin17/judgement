@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Card as CardType, Bid } from "../../types";
+import type { Card as CardType, Bid, Player } from "../../types";
 import { GamePhase, isMyTurn } from "../../types";
 import { useGameContext } from "../../context/GameContext";
 import { RoundInfo } from "./RoundInfo";
@@ -67,11 +67,12 @@ export function GameBoard() {
 
   const myTurn = isMyTurn(state);
   const allPlayers = state.players;
-  const opponents = allPlayers.filter((player) => player.id !== state.playerId);
   const seatPositions = getSeatPositions(allPlayers.length);
 
   const humanPlayer = allPlayers.find((player) => player.id === state.playerId);
-  const orderedPlayers = humanPlayer ? [humanPlayer, ...opponents] : allPlayers;
+  const orderedPlayers = humanPlayer && state.playerId
+    ? [humanPlayer, ...clockwiseOpponents(allPlayers, state.playerId)]
+    : allPlayers;
 
   const showRoundOverScoreboard = state.phase === GamePhase.ROUND_OVER && !state.roundOverAcknowledged;
 
@@ -252,4 +253,14 @@ export function GameBoard() {
 function findBidForPlayer(bids: Bid[], playerId: string): number | null {
   const bid = bids.find((bid) => bid.player_id === playerId);
   return bid ? bid.amount : null;
+}
+
+function clockwiseOpponents(players: Player[], humanId: string): Player[] {
+  const humanIndex = players.findIndex((player) => player.id === humanId);
+  if (humanIndex < 0) return players.filter((player) => player.id !== humanId);
+  const result: Player[] = [];
+  for (let offset = 1; offset < players.length; offset++) {
+    result.push(players[(humanIndex + offset) % players.length]);
+  }
+  return result;
 }

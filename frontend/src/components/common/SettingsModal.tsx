@@ -2,12 +2,10 @@ import { useState, useEffect } from "react";
 import { Modal } from "./Modal";
 import { useSettings } from "../../context/SettingsContext";
 import {
-  CardBackDesign,
   TableColor,
   AnimationSpeed,
   TABLE_COLOR_MAP,
   TABLE_COLOR_LABELS,
-  CARD_BACK_LABELS,
   ANIMATION_SPEED_LABELS,
 } from "../../types";
 import {
@@ -26,23 +24,10 @@ import type {
   SharePreviewResponse,
 } from "../../services/api";
 import styles from "../../styles/settings.module.css";
-import cardStyles from "../../styles/card.module.css";
 
 interface SettingsModalProps {
   onClose: () => void;
 }
-
-const CARD_BACK_OPTIONS: CardBackDesign[] = [
-  CardBackDesign.CLASSIC_BLUE,
-  CardBackDesign.COCKPIT_NAVY,
-  CardBackDesign.RUNWAY_GRAY,
-  CardBackDesign.FIRST_CLASS,
-  CardBackDesign.RED_EYE,
-  CardBackDesign.ALTITUDE_WHITE,
-  CardBackDesign.SUNSET_HORIZON,
-  CardBackDesign.RADAR_GREEN,
-  CardBackDesign.BLACKBOX,
-];
 
 const TABLE_COLOR_OPTIONS: TableColor[] = [
   TableColor.CLASSIC_GREEN,
@@ -64,60 +49,17 @@ const ANIMATION_SPEED_OPTIONS: AnimationSpeed[] = [
 ];
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
-  const { settings, updateCardBack, updateTableColor, updateAnimationSpeed } = useSettings();
+  const { settings, updateTableColor, updateAnimationSpeed } = useSettings();
 
   return (
     <Modal title="Settings" onClose={onClose}>
       <div className={styles.settingsContent}>
-        <CardBackPicker selected={settings.cardBack} onSelect={updateCardBack} />
         <TableColorPicker selected={settings.tableColor} onSelect={updateTableColor} />
         <AnimationSpeedPicker selected={settings.animationSpeed} onSelect={updateAnimationSpeed} />
         <CommunityDataSection />
         <UpdateSection />
       </div>
     </Modal>
-  );
-}
-
-// --- Card Back Picker ---
-
-interface CardBackPickerProps {
-  selected: CardBackDesign;
-  onSelect: (design: CardBackDesign) => void;
-}
-
-function CardBackPicker({ selected, onSelect }: CardBackPickerProps) {
-  return (
-    <div className={styles.settingsSection}>
-      <span className={styles.sectionTitle}>Card Back Design</span>
-      <div className={styles.cardBackGrid}>
-        {CARD_BACK_OPTIONS.map((design) => {
-          const optionClass = [
-            styles.cardBackOption,
-            selected === design ? styles.selected : "",
-          ].filter(Boolean).join(" ");
-
-          return (
-            <div key={design} className={optionClass} onClick={() => onSelect(design)}>
-              <CardBackMiniPreview design={design} />
-              <span className={styles.cardBackLabel}>{CARD_BACK_LABELS[design]}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function CardBackMiniPreview({ design }: { design: CardBackDesign }) {
-  const designClass = CARD_BACK_DESIGN_CLASS[design];
-  const previewClass = [styles.cardBackPreview, cardStyles.cardBack, designClass]
-    .filter(Boolean).join(" ");
-
-  return (
-    <div className={previewClass} style={{ width: 44, height: 64 }}>
-      <div className={cardStyles.backPattern} />
-    </div>
   );
 }
 
@@ -473,16 +415,3 @@ function UpdateSection() {
   );
 }
 
-// --- Card back design to CSS class mapping ---
-
-export const CARD_BACK_DESIGN_CLASS: Record<CardBackDesign, string> = {
-  [CardBackDesign.CLASSIC_BLUE]: cardStyles.backClassicBlue ?? "",
-  [CardBackDesign.COCKPIT_NAVY]: cardStyles.backCockpitNavy ?? "",
-  [CardBackDesign.RUNWAY_GRAY]: cardStyles.backRunwayGray ?? "",
-  [CardBackDesign.FIRST_CLASS]: cardStyles.backFirstClass ?? "",
-  [CardBackDesign.RED_EYE]: cardStyles.backRedEye ?? "",
-  [CardBackDesign.ALTITUDE_WHITE]: cardStyles.backAltitudeWhite ?? "",
-  [CardBackDesign.SUNSET_HORIZON]: cardStyles.backSunsetHorizon ?? "",
-  [CardBackDesign.RADAR_GREEN]: cardStyles.backRadarGreen ?? "",
-  [CardBackDesign.BLACKBOX]: cardStyles.backBlackbox ?? "",
-};
