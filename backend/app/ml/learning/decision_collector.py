@@ -83,34 +83,58 @@ class DecisionCollector:
 
     def flush_winner(self, winner_ids: List[str]) -> int:
         """Write the winner's decisions to data files. Returns examples written."""
+        return self._flush_with_outcome(winner_ids, "win")
+
+    def flush_losers(self, loser_ids: List[str]) -> int:
+        """Write loser decisions to data files with outcome=loss. Returns examples written."""
+        return self._flush_with_outcome(loser_ids, "loss")
+
+    def _flush_with_outcome(self, player_ids: List[str], outcome: str) -> int:
+        """Write decisions for given players with the specified outcome."""
         count = 0
         bid_file = get_bid_data_file()
         play_file = get_play_data_file()
 
-        for winner_id in winner_ids:
-            bid_count = len(self._bid_decisions.get(winner_id, []))
-            play_count = len(self._play_decisions.get(winner_id, []))
-            consented = self._share_consent.get(winner_id, False)
+        for player_id in player_ids:
+            bid_count = len(self._bid_decisions.get(player_id, []))
+            play_count = len(self._play_decisions.get(player_id, []))
+            consented = self._share_consent.get(player_id, False)
 
-            for features, label, strategy_type in self._bid_decisions.get(winner_id, []):
+            for features, label, strategy_type in self._bid_decisions.get(player_id, []):
                 neighbor_model.append_example(
                     bid_file, features, label,
-                    metadata={"strategy_type": strategy_type, "share_consent": consented},
+                    metadata={
+                        "strategy_type": strategy_type,
+                        "share_consent": consented,
+                        "outcome": outcome,
+                    },
                 )
                 count += 1
-            for features, label, strategy_type in self._play_decisions.get(winner_id, []):
+            for features, label, strategy_type in self._play_decisions.get(player_id, []):
                 neighbor_model.append_example(
                     play_file, features, label,
-                    metadata={"strategy_type": strategy_type, "share_consent": consented},
+                    metadata={
+                        "strategy_type": strategy_type,
+                        "share_consent": consented,
+                        "outcome": outcome,
+                    },
                 )
                 count += 1
 
             if bid_count or play_count:
                 logger.info(
-                    "Flushed %d bid + %d play decisions for winner %s",
-                    bid_count, play_count, winner_id,
+                    "Flushed %d bid + %d play decisions for %s %s",
+                    bid_count, play_count, outcome, player_id,
                 )
 
+        # Only clear buffers after both winners and losers are flushed
+        # (caller manages clear via flush_all)
+        return count
+
+    def flush_all(self, winner_ids: List[str], loser_ids: List[str]) -> int:
+        """Flush winners and losers, then clear buffers. Returns total examples written."""
+        count = self.flush_winner(winner_ids)
+        count += self.flush_losers(loser_ids)
         self._bid_decisions.clear()
         self._play_decisions.clear()
         return count

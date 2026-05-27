@@ -36,6 +36,9 @@ def extract_bid_features(
     total_bids_so_far = sum(bid.amount for bid in context.bids)
     is_dealer = 1.0 if len(context.bids) == context.num_players - 1 else 0.0
 
+    score_gap = _compute_score_gap(context)
+    round_progress = _compute_round_progress(context)
+
     return [
         float(context.num_cards),
         float(context.num_players),
@@ -49,6 +52,8 @@ def extract_bid_features(
         float(longest_suit),
         float(total_bids_so_far),
         is_dealer,
+        score_gap,
+        round_progress,
     ]
 
 
@@ -81,6 +86,9 @@ def extract_play_features(
     trump_cards_seen = sum(1 for card in context.cards_played if card.suit == trump)
     total_cards_seen = len(context.cards_played)
 
+    score_gap = _compute_score_gap(context)
+    round_progress = _compute_round_progress(context)
+
     return [
         float(tricks_needed),
         float(my_tricks),
@@ -93,6 +101,8 @@ def extract_play_features(
         float(current_max_rank),
         float(trump_cards_seen),
         float(total_cards_seen),
+        score_gap,
+        round_progress,
     ]
 
 
@@ -118,3 +128,23 @@ def _get_my_bid(context: RoundContext) -> Optional[int]:
         if bid.player_id == context.player_id:
             return bid.amount
     return None
+
+
+def _compute_score_gap(context: RoundContext) -> float:
+    """Player's score minus average opponent score. Normalized by dividing by 50."""
+    scores = context.cumulative_scores
+    if not scores or context.player_id not in scores:
+        return 0.0
+    my_score = scores[context.player_id]
+    others = [score for pid, score in scores.items() if pid != context.player_id]
+    if not others:
+        return 0.0
+    avg_opponent = sum(others) / len(others)
+    return (my_score - avg_opponent) / 50.0
+
+
+def _compute_round_progress(context: RoundContext) -> float:
+    """Current round / total rounds. 0.0 at start, 1.0 at end."""
+    if context.total_rounds <= 0:
+        return 0.5
+    return context.round_number / context.total_rounds

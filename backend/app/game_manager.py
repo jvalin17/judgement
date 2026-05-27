@@ -319,11 +319,12 @@ class ManagedGame:
 
     def _flush_winner_decisions(self, event: GameEvent) -> None:
         winner_ids = event.data.get("winners", [])
-        if winner_ids:
-            count = self.decision_collector.flush_winner(winner_ids)
-            # Trigger background upload if enough consented examples accumulated
-            if count > 0:
-                self._maybe_trigger_upload(count)
+        all_player_ids = [player.id for player in self.engine.state.players]
+        loser_ids = [pid for pid in all_player_ids if pid not in winner_ids]
+
+        count = self.decision_collector.flush_all(winner_ids, loser_ids)
+        if count > 0:
+            self._maybe_trigger_upload(count)
 
     @staticmethod
     def _maybe_trigger_upload(new_examples: int) -> None:

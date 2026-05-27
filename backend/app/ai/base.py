@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from backend.app.models import Card, Suit, Bid
 from backend.app.models.game import TrickPlay
@@ -23,6 +23,9 @@ class RoundContext:
         trick_history: Optional[List[List[TrickPlay]]] = None,
         current_trick_plays: Optional[List[TrickPlay]] = None,
         play_order: Optional[List[str]] = None,
+        cumulative_scores: Optional[Dict[str, int]] = None,
+        round_number: int = 1,
+        total_rounds: int = 10,
     ):
         self.player_id = player_id
         self.trump_suit = trump_suit
@@ -35,6 +38,9 @@ class RoundContext:
         self.trick_history = trick_history or []
         self.current_trick_plays = current_trick_plays or []
         self.play_order = play_order or []
+        self.cumulative_scores = cumulative_scores or {}
+        self.round_number = round_number
+        self.total_rounds = total_rounds
 
 
 class AIStrategy(ABC):

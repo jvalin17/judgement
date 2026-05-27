@@ -317,6 +317,9 @@ class GameEngine:
             trick_history=trick_history,
             current_trick_plays=current_trick_plays,
             play_order=list(rm.play_order),
+            cumulative_scores=dict(self.state.cumulative_scores),
+            round_number=rm.state.round_number,
+            total_rounds=len(self._round_configs),
         )
 
     def get_round_summary(self) -> dict:
