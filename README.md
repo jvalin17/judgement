@@ -34,13 +34,13 @@ No Python, Node.js, or terminal needed. Just download and play.
 
 ## Features
 
-- **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (learns from game winners via kNN)
+- **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (learns from winners and losers via CardGameKNN with feature normalization and confidence scoring)
 - **Online multiplayer** — play at https://judgement-game.duckdns.org with friends from anywhere
 - **Local multiplayer** — create or join rooms with a code, lobby browser, quick-join
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
 - **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
 - **Turbulence mode** — guarantees at least one player misses their bid each round
-- **Play style persona** — at game end, get matched to one of 75 personas across 6 categories based on an 11-dimension play fingerprint
+- **Play style persona** — at game end, get matched to one of 90 personas across 8 categories (including Bollywood and Anime exclusives) based on an 11-dimension play fingerprint
 - **Community data sharing** — opt-in to share anonymized game decisions; the server learns from community data and SmartHardAI gets smarter over time
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
@@ -138,7 +138,7 @@ cd frontend && npm run dev
 | Frontend | React 19, TypeScript, Vite, CSS Modules |
 | Backend | Python 3.9, FastAPI, Pydantic |
 | Real-time | WebSockets (uvicorn) |
-| AI | Rule-based strategies + kNN learning engine |
+| AI | Rule-based strategies + CardGameKNN learning engine (normalized, outcome-aware) |
 | ML | Player fingerprinting, persona matching, community data sharing |
 | Desktop | PyInstaller, pywebview |
 | Deployment | Docker, Caddy (HTTPS), Oracle Cloud VM |
@@ -155,7 +155,7 @@ judgement/
 │   │   ├── game/           # Rules engine (pure logic, no I/O)
 │   │   ├── ai/             # AI strategies (Easy, Medium, Hard, SmartHard)
 │   │   ├── ml/             # Machine learning infrastructure
-│   │   │   ├── learning/   # kNN model, feature extraction, data collector, sync
+│   │   │   ├── learning/   # CardGameKNN model, feature extraction, data collector, sync
 │   │   │   └── analysis/   # Play style fingerprinting + persona matching
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
@@ -207,7 +207,7 @@ Runs automatically on every push to `main` and on pull requests via GitHub Actio
 ## Roadmap
 
 - **Mobile app** — lightweight PWA or native app for phones and tablets
-- **Smarter AI** — neural network models trained on community data for more human-like play
+- **Even smarter AI** — neural network models or ensemble methods trained on growing community dataset
 - **Persistence** — save game history and stats to a database (currently in-memory)
 - **Public API** — expose the game engine so others can build bots, dashboards, or tournaments
 
