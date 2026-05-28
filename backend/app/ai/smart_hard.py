@@ -3,6 +3,10 @@
 Delegates predictions to a pluggable ML model (kNN, Decision Tree,
 Naive Bayes, or Strategy Classifier). Falls back to rule-based HardAI
 when the model has insufficient data or low confidence.
+
+For bidding: blends ML prediction with HardAI's hand evaluation when
+ML confidence is moderate. This prevents wildly wrong bids on hands
+the model hasn't seen enough examples of (e.g., 10-card hands).
 """
 
 from __future__ import annotations
@@ -18,6 +22,9 @@ from backend.app.ml.learning.decision_collector import get_bid_data_file, get_pl
 from backend.app.ml.data_store import get_default_store
 
 logger = logging.getLogger(__name__)
+
+# Above this confidence, trust ML fully. Below, blend with HardAI.
+HIGH_CONFIDENCE = 0.7
 
 
 class SmartHardAI(AIStrategy):
@@ -48,14 +55,25 @@ class SmartHardAI(AIStrategy):
             "round_context": context,
         })
 
-        if prediction is not None:
-            predicted = prediction.value
-            if predicted in valid_bids:
-                return predicted
-            closest = min(valid_bids, key=lambda bid: abs(bid - predicted))
-            return closest
+        hard_bid = self._fallback.choose_bid(hand, valid_bids, context)
 
-        return self._fallback.choose_bid(hand, valid_bids, context)
+        if prediction is None:
+            return hard_bid
+
+        ml_bid = prediction.value
+
+        # High confidence: trust ML fully
+        if prediction.confidence >= HIGH_CONFIDENCE:
+            bid = ml_bid
+        else:
+            # Blend: weight ML by its confidence, HardAI fills the gap
+            ml_weight = prediction.confidence
+            bid = round(ml_bid * ml_weight + hard_bid * (1.0 - ml_weight))
+
+        # Clamp to nearest valid bid
+        if bid in valid_bids:
+            return bid
+        return min(valid_bids, key=lambda b: abs(b - bid))
 
     def choose_card(
         self,

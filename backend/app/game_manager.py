@@ -126,6 +126,7 @@ class ManagedGame:
             return
         self._notify_callbacks(event)
         self._handle_logging(event)
+        self._handle_feedback(event)
         self._handle_ai_dispatch(event)
 
     def _notify_callbacks(self, event: GameEvent) -> None:
@@ -199,6 +200,17 @@ class ManagedGame:
     def _handle_logging(self, event: GameEvent) -> None:
         if event.event_type == EventType.ROUND_COMPLETE:
             self._log_round(event)
+
+    def _handle_feedback(self, event: GameEvent) -> None:
+        """Annotate buffered decisions with per-trick and per-round feedback."""
+        if event.event_type == EventType.TRICK_COMPLETE:
+            winner_id = event.data.get("winner_id", "")
+            all_player_ids = [player.id for player in self.engine.state.players]
+            self.decision_collector.annotate_trick_result(winner_id, all_player_ids)
+        elif event.event_type == EventType.ROUND_COMPLETE:
+            bids_map = {bid["player_id"]: bid["amount"] for bid in event.data.get("bids", [])}
+            tricks_won = event.data.get("tricks_won", {})
+            self.decision_collector.annotate_round_end(bids_map, tricks_won)
 
     def _handle_ai_dispatch(self, event: GameEvent) -> None:
         if event.event_type == EventType.TURN_CHANGED:
