@@ -34,7 +34,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 
 ## Features
 
-- **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (learns from winners and losers via CardGameKNN with feature normalization and confidence scoring)
+- **Four AI difficulty levels** — Easy (random), Medium (heuristic), Hard (card counting + opponent modeling + personality system), Smart Hard (multi-model ML engine — each bot uses a different algorithm: kNN, Decision Tree, Naive Bayes, or Strategy Classifier, learning from winners and losers with per-decision feedback)
 - **Online multiplayer** — play at https://judgement-game.duckdns.org with friends from anywhere
 - **Local multiplayer** — create or join rooms with a code, lobby browser, quick-join
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
@@ -45,7 +45,7 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **Aviation-themed scoreboard** — Pilot, Flights, Landings, Current, Score columns
 - **Desktop app** — standalone macOS/Windows via PyInstaller + pywebview
 - **In-app updater** — check for new versions from Settings
-- **766 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push and PR via CI
+- **770 automated tests** — all in the [test suite repo](https://github.com/jvalin17/judgement-tests), run on every push and PR via CI
 - **Production health monitoring** — daily automated checks for uptime, TLS, security headers
 
 ---
@@ -138,7 +138,7 @@ cd frontend && npm run dev
 | Frontend | React 19, TypeScript, Vite, CSS Modules |
 | Backend | Python 3.9, FastAPI, Pydantic |
 | Real-time | WebSockets (uvicorn) |
-| AI | Rule-based strategies + CardGameKNN learning engine (normalized, outcome-aware) |
+| AI | Rule-based strategies + multi-model ML engine (kNN, Decision Tree, Naive Bayes, Strategy Classifier) |
 | ML | Player fingerprinting, persona matching, community data sharing |
 | Desktop | PyInstaller, pywebview |
 | Deployment | Docker, Caddy (HTTPS), Oracle Cloud VM |
@@ -155,7 +155,7 @@ judgement/
 │   │   ├── game/           # Rules engine (pure logic, no I/O)
 │   │   ├── ai/             # AI strategies (Easy, Medium, Hard, SmartHard)
 │   │   ├── ml/             # Machine learning infrastructure
-│   │   │   ├── learning/   # CardGameKNN model, feature extraction, data collector, sync
+│   │   │   ├── learning/   # ML models (kNN, Decision Tree, Naive Bayes, Strategy), features, data collector
 │   │   │   └── analysis/   # Play style fingerprinting + persona matching
 │   │   ├── api/            # REST + WebSocket + update + data sharing
 │   │   ├── game_manager.py # Orchestrator
@@ -190,7 +190,7 @@ See [`deployment/DEPLOY.md`](deployment/DEPLOY.md) for the full runbook.
 
 ## Testing
 
-All 766 tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — covering game logic, AI strategies, persona matching, all UI components, edge cases, and integration flows.
+All 770 tests live in the **[test suite repo](https://github.com/jvalin17/judgement-tests)** — covering game logic, AI strategies, ML models, persona matching, all UI components, edge cases, and integration flows.
 
 ```bash
 # Clone test repo as sibling (one-time)
@@ -207,7 +207,7 @@ Runs automatically on every push to `main` and on pull requests via GitHub Actio
 ## Roadmap
 
 - **Mobile app** — lightweight PWA or native app for phones and tablets
-- **Even smarter AI** — neural network models or ensemble methods trained on growing community dataset
+- **Neural network AI** — deep learning models trained on growing community dataset for even more human-like play
 - **Persistence** — save game history and stats to a database (currently in-memory)
 - **Public API** — expose the game engine so others can build bots, dashboards, or tournaments
 
