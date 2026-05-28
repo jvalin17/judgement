@@ -82,6 +82,8 @@ jobs:
             --add-data "frontend/dist:frontend/dist" \
             --add-data "backend/app/game/rounds:backend/app/game/rounds" \
             --add-data "backend/app/version_info.json:backend/app" \
+            --add-data "backend/app/ml/analysis/personas.json:backend/app/ml/analysis" \
+            --add-data "backend/app/ml/learning/data:backend/app/ml/learning/data" \
             --hidden-import "backend" \
             --hidden-import "backend.app" \
             --hidden-import "backend.app.main" \
@@ -112,7 +114,28 @@ jobs:
             --hidden-import "backend.app.ai.hard" \
             --hidden-import "backend.app.ai.card_play" \
             --hidden-import "backend.app.ai.hand_evaluator" \
+            --hidden-import "backend.app.ai.smart_hard" \
+            --hidden-import "backend.app.ai.personality" \
+            --hidden-import "backend.app.ai.opponent_model" \
             --hidden-import "backend.app.game_manager" \
+            --hidden-import "backend.app.ml" \
+            --hidden-import "backend.app.ml.constants" \
+            --hidden-import "backend.app.ml.utils" \
+            --hidden-import "backend.app.ml.data_store" \
+            --hidden-import "backend.app.ml.learning" \
+            --hidden-import "backend.app.ml.learning.model_base" \
+            --hidden-import "backend.app.ml.learning.neighbor_model" \
+            --hidden-import "backend.app.ml.learning.decision_tree" \
+            --hidden-import "backend.app.ml.learning.naive_bayes" \
+            --hidden-import "backend.app.ml.learning.strategy_classifier" \
+            --hidden-import "backend.app.ml.learning.features" \
+            --hidden-import "backend.app.ml.learning.decision_collector" \
+            --hidden-import "backend.app.ml.learning.data_sync" \
+            --hidden-import "backend.app.ml.analysis" \
+            --hidden-import "backend.app.ml.analysis.persona_loader" \
+            --hidden-import "backend.app.ml.analysis.persona_match" \
+            --hidden-import "backend.app.ml.analysis.fingerprint" \
+            --hidden-import "backend.app.api.data_sharing" \
             --hidden-import "uvicorn" \
             --hidden-import "uvicorn.logging" \
             --hidden-import "uvicorn.loops" \
@@ -141,6 +164,8 @@ jobs:
             --add-data "frontend/dist;frontend/dist" `
             --add-data "backend/app/game/rounds;backend/app/game/rounds" `
             --add-data "backend/app/version_info.json;backend/app" `
+            --add-data "backend/app/ml/analysis/personas.json;backend/app/ml/analysis" `
+            --add-data "backend/app/ml/learning/data;backend/app/ml/learning/data" `
             --hidden-import "backend" `
             --hidden-import "backend.app" `
             --hidden-import "backend.app.main" `
@@ -171,7 +196,28 @@ jobs:
             --hidden-import "backend.app.ai.hard" `
             --hidden-import "backend.app.ai.card_play" `
             --hidden-import "backend.app.ai.hand_evaluator" `
+            --hidden-import "backend.app.ai.smart_hard" `
+            --hidden-import "backend.app.ai.personality" `
+            --hidden-import "backend.app.ai.opponent_model" `
             --hidden-import "backend.app.game_manager" `
+            --hidden-import "backend.app.ml" `
+            --hidden-import "backend.app.ml.constants" `
+            --hidden-import "backend.app.ml.utils" `
+            --hidden-import "backend.app.ml.data_store" `
+            --hidden-import "backend.app.ml.learning" `
+            --hidden-import "backend.app.ml.learning.model_base" `
+            --hidden-import "backend.app.ml.learning.neighbor_model" `
+            --hidden-import "backend.app.ml.learning.decision_tree" `
+            --hidden-import "backend.app.ml.learning.naive_bayes" `
+            --hidden-import "backend.app.ml.learning.strategy_classifier" `
+            --hidden-import "backend.app.ml.learning.features" `
+            --hidden-import "backend.app.ml.learning.decision_collector" `
+            --hidden-import "backend.app.ml.learning.data_sync" `
+            --hidden-import "backend.app.ml.analysis" `
+            --hidden-import "backend.app.ml.analysis.persona_loader" `
+            --hidden-import "backend.app.ml.analysis.persona_match" `
+            --hidden-import "backend.app.ml.analysis.fingerprint" `
+            --hidden-import "backend.app.api.data_sharing" `
             --hidden-import "uvicorn" `
             --hidden-import "uvicorn.logging" `
             --hidden-import "uvicorn.loops" `
