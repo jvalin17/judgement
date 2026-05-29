@@ -2,11 +2,20 @@ name: Deploy to Production
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Full Test Suite"]
+    branches: [main]
+    types: [completed]
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
     name: Deploy to VM
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Deploy via SSH
