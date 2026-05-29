@@ -33,6 +33,7 @@ export function TrickArea({
   const winnerName = trickWinner ? findPlayerName(players, trickWinner) : null;
   const pileClass = [
     styles.trickPile,
+    players.length >= 5 ? styles.manyPlayers : "",
     trickWinner ? styles.trickHasWinner : "",
     trickCollecting ? animStyles.collectTrick : "",
   ].filter(Boolean).join(" ");
