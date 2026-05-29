@@ -106,13 +106,15 @@
   max-width: 95vw;
 }
 
-/* Scale down trick cards when 5+ players to prevent overflow */
-.trickPile.manyPlayers {
-  gap: clamp(2px, 1vw, 8px);
-}
-.trickPile.manyPlayers .trickCardSlot {
-  transform: scale(0.85);
-  transform-origin: top center;
+/* Scale down trick cards for 5+ players only on smaller screens */
+@media (max-width: 900px) {
+  .trickPile.manyPlayers {
+    gap: clamp(2px, 1vw, 8px);
+  }
+  .trickPile.manyPlayers .trickCardSlot {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
 }
 
 .trickCardSlot {
