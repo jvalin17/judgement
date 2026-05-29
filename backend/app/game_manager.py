@@ -134,7 +134,7 @@ class ManagedGame:
             cb(event)
 
     def _handle_game_over(self, event: GameEvent) -> None:
-        """Handle GAME_OVER: log, compute personas, enrich event, then broadcast."""
+        """Handle GAME_OVER: log, compute personas, update leaderboard, then broadcast."""
         self._log_game_over(event)
         self._flush_winner_decisions(event)
 
