@@ -165,6 +165,11 @@ function handleConnected(state: GameState, data: ConnectedEventData): GameState 
     totalRounds: (data as unknown as Record<string, unknown>).total_rounds as number | null ?? state.totalRounds,
     mustLoseMode: (data as unknown as Record<string, unknown>).must_lose_mode as boolean ?? state.mustLoseMode,
     challengeMode: (data as unknown as Record<string, unknown>).challenge_mode as boolean ?? state.challengeMode,
+    variant: data.variant ?? state.variant,
+    houseRules: data.house_rules ?? state.houseRules,
+    customDeal: data.custom_deal !== undefined ? data.custom_deal : state.customDeal,
+    maxPlayers: data.max_players ?? state.maxPlayers,
+    trumpCard: data.trump_card !== undefined ? data.trump_card : state.trumpCard,
   };
 }
 
@@ -173,6 +178,7 @@ function handleRoundStarted(state: GameState, data: RoundStartedEventData): Game
     ...state,
     phase: GamePhase.BIDDING,
     trumpSuit: data.trump_suit,
+    trumpCard: data.trump_card ?? null,
     numCards: data.num_cards,
     roundNumber: data.round_number,
     dealerId: data.dealer_id,

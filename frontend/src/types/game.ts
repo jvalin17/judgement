@@ -1,5 +1,7 @@
 import type { Card } from "./card";
 import type { ServerEvent, PersonaAward } from "./events";
+import type { HouseRules, CustomDeal } from "./houseRules";
+import { DEFAULT_HOUSE_RULES, MAX_CUSTOM_PLAYERS, customDealMaxPlayers } from "./houseRules";
 
 export const GamePhase = {
   LOBBY: "lobby",
@@ -20,6 +22,7 @@ export const DealingVariant = {
   EIGHT_DOWN_UP_SHORT: "8_down_up_short",
   EIGHT_TO_THREE: "8_to_3",
   THREE_QUICK: "3_quick",
+  CUSTOM: "custom",
 } as const;
 
 export type DealingVariant = (typeof DealingVariant)[keyof typeof DealingVariant];
@@ -86,6 +89,11 @@ export interface GameState {
   totalRounds: number | null;
   mustLoseMode: boolean;
   challengeMode: boolean;
+  variant: DealingVariant | null;
+  houseRules: HouseRules;
+  customDeal: CustomDeal | null;
+  maxPlayers: number | null;
+  trumpCard: Card | null;
 }
 
 export interface RoundSummary {
@@ -128,6 +136,11 @@ export const INITIAL_GAME_STATE: GameState = {
   totalRounds: null,
   mustLoseMode: false,
   challengeMode: false,
+  variant: null,
+  houseRules: DEFAULT_HOUSE_RULES,
+  customDeal: null,
+  maxPlayers: null,
+  trumpCard: null,
 };
 
 export interface VariantConfig {
@@ -144,6 +157,7 @@ export const VARIANT_CONFIG: Record<DealingVariant, VariantConfig> = {
   [DealingVariant.EIGHT_DOWN_UP_SHORT]: { label: "8 down to 5, back to 8 — 8 rounds",  rounds: "8 rounds",  detail: "8 down to 5, back to 8",   maxPlayers: 6  },
   [DealingVariant.EIGHT_TO_THREE]:     { label: "8 down to 4 — 5 rounds",            rounds: "5 rounds",  detail: "8 down to 4",               maxPlayers: 6  },
   [DealingVariant.THREE_QUICK]:         { label: "Quick game — 3 rounds",              rounds: "3 rounds",  detail: "Quick game: 5, 3, 5 cards", maxPlayers: 10 },
+  [DealingVariant.CUSTOM]:              { label: "Custom deal — choose your rounds",  rounds: "Custom",    detail: "Pick your own hand sizes",  maxPlayers: MAX_CUSTOM_PLAYERS },
 };
 
 export const VARIANT_LIST: DealingVariant[] = Object.keys(VARIANT_CONFIG) as DealingVariant[];
@@ -154,6 +168,12 @@ export const VARIANT_LABELS: Record<DealingVariant, string> =
 
 export const VARIANT_MAX_PLAYERS: Record<DealingVariant, number> =
   Object.fromEntries(VARIANT_LIST.map((v) => [v, VARIANT_CONFIG[v].maxPlayers])) as Record<DealingVariant, number>;
+
+/** Seat limit for a variant; custom deals depend on their minimum hand size. */
+export function maxPlayersFor(variant: DealingVariant, customDeal: CustomDeal | null): number {
+  if (variant === DealingVariant.CUSTOM && customDeal) return customDealMaxPlayers(customDeal);
+  return VARIANT_CONFIG[variant].maxPlayers;
+}
 
 export function isMyTurn(state: GameState): boolean {
   return state.currentPlayerId === state.playerId;

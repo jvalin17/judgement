@@ -164,6 +164,8 @@ export function GameBoard() {
         trumpSuit={state.trumpSuit}
         playerCount={allPlayers.length}
         mustLoseMode={state.mustLoseMode}
+        trumpCard={state.trumpCard}
+        houseRules={state.houseRules}
         challengeMode={state.challengeMode}
       />
 

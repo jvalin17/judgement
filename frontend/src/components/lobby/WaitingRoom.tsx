@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 import { startGame as apiStartGame, addBot as apiAddBot } from "../../services/api";
-import { AIDifficulty } from "../../types";
+import { AIDifficulty, DEFAULT_HOUSE_RULES } from "../../types";
+import type { CustomDeal, HouseRules } from "../../types";
 import { ConnectionStatus } from "../../services/websocket";
 import { Button } from "../common";
+import { RulesSummary } from "./RulesSummary";
 import styles from "../../styles/waiting.module.css";
 
 interface LobbyPlayer {
@@ -20,6 +22,9 @@ interface WaitingRoomProps {
   maxPlayers: number;
   connectionStatus: ConnectionStatus;
   onLeave: () => void;
+  houseRules?: HouseRules;
+  /** Present only for the custom dealing variant. */
+  customDeal?: CustomDeal | null;
 }
 
 const STATUS_LABELS: Record<ConnectionStatus, string> = {
@@ -38,6 +43,8 @@ export function WaitingRoom({
   maxPlayers,
   connectionStatus,
   onLeave,
+  houseRules = DEFAULT_HOUSE_RULES,
+  customDeal = null,
 }: WaitingRoomProps) {
   const [copied, setCopied] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -77,7 +84,7 @@ export function WaitingRoom({
     }
   }, [gameId, playerId, botDifficulty]);
 
-  const emptySlots = maxPlayers - players.length;
+  const emptySlots = Math.max(0, maxPlayers - players.length);
   const canAddBot = isHost && emptySlots > 0;
 
   const statusClass =
@@ -123,6 +130,8 @@ export function WaitingRoom({
           </div>
         ))}
       </div>
+
+      <RulesSummary houseRules={houseRules} customDeal={customDeal} playerCount={players.length} />
 
       {autoStartSeconds !== null && (
         <div className={styles.countdown}>

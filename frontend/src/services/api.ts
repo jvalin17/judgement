@@ -5,6 +5,8 @@ import type {
   Bid,
   TrickPlay,
   Player,
+  HouseRules,
+  CustomDeal,
 } from "../types";
 
 // --- Request/Response types ---
@@ -19,6 +21,8 @@ export interface CreateGameRequest {
   variant: DealingVariant;
   must_lose_mode: boolean;
   challenge_mode?: boolean;
+  house_rules?: HouseRules;
+  custom_deal?: CustomDeal | null;
   players: PlayerSetup[];
   auto_start?: boolean;
   share_data?: boolean;
@@ -178,6 +182,8 @@ export interface LobbyGameInfo {
   host_name: string | null;
   variant: string;
   must_lose_mode: boolean;
+  house_rules: HouseRules;
+  custom_deal: CustomDeal | null;
   player_count: number;
   max_players: number;
 }
@@ -187,6 +193,8 @@ export interface LobbyStateResponse {
   phase: string;
   variant: string;
   must_lose_mode: boolean;
+  house_rules: HouseRules;
+  custom_deal: CustomDeal | null;
   players: Array<Record<string, unknown>>;
   host_player_id: string | null;
   max_players: number;

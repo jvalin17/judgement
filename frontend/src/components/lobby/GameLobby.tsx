@@ -1,16 +1,48 @@
 import { useState, useCallback } from "react";
-import { VARIANT_LIST, VARIANT_CONFIG, PlayerType } from "../../types";
+import {
+  VARIANT_LIST,
+  VARIANT_CONFIG,
+  PlayerType,
+  DealingVariant,
+  DEFAULT_HOUSE_RULES,
+  DEFAULT_CUSTOM_DEAL,
+  customDealMaxPlayers,
+  customDealSequence,
+  describeCustomDeal,
+  maxPlayersFor,
+} from "../../types";
+import type { CustomDeal, HouseRules } from "../../types";
 import { useSettings } from "../../context/SettingsContext";
 import { createGame, joinGame } from "../../services/api";
 import type { PlayerSetup as PlayerSetupRequest } from "../../services/api";
 import { SettingsModal } from "../common";
 import { PlayerSetup, createDefaultAiPlayer } from "./PlayerSetup";
+import { CustomDealEditor } from "./CustomDealEditor";
+import { HouseRulesPanel } from "./HouseRulesPanel";
 import type { PlayerConfig } from "./PlayerSetup";
 import styles from "../../styles/lobby.module.css";
 
 type LobbyView = "main" | "multiplayer";
 
 const VARIANTS = VARIANT_LIST;
+const CUSTOM_INDEX = VARIANTS.indexOf(DealingVariant.CUSTOM);
+
+interface VariantCardInfo {
+  rounds: string;
+  detail: string;
+  maxPlayers: number;
+}
+
+/** Carousel text for a variant; a custom deal describes its own hand sizes. */
+function variantCardInfo(variant: DealingVariant, customDeal: CustomDeal, playerCount: number): VariantCardInfo {
+  if (variant !== DealingVariant.CUSTOM) return VARIANT_CONFIG[variant];
+  const rounds = customDealSequence(customDeal, playerCount).length;
+  return {
+    rounds: `Custom \u00B7 ${rounds} ${rounds === 1 ? "round" : "rounds"}`,
+    detail: describeCustomDeal(customDeal),
+    maxPlayers: customDealMaxPlayers(customDeal),
+  };
+}
 
 interface GameLobbyProps {
   onGameCreated: (gameId: string, playerId: string) => void;
@@ -73,14 +105,22 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
   const [variantIndex, setVariantIndex] = useState(0);
   const [mustLoseMode, setMustLoseMode] = useState(false);
   const [challengeMode, setChallengeMode] = useState(false);
+  const [houseRules, setHouseRules] = useState<HouseRules>(DEFAULT_HOUSE_RULES);
+  const [customDeal, setCustomDeal] = useState<CustomDeal>(DEFAULT_CUSTOM_DEAL);
   const [opponents, setOpponents] = useState<PlayerConfig[]>(buildDefaultOpponents);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const variant = VARIANTS[variantIndex];
-  const variantInfo = VARIANT_CONFIG[variant];
-  const maxOpponents = VARIANT_CONFIG[variant].maxPlayers - 1;
+  const isCustom = variant === DealingVariant.CUSTOM;
+  const maxOpponents = maxPlayersFor(variant, customDeal) - 1;
   const effectiveOpponents = opponents.slice(0, maxOpponents);
+  const variantInfo = variantCardInfo(variant, customDeal, effectiveOpponents.length + 1);
+
+  const handleLoadCustomDeal = useCallback((deal: CustomDeal) => {
+    setCustomDeal(deal);
+    setVariantIndex(CUSTOM_INDEX);
+  }, []);
 
   const handlePrevVariant = useCallback(() => {
     setVariantIndex((current) => (current - 1 + VARIANTS.length) % VARIANTS.length);
@@ -120,6 +160,8 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
         variant,
         must_lose_mode: mustLoseMode,
         challenge_mode: challengeMode,
+        house_rules: houseRules,
+        custom_deal: isCustom ? customDeal : null,
         share_data: settings.shareData,
         players: allPlayers.map((player): PlayerSetupRequest => ({
           name: player.name.trim(),
@@ -135,7 +177,7 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
     } finally {
       setIsCreating(false);
     }
-  }, [playerName, effectiveOpponents, variant, mustLoseMode, challengeMode, onGameCreated]);
+  }, [playerName, effectiveOpponents, variant, isCustom, customDeal, houseRules, mustLoseMode, challengeMode, onGameCreated, settings.shareData]);
 
   return (
     <div className={styles.lobby}>
@@ -184,6 +226,14 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
         </div>
       </div>
 
+      {isCustom && (
+        <CustomDealEditor
+          deal={customDeal}
+          onChange={setCustomDeal}
+          playerCount={effectiveOpponents.length + 1}
+        />
+      )}
+
       {/* Opponents */}
       <PlayerSetup players={effectiveOpponents} maxPlayers={maxOpponents} onChange={setOpponents} />
 
@@ -227,6 +277,13 @@ function MainLobby({ onGameCreated, onMultiplayer }: MainLobbyProps) {
         {challengeMode ? "AI plays at full strength" : "AI adapts to your level"}
       </span>
 
+      <HouseRulesPanel
+        rules={houseRules}
+        onChange={setHouseRules}
+        customDeal={isCustom ? customDeal : null}
+        onLoadCustomDeal={handleLoadCustomDeal}
+      />
+
       {error && <p className={styles.error}>{error}</p>}
 
       {/* Red airplane start button */}
@@ -257,6 +314,8 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
   const [hostName, setHostName] = useState("");
   const [createVariantIndex, setCreateVariantIndex] = useState(0);
   const [createMustLose, setCreateMustLose] = useState(false);
+  const [createRules, setCreateRules] = useState<HouseRules>(DEFAULT_HOUSE_RULES);
+  const [createDeal, setCreateDeal] = useState<CustomDeal>(DEFAULT_CUSTOM_DEAL);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
@@ -266,7 +325,15 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
   const [isJoining, setIsJoining] = useState(false);
 
   const createVariant = VARIANTS[createVariantIndex];
-  const createVariantInfo = VARIANT_CONFIG[createVariant];
+  const createIsCustom = createVariant === DealingVariant.CUSTOM;
+  // Friends join later, so preview the deal at a full table.
+  const createPreviewPlayers = customDealMaxPlayers(createDeal);
+  const createVariantInfo = variantCardInfo(createVariant, createDeal, createPreviewPlayers);
+
+  const handleLoadCreateDeal = useCallback((deal: CustomDeal) => {
+    setCreateDeal(deal);
+    setCreateVariantIndex(CUSTOM_INDEX);
+  }, []);
 
   const handleCreateRoom = useCallback(async () => {
     if (!hostName.trim()) {
@@ -279,6 +346,8 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
       const request = {
         variant: createVariant,
         must_lose_mode: createMustLose,
+        house_rules: createRules,
+        custom_deal: createIsCustom ? createDeal : null,
         share_data: settings.shareData,
         players: [{ name: hostName.trim(), is_ai: false, ai_difficulty: null }] as PlayerSetupRequest[],
         auto_start: false,
@@ -291,7 +360,7 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
     } finally {
       setIsCreatingRoom(false);
     }
-  }, [hostName, createVariant, createMustLose, onGameCreated]);
+  }, [hostName, createVariant, createIsCustom, createDeal, createRules, createMustLose, onGameCreated, settings.shareData]);
 
   const handleJoinRoom = useCallback(async () => {
     if (!joinCode.trim()) {
@@ -363,6 +432,10 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
           </div>
         </div>
 
+        {createIsCustom && (
+          <CustomDealEditor deal={createDeal} onChange={setCreateDeal} playerCount={createPreviewPlayers} />
+        )}
+
         <button
           className={`${styles.turbulenceToggle} ${createMustLose ? styles.turbulenceActive : ""}`}
           onClick={() => setCreateMustLose(!createMustLose)}
@@ -375,6 +448,13 @@ function MultiplayerPage({ onGameCreated, onBack }: MultiplayerPageProps) {
             {createMustLose ? "Harder \u2014 someone must lose every round" : "Normal rules"}
           </span>
         </button>
+
+        <HouseRulesPanel
+          rules={createRules}
+          onChange={setCreateRules}
+          customDeal={createIsCustom ? createDeal : null}
+          onLoadCustomDeal={handleLoadCreateDeal}
+        />
 
         {createError && <p className={styles.error}>{createError}</p>}
 

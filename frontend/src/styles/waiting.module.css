@@ -213,6 +213,42 @@
   color: #ecf0f1;
 }
 
+/* Rules summary */
+
+.rulesSummary {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-light);
+  border-radius: var(--radius-md);
+}
+
+.rulesSummaryTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.rulesList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.rulesNotice {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
 /* Actions */
 
 .actionButtons {

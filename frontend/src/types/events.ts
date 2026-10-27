@@ -1,5 +1,6 @@
 import type { Card } from "./card";
-import type { Bid, Player } from "./game";
+import type { Bid, Player, DealingVariant } from "./game";
+import type { HouseRules, CustomDeal } from "./houseRules";
 
 export const ServerEventType = {
   CONNECTED: "connected",
@@ -45,6 +46,11 @@ export interface ConnectedEventData {
   bids?: Array<{ player_id: string; amount: number }>;
   current_trick?: Array<{ player_id: string; card: Card }>;
   tricks_won?: Record<string, number>;
+  trump_card?: Card | null;
+  variant?: DealingVariant;
+  house_rules?: HouseRules;
+  custom_deal?: CustomDeal | null;
+  max_players?: number;
 }
 
 export interface RoundStartedEventData {
@@ -52,6 +58,8 @@ export interface RoundStartedEventData {
   num_cards: number;
   trump_suit: string;
   dealer_id: string;
+  /** The face-up card that set trump under the "flip a card" house rule. */
+  trump_card?: Card | null;
 }
 
 export interface CardsDealtEventData {

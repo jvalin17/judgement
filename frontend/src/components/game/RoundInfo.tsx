@@ -1,5 +1,5 @@
-import type { Suit } from "../../types";
-import { SUIT_COLORS } from "../../types";
+import type { Card, HouseRules, Suit } from "../../types";
+import { RANK_DISPLAY, SUIT_COLORS, SUIT_SYMBOLS, summarizeHouseRules } from "../../types";
 import { SuitSvg } from "../common";
 import styles from "../../styles/game.module.css";
 
@@ -11,9 +11,15 @@ interface RoundInfoProps {
   playerCount: number;
   mustLoseMode: boolean;
   challengeMode: boolean;
+  /** The face-up card that set trump under the "flip a card" house rule. */
+  trumpCard?: Card | null;
+  houseRules?: HouseRules;
 }
 
-export function RoundInfo({ roundNumber, totalRounds, numCards, trumpSuit, playerCount, mustLoseMode, challengeMode }: RoundInfoProps) {
+export function RoundInfo({
+  roundNumber, totalRounds, numCards, trumpSuit, playerCount, mustLoseMode, challengeMode,
+  trumpCard = null, houseRules,
+}: RoundInfoProps) {
   if (!roundNumber) return null;
 
   const suit = trumpSuit as Suit | null;
@@ -25,6 +31,11 @@ export function RoundInfo({ roundNumber, totalRounds, numCards, trumpSuit, playe
   const topCenterFree = playerCount === 3 || playerCount === 5;
   const positionClass = topCenterFree ? styles.roundIslandTop : styles.roundIslandBottom;
 
+  const trumpTooltip = trumpCard
+    ? `Trump card turned up: ${RANK_DISPLAY[trumpCard.rank]}${SUIT_SYMBOLS[trumpCard.suit]}`
+    : "Trump suit";
+  const ruleLines = houseRules ? summarizeHouseRules(houseRules) : [];
+
   const roundTooltip = totalRounds
     ? `Round ${roundNumber} of ${totalRounds}`
     : `Round ${roundNumber}`;
@@ -32,8 +43,13 @@ export function RoundInfo({ roundNumber, totalRounds, numCards, trumpSuit, playe
   return (
     <div className={`${styles.roundIsland} ${positionClass}`}>
       {suit && (
-        <span className={styles.roundIslandSuit} style={{ color: symbolColor }}>
+        <span className={styles.roundIslandSuit} style={{ color: symbolColor }} title={trumpTooltip}>
           <SuitSvg suit={suit} size={22} />
+          {trumpCard && (
+            <span className={styles.roundIslandTrumpRank} aria-label={trumpTooltip}>
+              {RANK_DISPLAY[trumpCard.rank]}
+            </span>
+          )}
         </span>
       )}
       <span className={styles.roundIslandText} title={roundTooltip}>
@@ -45,6 +61,11 @@ export function RoundInfo({ roundNumber, totalRounds, numCards, trumpSuit, playe
       </span>
       <span className={styles.roundIslandDivider} />
       <span className={styles.roundIslandModes}>
+        {ruleLines.length > 0 && (
+          <span className={styles.modeIcon} title={`House rules: ${ruleLines.join("; ")}`}>
+            {"\uD83D\uDCDC"}
+          </span>
+        )}
         {mustLoseMode && (
           <span className={styles.modeIcon} title="Turbulence — someone must lose every round">
             ⚠️

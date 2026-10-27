@@ -79,7 +79,9 @@ function WaitingRoomScreen({ onPlayAgain }: { onPlayAgain: () => void }) {
       isHost={state.isHost}
       players={state.lobbyPlayers}
       autoStartSeconds={state.autoStartSeconds}
-      maxPlayers={5}
+      maxPlayers={state.maxPlayers ?? 5}
+      houseRules={state.houseRules}
+      customDeal={state.variant === "custom" ? state.customDeal : null}
       connectionStatus={connectionStatus}
       onLeave={onPlayAgain}
     />

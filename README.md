@@ -38,7 +38,8 @@ No Python, Node.js, or terminal needed. Just download and play.
 - **Online multiplayer** — play at https://judgement-game.duckdns.org with friends from anywhere
 - **Local multiplayer** — create or join rooms with a code, lobby browser, quick-join
 - **Challenge mode** — full-strength AI for competitive players (disables adaptive difficulty)
-- **Six dealing variants** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick
+- **Six dealing variants plus custom deals** — 10-to-1, 8 down & up, 10 down & up, 8 short, 8-to-4, 3 quick, or pick your own starting hand, lowest hand, and order
+- **House rules** — flip-a-card trump, optional dealer restriction, must-trump-when-void, and alternative scoring for made and missed bids. Save your table's rules as a preset
 - **Turbulence mode** — guarantees at least one player misses their bid each round
 - **Play style persona** — at game end, get matched to one of 90 personas across 8 categories based on an 11-dimension play fingerprint. Unlock exclusive prestige personas at higher difficulty tiers
 - **Community data sharing** — opt-in to share anonymized game decisions; the server learns from community data and SmartHardAI gets smarter over time
@@ -77,6 +78,23 @@ No Python, Node.js, or terminal needed. Just download and play.
 | 8 short (8→5→8) | 8 | 6 |
 | 8 down to 4 | 5 | 6 |
 | Quick game (5, 3, 5) | 3 | 10 |
+| Custom deal | You choose | Up to 6 |
+
+**Custom deal** lets the host pick the starting hand size, or "Max" for as many cards as the deck allows. They also pick the fewest cards and the order: down, up, down & up, or up & down. If more players join than the deck can serve, hands shrink automatically and the waiting room says so.
+
+### House Rules
+
+House rules work with every dealing variant. The defaults are the classic rules above.
+
+| Rule | Options |
+|------|---------|
+| Trump | Rotate suits (default), or flip the first undealt card. If every card is dealt, suits rotate for that round |
+| Dealer restriction | On (default): the dealer can't make total bids equal the cards dealt. Off: any bid |
+| Must trump when void | Off (default). On: if you can't follow suit, you must play a trump if you have one |
+| Made bid | Classic 10 / 11 / bid x 10 (default), or 10 + bid |
+| Missed bid | Lose what you'd have won (default), zero points, or -10 per trick you were off |
+
+The waiting room and the in-game round badge show every rule that differs from classic. Quick-join only matches classic games. Games with different scoring or play rules are left out of the ML training data, so the Smart Hard bots keep learning classic incentives.
 
 ---
 
@@ -198,6 +216,13 @@ git clone https://github.com/jvalin17/judgement-tests.git ../judgement-tests
 
 # Run all tests locally
 ./scripts/run-test-suite.sh
+```
+
+House rules tests currently live in this repo until they move to the suite repo:
+
+```bash
+python3 -m pytest backend/tests/        # backend: rules, scoring, API
+cd frontend && npx vitest run           # frontend: lobby controls, presets, state
 ```
 
 Runs automatically on every push to `main` and on pull requests via GitHub Actions. See badges at the top.
