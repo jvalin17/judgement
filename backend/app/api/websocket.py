@@ -8,7 +8,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 logger = logging.getLogger(__name__)
 
-from backend.app.models import Card, Suit, Rank
+from backend.app.models import Card, Suit, Rank, max_players_for_config
 from backend.app.models.events import EventType, GameEvent
 from backend.app.game_manager import GameManager, ManagedGame
 
@@ -111,6 +111,17 @@ async def _handle_get_hand(
     })
 
 
+def _rules_payload(engine) -> dict:
+    """Game options every client shows: dealing variant, house rules, seat limit."""
+    config = engine.state.config
+    return {
+        "variant": config.variant.value,
+        "house_rules": config.house_rules.model_dump(mode="json"),
+        "custom_deal": config.custom_deal.model_dump(mode="json") if config.custom_deal else None,
+        "max_players": max_players_for_config(config),
+    }
+
+
 async def _send_error(websocket: WebSocket, reason: str) -> None:
     await websocket.send_json({"type": "error", "data": {"message": reason}})
 
@@ -130,6 +141,7 @@ async def _send_connected(websocket: WebSocket, managed: ManagedGame, game_id: s
             "must_lose_mode": engine.state.config.must_lose_mode,
             "challenge_mode": engine.state.config.challenge_mode,
             "total_rounds": len(engine._round_configs) if engine._round_configs else None,
+            **_rules_payload(engine),
             **round_data,
         },
     })

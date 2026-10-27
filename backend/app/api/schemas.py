@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from backend.app.models.player import AIDifficulty
 from backend.app.models.game import DealingVariant
+from backend.app.models.house_rules import CustomDeal, HouseRules
 
 
 class PlayerSetup(BaseModel):
@@ -25,6 +26,8 @@ class CreateGameRequest(BaseModel):
     variant: DealingVariant = DealingVariant.TEN_TO_ONE
     must_lose_mode: bool = False
     challenge_mode: bool = False
+    house_rules: HouseRules = HouseRules()
+    custom_deal: Optional[CustomDeal] = None  # used when variant == "custom"
     players: List[PlayerSetup]
     speed: Optional[GameSpeed] = None
     auto_start: bool = True
@@ -104,6 +107,8 @@ class LobbyStateResponse(BaseModel):
     phase: str
     variant: str
     must_lose_mode: bool
+    house_rules: HouseRules = HouseRules()
+    custom_deal: Optional[CustomDeal] = None
     players: List[Dict]
     host_player_id: Optional[str] = None
     max_players: int
@@ -114,6 +119,8 @@ class LobbyGameInfo(BaseModel):
     host_name: Optional[str] = None
     variant: str
     must_lose_mode: bool
+    house_rules: HouseRules = HouseRules()
+    custom_deal: Optional[CustomDeal] = None
     player_count: int
     max_players: int
 

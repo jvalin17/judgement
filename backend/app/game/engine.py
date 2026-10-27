@@ -5,7 +5,7 @@ import uuid
 
 from backend.app.models import (
     Player, GamePhase, GameConfig, GameFullState, Card,
-    max_players_for_variant,
+    max_players_for_config,
 )
 from backend.app.models.events import (
     EventType, GameEvent,
@@ -16,7 +16,7 @@ from backend.app.models.events import (
 )
 from backend.app.ai.base import RoundContext
 from backend.app.game.round_manager import RoundManager
-from backend.app.game.round_config_loader import load_round_configs
+from backend.app.game.round_config_loader import build_round_configs
 from backend.app.game.validators import get_forbidden_bid, get_valid_cards as _get_valid_cards
 
 
@@ -64,7 +64,7 @@ class GameEngine:
     def _can_add_player(self, player: Player) -> bool:
         if self.state.phase != GamePhase.LOBBY:
             return False
-        max_p = max_players_for_variant(self.state.config.variant)
+        max_p = max_players_for_config(self.state.config)
         if len(self.state.players) >= max_p:
             return False
         if any(existing.id == player.id for existing in self.state.players):
@@ -87,7 +87,7 @@ class GameEngine:
         )
 
     def _initialize_game(self) -> None:
-        self._round_configs = load_round_configs(self.state.config.variant)
+        self._round_configs = build_round_configs(self.state.config, len(self.state.players))
         self._current_round_index = 0
         self._dealer_index = 0
         self._emit(game_started_event(
@@ -113,6 +113,7 @@ class GameEngine:
             players=self.state.players,
             dealer_index=self._dealer_index,
             must_lose_mode=self.state.config.must_lose_mode,
+            house_rules=self.state.config.house_rules,
         )
         self.state.current_round = self._round_manager.state
         self.state.phase = GamePhase.BIDDING
@@ -124,6 +125,7 @@ class GameEngine:
             num_cards=rm.num_cards,
             trump_suit=rm.state.trump_suit.value,
             dealer_id=rm.state.dealer_id,
+            trump_card=rm.state.trump_card.model_dump() if rm.state.trump_card else None,
         ))
 
     def _deal_hands_to_players(self) -> None:
@@ -275,6 +277,7 @@ class GameEngine:
             rm.num_cards,
             rm.state.bids,
             self.state.config.must_lose_mode,
+            self.state.config.house_rules.dealer_restriction,
         )
         return [
             bid_amount for bid_amount in range(rm.num_cards + 1)
@@ -284,9 +287,13 @@ class GameEngine:
     def get_valid_cards(self, player_id: str) -> list[Card]:
         if not self._is_playing_phase():
             return []
-        hand = self._round_manager.state.hands.get(player_id, [])
-        lead_suit = self._round_manager.state.current_trick.lead_suit
-        return _get_valid_cards(hand, lead_suit)
+        rm = self._round_manager
+        hand = rm.state.hands.get(player_id, [])
+        lead_suit = rm.state.current_trick.lead_suit
+        return _get_valid_cards(
+            hand, lead_suit,
+            rm.state.trump_suit, self.state.config.house_rules.must_trump_when_void,
+        )
 
     def get_round_context(self, player_id: str) -> RoundContext:
         """Build an AI-visible context for the current round."""
@@ -331,6 +338,7 @@ class GameEngine:
             "round_number": rm.state.round_number,
             "num_cards": rm.num_cards,
             "trump_suit": rm.state.trump_suit.value,
+            "trump_card": rm.state.trump_card.model_dump() if rm.state.trump_card else None,
             "dealer_id": rm.state.dealer_id,
             "bids": [bid.model_dump() for bid in rm.state.bids],
             "current_trick": [play.model_dump() for play in rm.state.current_trick.plays],

@@ -16,7 +16,7 @@ _STATS_FILE = os.path.join(os.path.dirname(__file__), "ml", "learning", "data", 
 
 from backend.app.models import (
     Player, PlayerType, AIDifficulty, GameConfig, GamePhase,
-    max_players_for_variant,
+    max_players_for_config,
 )
 from backend.app.models.events import (
     GameEvent, EventType, PersonaAward,
@@ -334,6 +334,13 @@ class ManagedGame:
         self.session_log.winners = event.data.get("winners", [])
 
     def _flush_winner_decisions(self, event: GameEvent) -> None:
+        house_rules = self.engine.state.config.house_rules
+        if not house_rules.is_training_compatible():
+            # Decisions made under different scoring or play rules would teach
+            # the bots the wrong incentives, so they never reach training data.
+            logger.info("House rules change incentives; skipping ML data for this game")
+            self.decision_collector.clear()
+            return
         winner_ids = event.data.get("winners", [])
         all_player_ids = [player.id for player in self.engine.state.players]
         loser_ids = [pid for pid in all_player_ids if pid not in winner_ids]
@@ -493,7 +500,7 @@ class GameManager:
         if not managed:
             return
         engine = managed.engine
-        max_p = max_players_for_variant(engine.state.config.variant)
+        max_p = max_players_for_config(engine.state.config)
         current_count = len(engine.state.players)
         used_names = {player.name for player in engine.state.players}
         for index in range(current_count, max_p):

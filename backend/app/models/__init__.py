@@ -10,6 +10,15 @@ from .game import (
     RoundState,
     GameFullState,
     max_players_for_variant,
+    max_players_for_config,
+)
+from .house_rules import (
+    HouseRules,
+    CustomDeal,
+    TrumpMode,
+    MadeScoring,
+    MissedScoring,
+    RoundShape,
 )
 
 __all__ = [
@@ -28,5 +37,12 @@ __all__ = [
     "Trick",
     "RoundState",
     "GameFullState",
+    "max_players_for_config",
+    "HouseRules",
+    "CustomDeal",
+    "TrumpMode",
+    "MadeScoring",
+    "MissedScoring",
+    "RoundShape",
     "max_players_for_variant",
 ]

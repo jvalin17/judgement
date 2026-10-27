@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from backend.app.models import (
     Card, Suit, Bid, TrickPlay, Trick, RoundState, Player,
+    HouseRules, TrumpMode,
 )
 from backend.app.game.deck import create_deck, shuffle_deck, deal
 from backend.app.game.trick_resolver import resolve_trick
@@ -18,14 +19,18 @@ class RoundManager:
         players: list[Player],
         dealer_index: int,
         must_lose_mode: bool,
+        house_rules: HouseRules | None = None,
     ):
         self.players = players
         self.num_cards = num_cards
         self.dealer_index = dealer_index
         self.must_lose_mode = must_lose_mode
+        self.house_rules = house_rules or HouseRules()
 
         player_order = self._build_player_order(dealer_index)
-        hands = self._deal_hands(player_order)
+        hands, trump_card = self._deal_hands(player_order)
+        if trump_card is not None:
+            trump_suit = trump_card.suit
 
         self.bid_order = player_order
         self.play_order = list(player_order)
@@ -37,6 +42,7 @@ class RoundManager:
             dealer_id=players[dealer_index].id,
             hands=hands,
             tricks_won={player.id: 0 for player in players},
+            trump_card=trump_card,
         )
 
     # --- Setup helpers ---
@@ -49,10 +55,22 @@ class RoundManager:
             for offset in range(len(self.players))
         ]
 
-    def _deal_hands(self, player_order: list[str]) -> dict[str, list[Card]]:
+    def _deal_hands(self, player_order: list[str]) -> tuple[dict[str, list[Card]], Card | None]:
+        """Deal every hand. Returns the hands and the flipped trump card, if any.
+
+        Under the "flip" house rule the first undealt card is turned face up
+        and its suit becomes trump. When every card was dealt there is
+        nothing to turn, so the round keeps its rotation trump.
+        """
         deck = shuffle_deck(create_deck())
         hands_list = deal(deck, len(self.players), self.num_cards)
-        return {player_id: hands_list[index] for index, player_id in enumerate(player_order)}
+        hands = {player_id: hands_list[index] for index, player_id in enumerate(player_order)}
+        trump_card = None
+        if self.house_rules.trump_mode == TrumpMode.FLIP:
+            dealt = len(self.players) * self.num_cards
+            if dealt < len(deck):
+                trump_card = deck[dealt]
+        return hands, trump_card
 
     # --- State queries ---
 
@@ -102,6 +120,7 @@ class RoundManager:
         return validate_bid(
             amount, bid_index, len(self.players),
             self.num_cards, self.state.bids, self.must_lose_mode,
+            self.house_rules.dealer_restriction,
         )
 
     def play_card(self, player_id: str, card: Card) -> bool:
@@ -118,7 +137,10 @@ class RoundManager:
     def _is_valid_card_play(self, player_id: str, card: Card) -> bool:
         hand = self.state.hands.get(player_id, [])
         lead_suit = self.state.current_trick.lead_suit
-        return validate_play(card, hand, lead_suit)
+        return validate_play(
+            card, hand, lead_suit,
+            self.state.trump_suit, self.house_rules.must_trump_when_void,
+        )
 
     def _record_card_play(self, player_id: str, card: Card) -> None:
         if not self.state.current_trick.plays:
@@ -162,6 +184,9 @@ class RoundManager:
     # --- Scoring ---
 
     def calculate_scores(self) -> dict[str, int]:
-        scores = score_round(self.state.bids, self.state.tricks_won)
+        scores = score_round(
+            self.state.bids, self.state.tricks_won,
+            self.house_rules.made_scoring, self.house_rules.missed_scoring,
+        )
         self.state.scores = scores
         return scores

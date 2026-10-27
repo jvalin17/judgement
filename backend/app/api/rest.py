@@ -3,8 +3,9 @@ from __future__ import annotations
 import uuid
 from fastapi import APIRouter, HTTPException
 
-from backend.app.models import Player, PlayerType, GamePhase, GameConfig, Card, Suit, Rank, max_players_for_variant
+from backend.app.models import Player, PlayerType, GamePhase, GameConfig, Card, Suit, Rank, max_players_for_config
 from backend.app.models.game import DealingVariant
+from backend.app.models.house_rules import CustomDeal
 from backend.app.api.schemas import (
     CreateGameRequest, CreateGameResponse,
     GameStateResponse, PlayerHandResponse,
@@ -84,7 +85,16 @@ async def create_game(request: CreateGameRequest):
     if len(request.players) > 6:
         raise HTTPException(400, "Maximum 6 players")
 
-    config = GameConfig(variant=request.variant, must_lose_mode=request.must_lose_mode, challenge_mode=request.challenge_mode)
+    config = GameConfig(
+        variant=request.variant,
+        must_lose_mode=request.must_lose_mode,
+        challenge_mode=request.challenge_mode,
+        house_rules=request.house_rules,
+        custom_deal=(request.custom_deal or CustomDeal()) if request.variant == DealingVariant.CUSTOM else None,
+    )
+    max_p = max_players_for_config(config)
+    if len(request.players) > max_p:
+        raise HTTPException(400, f"This deal seats at most {max_p} players")
     players = []
     player_ids = {}
 
@@ -198,7 +208,7 @@ async def join_game(game_id: str, request: JoinGameRequest):
     if engine.state.phase != GamePhase.LOBBY:
         raise HTTPException(400, "Game already started")
 
-    max_p = max_players_for_variant(engine.state.config.variant)
+    max_p = max_players_for_config(engine.state.config)
     if len(engine.state.players) >= max_p:
         raise HTTPException(400, "Game is full")
 
@@ -243,7 +253,7 @@ async def add_bot(game_id: str, request: AddBotRequest):
     if managed.host_player_id and managed.host_player_id != request.player_id:
         raise HTTPException(403, "Only the host can add bots")
 
-    max_p = max_players_for_variant(engine.state.config.variant)
+    max_p = max_players_for_config(engine.state.config)
     if len(engine.state.players) >= max_p:
         raise HTTPException(400, "Game is full")
 
@@ -283,9 +293,11 @@ async def get_lobby_state(game_id: str):
         phase=engine.state.phase.value,
         variant=config.variant.value,
         must_lose_mode=config.must_lose_mode,
+        house_rules=config.house_rules,
+        custom_deal=config.custom_deal,
         players=[player.model_dump() for player in engine.state.players],
         host_player_id=managed.host_player_id,
-        max_players=max_players_for_variant(config.variant),
+        max_players=max_players_for_config(config),
     )
 
 
@@ -312,8 +324,10 @@ async def list_lobbies():
             host_name=host.name if host else None,
             variant=config.variant.value,
             must_lose_mode=config.must_lose_mode,
+            house_rules=config.house_rules,
+            custom_deal=config.custom_deal,
             player_count=len(engine.state.players),
-            max_players=max_players_for_variant(config.variant),
+            max_players=max_players_for_config(config),
         ))
     # Sort: most players first, then oldest
     games.sort(key=lambda g: (-g.player_count, g.game_id))
@@ -322,7 +336,14 @@ async def list_lobbies():
 
 @lobby_router.post("/quick-join", response_model=JoinGameResponse)
 async def quick_join(request: QuickJoinRequest):
-    lobbies = _manager.list_public_lobbies()
+    if request.variant == DealingVariant.CUSTOM.value:
+        raise HTTPException(400, "Quick join only supports the preset game modes")
+
+    # Quick join is for strangers, so only match games played with classic rules.
+    lobbies = [
+        managed for managed in _manager.list_public_lobbies()
+        if managed.engine.state.config.is_standard()
+    ]
 
     # Filter by variant if specified
     if request.variant:
@@ -341,7 +362,7 @@ async def quick_join(request: QuickJoinRequest):
         engine = managed.engine
         name_lower = request.player_name.strip().lower()
         name_taken = any(p.name.lower() == name_lower for p in engine.state.players)
-        max_p = max_players_for_variant(engine.state.config.variant)
+        max_p = max_players_for_config(engine.state.config)
         is_full = len(engine.state.players) >= max_p
 
         if not name_taken and not is_full:

@@ -43,6 +43,7 @@ class RoundStartedData(BaseModel):
     num_cards: int
     trump_suit: str
     dealer_id: str
+    trump_card: Optional[Dict] = None
 
 
 class CardsDealtData(BaseModel):
@@ -110,10 +111,11 @@ def game_started_event(players: List[dict], variant: str) -> GameEvent:
 
 def round_started_event(
     round_number: int, num_cards: int, trump_suit: str, dealer_id: str,
+    trump_card: Optional[dict] = None,
 ) -> GameEvent:
     data = RoundStartedData(
         round_number=round_number, num_cards=num_cards,
-        trump_suit=trump_suit, dealer_id=dealer_id,
+        trump_suit=trump_suit, dealer_id=dealer_id, trump_card=trump_card,
     )
     return GameEvent(event_type=EventType.ROUND_STARTED, data=data.model_dump())
 
